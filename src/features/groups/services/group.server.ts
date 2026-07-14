@@ -10,6 +10,7 @@ export interface ServerGroupMembership {
   groupId: UUID;
   role: GroupRole;
   group: WorkoutGroup;
+  seenSplitVersion: number;
 }
 
 function mapGroup(row: GroupRow): WorkoutGroup {
@@ -21,6 +22,8 @@ function mapGroup(row: GroupRow): WorkoutGroup {
     createdAt: row.created_at,
     updatedAt: row.updated_at,
     isPersonal: row.is_personal,
+    splitVersion: row.split_version,
+    splitUpdatedAt: row.split_updated_at,
   };
 }
 
@@ -30,7 +33,7 @@ export async function getGroupMembershipForUser(
   const supabase = await createClient();
   const { data: member, error: memberError } = await supabase
     .from("group_members")
-    .select("group_id, role")
+    .select("group_id, role, seen_split_version")
     .eq("user_id", userId)
     .maybeSingle();
 
@@ -49,5 +52,6 @@ export async function getGroupMembershipForUser(
     groupId: member.group_id,
     role: member.role,
     group: mapGroup(group),
+    seenSplitVersion: member.seen_split_version,
   };
 }

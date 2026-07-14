@@ -109,6 +109,7 @@ export type Database = {
           id: string
           joined_at: string
           role: Database["public"]["Enums"]["group_role"]
+          seen_split_version: number
           user_id: string
         }
         Insert: {
@@ -116,6 +117,7 @@ export type Database = {
           id?: string
           joined_at?: string
           role?: Database["public"]["Enums"]["group_role"]
+          seen_split_version?: number
           user_id: string
         }
         Update: {
@@ -123,6 +125,7 @@ export type Database = {
           id?: string
           joined_at?: string
           role?: Database["public"]["Enums"]["group_role"]
+          seen_split_version?: number
           user_id?: string
         }
         Relationships: [
@@ -150,6 +153,8 @@ export type Database = {
           invite_code: string
           is_personal: boolean
           name: string
+          split_updated_at: string
+          split_version: number
           updated_at: string
         }
         Insert: {
@@ -159,6 +164,8 @@ export type Database = {
           invite_code: string
           is_personal?: boolean
           name: string
+          split_updated_at?: string
+          split_version?: number
           updated_at?: string
         }
         Update: {
@@ -168,6 +175,8 @@ export type Database = {
           invite_code?: string
           is_personal?: boolean
           name?: string
+          split_updated_at?: string
+          split_version?: number
           updated_at?: string
         }
         Relationships: [
@@ -245,6 +254,9 @@ export type Database = {
           created_at: string
           display_name: string
           id: string
+          share_personal_records: boolean
+          share_weights: boolean
+          share_workout_summary: boolean
           updated_at: string
         }
         Insert: {
@@ -253,6 +265,9 @@ export type Database = {
           created_at?: string
           display_name: string
           id: string
+          share_personal_records?: boolean
+          share_weights?: boolean
+          share_workout_summary?: boolean
           updated_at?: string
         }
         Update: {
@@ -261,6 +276,9 @@ export type Database = {
           created_at?: string
           display_name?: string
           id?: string
+          share_personal_records?: boolean
+          share_weights?: boolean
+          share_workout_summary?: boolean
           updated_at?: string
         }
         Relationships: []
@@ -534,6 +552,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      acknowledge_group_split_version: {
+        Args: { target_group_id: string }
+        Returns: number
+      }
       add_workout_exercise: {
         Args: {
           session_only?: boolean
@@ -548,6 +570,10 @@ export type Database = {
         Returns: string
       }
       array_is_unique: { Args: { values_array: unknown }; Returns: boolean }
+      bump_group_split_version: {
+        Args: { target_group_id: string }
+        Returns: number
+      }
       create_group_with_owner: {
         Args: { group_name: string }
         Returns: {
@@ -557,6 +583,8 @@ export type Database = {
           invite_code: string
           is_personal: boolean
           name: string
+          split_updated_at: string
+          split_version: number
           updated_at: string
         }
         SetofOptions: {
@@ -575,6 +603,8 @@ export type Database = {
           invite_code: string
           is_personal: boolean
           name: string
+          split_updated_at: string
+          split_version: number
           updated_at: string
         }
         SetofOptions: {
@@ -587,6 +617,23 @@ export type Database = {
       current_user_group_id: { Args: never; Returns: string }
       ensure_personal_split: { Args: never; Returns: undefined }
       generate_group_invite_code: { Args: never; Returns: string }
+      get_group_member_weekly_stats: {
+        Args: { target_group_id: string }
+        Returns: {
+          adherence_percent: number
+          avatar_url: string
+          display_name: string
+          last_workout_at: string
+          personal_records_count: number
+          role: Database["public"]["Enums"]["group_role"]
+          scheduled_this_week: number
+          sessions_this_week: number
+          share_personal_records: boolean
+          share_weights: boolean
+          share_workout_summary: boolean
+          user_id: string
+        }[]
+      }
       is_group_admin: { Args: { target_group_id: string }; Returns: boolean }
       is_group_member: { Args: { target_group_id: string }; Returns: boolean }
       is_group_owner: { Args: { target_group_id: string }; Returns: boolean }
@@ -599,6 +646,8 @@ export type Database = {
           invite_code: string
           is_personal: boolean
           name: string
+          split_updated_at: string
+          split_version: number
           updated_at: string
         }
         SetofOptions: {

@@ -1,18 +1,11 @@
-import type { UUID } from "@/types";
+import { TrendLineChart } from "./TrendLineChart";
 
 export interface ExerciseProgressChartProps {
-  exerciseId: UUID;
+  points: Array<{ label: string; value: number }>;
+  valueLabel: string;
+  formatValue?: (value: number) => string;
 }
 
-/**
- * Minimal placeholder for an exercise's progress-over-time chart.
- * No chart library is installed yet — this renders a text placeholder
- * until one is chosen and added.
- */
-export function ExerciseProgressChart({ exerciseId }: ExerciseProgressChartProps) {
-  return (
-    <div className="flex h-40 items-center justify-center rounded-lg border text-sm opacity-70">
-      Progress chart for exercise {exerciseId.slice(0, 8)}
-    </div>
-  );
+export function ExerciseProgressChart({ points, valueLabel, formatValue }: ExerciseProgressChartProps) {
+  return <TrendLineChart points={points} valueLabel={valueLabel} formatValue={formatValue} />;
 }

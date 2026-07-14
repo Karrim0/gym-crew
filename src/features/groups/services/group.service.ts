@@ -28,6 +28,8 @@ function mapGroup(row: GroupRow): WorkoutGroup {
     createdAt: row.created_at,
     updatedAt: row.updated_at,
     isPersonal: row.is_personal,
+    splitVersion: row.split_version,
+    splitUpdatedAt: row.split_updated_at,
   };
 }
 
@@ -38,6 +40,7 @@ function mapMember(row: GroupMemberRow): GroupMember {
     userId: row.user_id,
     role: row.role,
     joinedAt: row.joined_at,
+    seenSplitVersion: row.seen_split_version,
   };
 }
 
@@ -47,6 +50,9 @@ function mapProfile(row: ProfileRow): UserProfile {
     displayName: row.display_name,
     avatarUrl: row.avatar_url,
     additionalRestDays: row.additional_rest_days,
+    shareWorkoutSummary: row.share_workout_summary,
+    sharePersonalRecords: row.share_personal_records,
+    shareWeights: row.share_weights,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   };
@@ -238,4 +244,94 @@ export async function createSoloWorkspace(): Promise<WorkoutGroup> {
   if (error) throw new Error(error.message);
   if (!data) throw new Error("The solo workspace was not returned after creation.");
   return mapGroup(data);
+}
+
+export async function fetchGroupActivityFeed(
+  groupId: UUID,
+): Promise<import("../types").GroupActivityFeedItem[]> {
+  const supabase = createClient();
+  const [activities, members] = await Promise.all([
+    fetchGroupActivity(groupId),
+    fetchGroupMembers(groupId),
+  ]);
+
+  const memberByUserId = new Map(members.map((member) => [member.userId, member]));
+  const exerciseIds = activities.flatMap((activity) => {
+    const exerciseId = activity.metadata.exercise_id;
+    return typeof exerciseId === "string" ? [exerciseId] : [];
+  });
+
+  const exerciseNames = new Map<string, string>();
+  if (exerciseIds.length > 0) {
+    const { data, error } = await supabase
+      .from("exercises")
+      .select("id, name")
+      .in("id", [...new Set(exerciseIds)]);
+    if (error) throw new Error(error.message);
+    for (const exercise of data) exerciseNames.set(exercise.id, exercise.name);
+  }
+
+  return activities.flatMap((activity) => {
+    const member = memberByUserId.get(activity.userId);
+    if (!member) return [];
+    if (activity.type === "workout_completed" && !member.profile.shareWorkoutSummary) return [];
+    if (activity.type === "personal_record" && !member.profile.sharePersonalRecords) return [];
+
+    const exerciseId = activity.metadata.exercise_id;
+    return [{
+      ...activity,
+      actorName: member.profile.displayName,
+      actorAvatarUrl: member.profile.avatarUrl,
+      exerciseName: typeof exerciseId === "string" ? exerciseNames.get(exerciseId) ?? null : null,
+      showWeights: member.profile.shareWeights,
+    }];
+  });
+}
+
+export async function fetchGroupMemberWeeklyStats(
+  groupId: UUID,
+): Promise<import("../types").GroupMemberWeeklyStats[]> {
+  const supabase = createClient();
+  const { data, error } = await supabase.rpc("get_group_member_weekly_stats", {
+    target_group_id: groupId,
+  });
+  if (error) throw new Error(error.message);
+
+  return data.map((row) => ({
+    userId: row.user_id,
+    displayName: row.display_name,
+    avatarUrl: row.avatar_url,
+    role: row.role,
+    sessionsThisWeek: row.sessions_this_week,
+    scheduledThisWeek: row.scheduled_this_week,
+    adherencePercent: row.adherence_percent,
+    personalRecordsCount: row.personal_records_count,
+    lastWorkoutAt: row.last_workout_at,
+    shareWorkoutSummary: row.share_workout_summary,
+    sharePersonalRecords: row.share_personal_records,
+    shareWeights: row.share_weights,
+  }));
+}
+
+export async function fetchGroupSplitSyncStatus(
+  userId: UUID,
+): Promise<import("../types").GroupSplitSyncStatus | null> {
+  const membership = await fetchCurrentGroupMembership(userId);
+  if (!membership || membership.group.isPersonal) return null;
+  return {
+    groupId: membership.group.id,
+    groupVersion: membership.group.splitVersion,
+    seenVersion: membership.member.seenSplitVersion,
+    updatedAt: membership.group.splitUpdatedAt,
+    hasUpdate: membership.group.splitVersion > membership.member.seenSplitVersion,
+  };
+}
+
+export async function acknowledgeGroupSplitUpdate(groupId: UUID): Promise<number> {
+  const supabase = createClient();
+  const { data, error } = await supabase.rpc("acknowledge_group_split_version", {
+    target_group_id: groupId,
+  });
+  if (error) throw new Error(error.message);
+  return data;
 }

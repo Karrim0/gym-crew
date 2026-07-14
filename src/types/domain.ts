@@ -21,6 +21,9 @@ export interface UserProfile {
   avatarUrl: string | null;
   /** Friday is implicit and must never appear in this array. */
   additionalRestDays: Weekday[];
+  shareWorkoutSummary: boolean;
+  sharePersonalRecords: boolean;
+  shareWeights: boolean;
   createdAt: ISODateString;
   updatedAt: ISODateString;
 }
@@ -34,6 +37,8 @@ export interface WorkoutGroup {
   updatedAt: ISODateString;
   /** True when this is a private one-person training workspace. */
   isPersonal: boolean;
+  splitVersion: number;
+  splitUpdatedAt: ISODateString;
 }
 
 export type GroupRole = "owner" | "admin" | "member";
@@ -44,6 +49,7 @@ export interface GroupMember {
   userId: UUID;
   role: GroupRole;
   joinedAt: ISODateString;
+  seenSplitVersion: number;
 }
 
 // ---------------------------------------------------------------------------

@@ -12,6 +12,9 @@ export function mapProfile(row: ProfileRow): UserProfile {
     displayName: row.display_name,
     avatarUrl: row.avatar_url,
     additionalRestDays: row.additional_rest_days,
+    shareWorkoutSummary: row.share_workout_summary,
+    sharePersonalRecords: row.share_personal_records,
+    shareWeights: row.share_weights,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   };
@@ -69,4 +72,32 @@ export async function uploadProfileAvatar(userId: UUID, file: File): Promise<str
 
   if (error) throw new Error(error.message);
   return supabase.storage.from("avatars").getPublicUrl(path).data.publicUrl;
+}
+
+export interface SharingPreferencesInput {
+  shareWorkoutSummary: boolean;
+  sharePersonalRecords: boolean;
+  shareWeights: boolean;
+}
+
+export async function updateSharingPreferences(
+  userId: UUID,
+  input: SharingPreferencesInput,
+): Promise<UserProfile> {
+  const supabase = createClient();
+  const { data, error } = await supabase
+    .from("profiles")
+    .update({
+      share_workout_summary: input.shareWorkoutSummary,
+      share_personal_records: input.sharePersonalRecords,
+      share_weights: input.shareWeights,
+    })
+    .eq("id", userId)
+    .select("*")
+    .single();
+
+  if (error) throw new Error(error.message);
+  const profile = mapProfile(data);
+  await cacheProfile(profile);
+  return profile;
 }

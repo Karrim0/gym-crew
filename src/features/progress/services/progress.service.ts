@@ -330,3 +330,156 @@ export async function fetchExerciseProgressDetails(
     bestRepsByWeight: [...bestByWeight.values()].sort((a, b) => b.weightKg - a.weightKg),
   };
 }
+
+export type AnalyticsRangeDays = 7 | 30 | 90;
+export type MuscleMetric = "sets" | "volume";
+
+export interface MuscleAnalyticsSummary extends MuscleTrainingSummary {
+  weightedSets: number;
+  weightedVolumeKg: number;
+  intensityBySets: number;
+  intensityByVolume: number;
+}
+
+export interface TrainingTrendPoint {
+  weekStart: string;
+  label: string;
+  sessions: number;
+  workingSets: number;
+  volumeKg: number;
+  averageDurationSeconds: number;
+}
+
+const ALL_MUSCLES: MuscleGroup[] = [
+  "chest",
+  "back",
+  "shoulders",
+  "biceps",
+  "triceps",
+  "quads",
+  "hamstrings",
+  "glutes",
+  "calves",
+  "core",
+];
+
+function toDateOnly(date: Date): string {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+function subtractDays(date: Date, days: number): Date {
+  const copy = new Date(date);
+  copy.setDate(copy.getDate() - days);
+  copy.setHours(12, 0, 0, 0);
+  return copy;
+}
+
+export async function fetchMuscleAnalytics(
+  userId: UUID,
+  rangeDays: AnalyticsRangeDays = 30,
+): Promise<MuscleAnalyticsSummary[]> {
+  const history = await fetchWorkoutHistory(userId);
+  const cutoff = toDateOnly(subtractDays(new Date(), rangeDays - 1));
+  const map = new Map<MuscleGroup, Omit<MuscleAnalyticsSummary, "intensityBySets" | "intensityByVolume">>();
+  const exerciseIds = new Map<MuscleGroup, Set<UUID>>();
+
+  for (const muscle of ALL_MUSCLES) {
+    map.set(muscle, {
+      muscle,
+      completedSets: 0,
+      volumeKg: 0,
+      exerciseCount: 0,
+      weightedSets: 0,
+      weightedVolumeKg: 0,
+    });
+    exerciseIds.set(muscle, new Set());
+  }
+
+  for (const session of history) {
+    if (session.scheduledDate < cutoff) continue;
+    for (const workoutExercise of session.exercises) {
+      const completedSets = workoutExercise.sets.filter((set) => set.isCompleted && !set.isWarmup);
+      if (completedSets.length === 0) continue;
+      const volume = calculateWorkoutVolume(completedSets);
+      const primary = workoutExercise.exercise.primaryMuscle;
+      const primarySummary = map.get(primary)!;
+      primarySummary.completedSets += completedSets.length;
+      primarySummary.volumeKg += volume;
+      primarySummary.weightedSets += completedSets.length;
+      primarySummary.weightedVolumeKg += volume;
+      exerciseIds.get(primary)!.add(workoutExercise.exerciseId);
+
+      for (const secondary of workoutExercise.exercise.secondaryMuscles) {
+        const secondarySummary = map.get(secondary)!;
+        secondarySummary.weightedSets += completedSets.length * 0.35;
+        secondarySummary.weightedVolumeKg += volume * 0.35;
+        exerciseIds.get(secondary)!.add(workoutExercise.exerciseId);
+      }
+    }
+  }
+
+  const maxSets = Math.max(1, ...[...map.values()].map((item) => item.weightedSets));
+  const maxVolume = Math.max(1, ...[...map.values()].map((item) => item.weightedVolumeKg));
+
+  return ALL_MUSCLES.map((muscle) => {
+    const item = map.get(muscle)!;
+    return {
+      ...item,
+      exerciseCount: exerciseIds.get(muscle)!.size,
+      intensityBySets: item.weightedSets / maxSets,
+      intensityByVolume: item.weightedVolumeKg / maxVolume,
+    };
+  }).sort((a, b) => b.weightedSets - a.weightedSets);
+}
+
+export async function fetchTrainingTrend(
+  userId: UUID,
+  weekCount = 8,
+): Promise<TrainingTrendPoint[]> {
+  const history = await fetchWorkoutHistory(userId);
+  const currentWeekStart = getTrainingWeekStart(new Date());
+  const points: TrainingTrendPoint[] = [];
+
+  for (let index = weekCount - 1; index >= 0; index -= 1) {
+    const weekStart = new Date(currentWeekStart);
+    weekStart.setDate(weekStart.getDate() - index * 7);
+    const weekEnd = new Date(weekStart);
+    weekEnd.setDate(weekEnd.getDate() + 6);
+    const startISO = toDateOnly(weekStart);
+    const endISO = toDateOnly(weekEnd);
+    const sessions = history.filter(
+      (session) => session.scheduledDate >= startISO && session.scheduledDate <= endISO,
+    );
+    const workingSets = sessions.reduce(
+      (total, session) => total + session.exercises.reduce(
+        (exerciseTotal, exercise) => exerciseTotal + exercise.sets.filter(
+          (set) => set.isCompleted && !set.isWarmup,
+        ).length,
+        0,
+      ),
+      0,
+    );
+    const volumeKg = sessions.reduce(
+      (total, session) => total + session.exercises.reduce(
+        (exerciseTotal, exercise) => exerciseTotal + calculateWorkoutVolume(exercise.sets),
+        0,
+      ),
+      0,
+    );
+    const duration = sessions.reduce((total, session) => total + session.durationSeconds, 0);
+
+    points.push({
+      weekStart: startISO,
+      label: weekStart.toLocaleDateString(undefined, { month: "short", day: "numeric" }),
+      sessions: sessions.length,
+      workingSets,
+      volumeKg,
+      averageDurationSeconds: sessions.length === 0 ? 0 : Math.round(duration / sessions.length),
+    });
+  }
+
+  return points;
+}
