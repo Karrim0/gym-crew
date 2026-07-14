@@ -1,13 +1,14 @@
 "use client";
 
 import { createContext, useContext } from "react";
-import type { StopwatchState } from "@/types";
+import type { StopwatchState, UUID } from "@/types";
 
 export interface StopwatchContextValue extends StopwatchState {
+  sessionId: UUID | null;
   start: () => void;
   pause: () => void;
   reset: () => void;
-  hydrate: (startedAt: string, elapsedSeconds?: number) => void;
+  hydrate: (sessionId: UUID, startedAt: string, elapsedSeconds?: number) => void;
 }
 
 export const StopwatchContext = createContext<StopwatchContextValue | undefined>(undefined);

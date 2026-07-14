@@ -7,6 +7,7 @@ import { requireCurrentUser } from "@/features/auth/services/auth.server";
 import { GroupInviteCode } from "@/features/groups/components/GroupInviteCode";
 import { getGroupMembershipForUser } from "@/features/groups/services/group.server";
 import { createClient } from "@/lib/supabase/server";
+import { PersonalDashboardSummary } from "@/features/dashboard/components/PersonalDashboardSummary";
 
 export default async function DashboardPage() {
   const user = await requireCurrentUser();
@@ -24,7 +25,9 @@ export default async function DashboardPage() {
           <ChevronRight className="h-5 w-5" />
         </Link>
 
-        {membership ? (
+        <PersonalDashboardSummary userId={user.id} />
+
+        {membership && !membership.group.isPersonal ? (
           <section className="space-y-3 rounded-2xl border bg-white p-4 dark:bg-neutral-950">
             <div className="flex items-center gap-3">
               <Users className="h-5 w-5" />

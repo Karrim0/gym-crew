@@ -1,15 +1,21 @@
-import { NotImplementedError } from "@/lib/utils/errors";
-import type { StreakResult } from "@/lib/calculations/streaks";
-import type { UUID } from "@/types";
+import { calculateWorkoutStreak, type StreakResult } from "@/lib/calculations/streaks";
+import { fetchProfile } from "@/features/profile/services/profile.service";
+import { fetchPersonalSplit } from "@/features/splits/services/split.service";
+import { fetchWorkoutHistory } from "@/features/workouts/services/workout-session.service";
+import type { UUID, Weekday } from "@/types";
 
-/**
- * Loads a member's completed workout dates and personal rest days, then
- * delegates the actual streak math to `calculateWorkoutStreak` in
- * `lib/calculations/streaks.ts`. Kept as a feature service (rather than
- * folding into `lib/calculations`) because it needs to fetch data, which
- * `lib/calculations` intentionally never does.
- */
 export async function fetchWorkoutStreak(userId: UUID): Promise<StreakResult> {
-  void userId;
-  throw new NotImplementedError("fetchWorkoutStreak");
+  const [profile, split, history] = await Promise.all([
+    fetchProfile(userId),
+    fetchPersonalSplit(userId),
+    fetchWorkoutHistory(userId),
+  ]);
+
+  const personalRestDays = new Set(profile?.additionalRestDays ?? []);
+  const scheduledWeekdays = split
+    .filter((day) => day.workoutType !== "rest" && !personalRestDays.has(day.weekday))
+    .map((day) => day.weekday as Weekday);
+  const completedDates = [...new Set(history.map((session) => session.scheduledDate))];
+
+  return calculateWorkoutStreak(completedDates, scheduledWeekdays);
 }

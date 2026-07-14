@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { signOut } from "../services/auth.service";
+import { clearPrivatePageCache } from "@/lib/pwa/service-worker-messages";
 
 export function LogoutButton() {
   const router = useRouter();
@@ -17,6 +18,7 @@ export function LogoutButton() {
       return;
     }
 
+    await clearPrivatePageCache();
     router.replace("/login");
     router.refresh();
   }

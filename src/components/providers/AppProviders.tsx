@@ -4,6 +4,7 @@ import { useEffect, type ReactNode } from "react";
 import { registerServiceWorker } from "@/lib/pwa/register-service-worker";
 import { NetworkProvider } from "./NetworkProvider";
 import { SupabaseProvider } from "./SupabaseProvider";
+import { OfflineCacheWarmer } from "./OfflineCacheWarmer";
 
 interface AppProvidersProps {
   children: ReactNode;
@@ -21,7 +22,7 @@ export function AppProviders({ children }: AppProvidersProps) {
 
   return (
     <SupabaseProvider>
-      <NetworkProvider>{children}</NetworkProvider>
+      <NetworkProvider><OfflineCacheWarmer />{children}</NetworkProvider>
     </SupabaseProvider>
   );
 }

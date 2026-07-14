@@ -1,19 +1,34 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import type { UUID } from "@/types";
+import { fetchAdherenceSummary } from "../services/progress.service";
 
 export interface UseAdherenceResult {
   weekly: number | null;
   monthly: number | null;
   isLoading: boolean;
+  error: string | null;
 }
 
-/**
- * Will load weekly/monthly adherence for the current user. Currently
- * returns an empty, non-loading state — wire this up to
- * `features/progress/services` once adherence tracking is implemented.
- */
-export function useAdherence(): UseAdherenceResult {
-  const [state] = useState<UseAdherenceResult>({ weekly: null, monthly: null, isLoading: false });
+export function useAdherence(userId: UUID): UseAdherenceResult {
+  const [state, setState] = useState<UseAdherenceResult>({
+    weekly: null,
+    monthly: null,
+    isLoading: true,
+    error: null,
+  });
+
+  useEffect(() => {
+    fetchAdherenceSummary(userId)
+      .then((summary) => setState({ weekly: summary.weekly, monthly: summary.monthly, isLoading: false, error: null }))
+      .catch((caught) => setState({
+        weekly: null,
+        monthly: null,
+        isLoading: false,
+        error: caught instanceof Error ? caught.message : "Unable to load adherence.",
+      }));
+  }, [userId]);
+
   return state;
 }

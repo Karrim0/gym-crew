@@ -5,23 +5,22 @@ import type {
   WorkoutExercise,
   WorkoutSession,
   WorkoutSet,
+  UserProfile,
 } from "@/types";
 
 /**
- * IndexedDB is normalized even though the app-facing domain model is nested.
- * This prevents the same set from being stored both inside its session and in
- * the `workoutSets` table, which would otherwise create stale copies.
+ * Workout data is normalized so a set has one durable local source of truth.
+ * Cached splits are intentionally denormalized because they are read as a
+ * weekly document and refreshed as a unit.
  */
 export type WorkoutSessionRow = Omit<WorkoutSession, "exercises">;
 export type WorkoutExerciseRow = Omit<WorkoutExercise, "sets">;
 export type WorkoutSetRow = WorkoutSet;
 export type SyncQueueRow = SyncQueueItem;
 
-export type CachedSplitRow = Omit<SplitDay, "exercises"> & {
-  cachedAt: string;
-};
-
+export type CachedSplitRow = SplitDay & { cachedAt: string };
 export type CachedExerciseRow = Exercise & { cachedAt: string };
+export type CachedProfileRow = UserProfile & { cachedAt: string };
 
 export const OFFLINE_TABLE_NAMES = {
   workoutSessions: "workoutSessions",
@@ -30,4 +29,5 @@ export const OFFLINE_TABLE_NAMES = {
   syncQueue: "syncQueue",
   cachedSplits: "cachedSplits",
   cachedExercises: "cachedExercises",
+  cachedProfiles: "cachedProfiles",
 } as const;

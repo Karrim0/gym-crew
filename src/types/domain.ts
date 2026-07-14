@@ -32,6 +32,8 @@ export interface WorkoutGroup {
   createdBy: UUID;
   createdAt: ISODateString;
   updatedAt: ISODateString;
+  /** True when this is a private one-person training workspace. */
+  isPersonal: boolean;
 }
 
 export type GroupRole = "owner" | "admin" | "member";
@@ -169,6 +171,9 @@ export interface PersonalRecord {
   value: number;
   achievedAt: ISODateString;
   workoutSetId: UUID;
+  /** Load and reps that produced the record, kept as useful context. */
+  weightKg: number | null;
+  reps: number | null;
 }
 
 // ---------------------------------------------------------------------------

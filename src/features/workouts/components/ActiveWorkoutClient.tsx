@@ -4,6 +4,8 @@ import { useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Check, Plus, Save, Trash2 } from "lucide-react";
 import { useStopwatchContext } from "@/contexts/stopwatch-context";
+import { useNetworkStatus } from "@/hooks/use-network-status";
+import { SyncStatusIndicator } from "@/components/feedback/SyncStatusIndicator";
 import { fetchExerciseLibrary } from "@/features/exercises/services/exercise.service";
 import { addSplitExercise } from "@/features/splits/services/split.service";
 import type { Exercise, WorkoutSet } from "@/types";
@@ -70,7 +72,8 @@ export function ActiveWorkoutClient() {
   const searchParams = useSearchParams();
   const sessionId = searchParams.get("session");
   const { session, isLoading, error: loadError, reload } = useActiveWorkout(sessionId);
-  const { hydrate, elapsedSeconds } = useStopwatchContext();
+  const { hydrate, elapsedSeconds, reset } = useStopwatchContext();
+  const { isOnline } = useNetworkStatus();
   const hydratedSession = useRef<string | null>(null);
   const [library, setLibrary] = useState<Exercise[]>([]);
   const [selectedExercise, setSelectedExercise] = useState("");
@@ -87,7 +90,7 @@ export function ActiveWorkoutClient() {
     if (session && hydratedSession.current !== session.id) {
       hydratedSession.current = session.id;
       setSessionNotes(session.notes);
-      hydrate(session.startedAt, session.durationSeconds || undefined);
+      hydrate(session.id, session.startedAt, session.durationSeconds || undefined);
     }
   }, [hydrate, session]);
 
@@ -110,10 +113,14 @@ export function ActiveWorkoutClient() {
     setBusy(true);
     setError(null);
     try {
+      await addExerciseToWorkout(session.id, exercise.id, 3, !permanent || !isOnline);
       if (permanent && session.splitDayId) {
-        await addSplitExercise({ splitDayId: session.splitDayId, exercise, isPersonalAddition: true });
+        if (!isOnline) {
+          setError("The exercise was added to this workout. Connect to the internet to add it permanently to your split.");
+        } else {
+          await addSplitExercise({ splitDayId: session.splitDayId, exercise, isPersonalAddition: true });
+        }
       }
-      await addExerciseToWorkout(session.id, exercise.id, 3, !permanent);
       setSelectedExercise("");
       setPermanent(false);
       await reload();
@@ -129,6 +136,7 @@ export function ActiveWorkoutClient() {
     try {
       await updateWorkoutSessionNotes(session.id, sessionNotes);
       await finishWorkoutSession(session.id, elapsedSeconds, sessionNotes);
+      reset();
       router.replace("/workout/history");
       router.refresh();
     } catch (caught) {
@@ -141,6 +149,10 @@ export function ActiveWorkoutClient() {
 
   return (
     <div className="space-y-4">
+      <div className="flex items-center justify-between gap-3 rounded-xl border bg-white px-3 py-2 dark:bg-neutral-950">
+        <span className="text-xs font-semibold uppercase tracking-wide text-neutral-500">Workout autosave</span>
+        <SyncStatusIndicator />
+      </div>
       <Stopwatch />
       {error ? <p className="rounded-xl bg-red-50 p-3 text-sm text-red-700 dark:bg-red-950/30 dark:text-red-300">{error}</p> : null}
 
@@ -173,6 +185,7 @@ export function ActiveWorkoutClient() {
             {library.filter((exercise) => !session.exercises.some((item) => item.exerciseId === exercise.id)).map((exercise) => <option key={exercise.id} value={exercise.id}>{exercise.name}</option>)}
           </select>
           <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={permanent} onChange={(event) => setPermanent(event.target.checked)} /> Also add it permanently to this split day</label>
+          {!isOnline && permanent ? <p className="text-xs text-amber-600">Permanent split changes need internet. The exercise will still be saved in this session.</p> : null}
           <button type="button" disabled={!selectedExercise || busy} onClick={() => void addExercise()} className="inline-flex w-full items-center justify-center gap-2 rounded-xl border px-4 py-3 font-semibold disabled:opacity-40"><Plus className="h-4 w-4" /> Add exercise</button>
         </div>
       </section>

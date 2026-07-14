@@ -20,6 +20,7 @@ function mapGroup(row: GroupRow): WorkoutGroup {
     createdBy: row.created_by,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
+    isPersonal: row.is_personal,
   };
 }
 

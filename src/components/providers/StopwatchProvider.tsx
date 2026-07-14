@@ -1,11 +1,15 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useState, type ReactNode } from "react";
 import { StopwatchContext, type StopwatchContextValue } from "@/contexts/stopwatch-context";
-import type { StopwatchState } from "@/types";
+import type { StopwatchState, UUID } from "@/types";
 
 interface StopwatchProviderProps {
   children: ReactNode;
+}
+
+interface PersistedStopwatch extends StopwatchState {
+  savedAt: string;
 }
 
 const INITIAL_STATE: StopwatchState = {
@@ -14,19 +18,27 @@ const INITIAL_STATE: StopwatchState = {
   elapsedSeconds: 0,
 };
 
+function storageKey(sessionId: UUID) {
+  return `gym-crew:stopwatch:${sessionId}`;
+}
+
 export function StopwatchProvider({ children }: StopwatchProviderProps) {
+  const [sessionId, setSessionId] = useState<UUID | null>(null);
   const [state, setState] = useState<StopwatchState>(INITIAL_STATE);
-  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
     if (!state.isRunning) return;
-    intervalRef.current = setInterval(() => {
+    const interval = window.setInterval(() => {
       setState((current) => ({ ...current, elapsedSeconds: current.elapsedSeconds + 1 }));
     }, 1000);
-    return () => {
-      if (intervalRef.current) clearInterval(intervalRef.current);
-    };
+    return () => window.clearInterval(interval);
   }, [state.isRunning]);
+
+  useEffect(() => {
+    if (!sessionId) return;
+    const persisted: PersistedStopwatch = { ...state, savedAt: new Date().toISOString() };
+    window.localStorage.setItem(storageKey(sessionId), JSON.stringify(persisted));
+  }, [sessionId, state]);
 
   const start = useCallback(() => {
     setState((current) => ({
@@ -40,13 +52,35 @@ export function StopwatchProvider({ children }: StopwatchProviderProps) {
     setState((current) => ({ ...current, isRunning: false }));
   }, []);
 
-  const reset = useCallback(() => setState(INITIAL_STATE), []);
+  const reset = useCallback(() => {
+    if (sessionId) window.localStorage.removeItem(storageKey(sessionId));
+    setState(INITIAL_STATE);
+  }, [sessionId]);
 
-  const hydrate = useCallback((startedAt: string, elapsedSeconds?: number) => {
+  const hydrate = useCallback((nextSessionId: UUID, startedAt: string, elapsedSeconds?: number) => {
+    setSessionId(nextSessionId);
+    const raw = window.localStorage.getItem(storageKey(nextSessionId));
+    if (raw) {
+      try {
+        const stored = JSON.parse(raw) as PersistedStopwatch;
+        const offlineElapsed = stored.isRunning
+          ? Math.max(0, Math.floor((Date.now() - new Date(stored.savedAt).getTime()) / 1000))
+          : 0;
+        setState({
+          isRunning: stored.isRunning,
+          startedAt: stored.startedAt ?? startedAt,
+          elapsedSeconds: stored.elapsedSeconds + offlineElapsed,
+        });
+        return;
+      } catch {
+        window.localStorage.removeItem(storageKey(nextSessionId));
+      }
+    }
+
     const elapsed = elapsedSeconds ?? Math.max(0, Math.floor((Date.now() - new Date(startedAt).getTime()) / 1000));
     setState({ isRunning: true, startedAt, elapsedSeconds: elapsed });
   }, []);
 
-  const value: StopwatchContextValue = { ...state, start, pause, reset, hydrate };
+  const value: StopwatchContextValue = { ...state, sessionId, start, pause, reset, hydrate };
   return <StopwatchContext value={value}>{children}</StopwatchContext>;
 }

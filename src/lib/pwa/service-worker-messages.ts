@@ -1,14 +1,9 @@
-/**
- * Typed message contract between the app and `public/sw.js`. Keeping this
- * in one place prevents the page and the service worker from silently
- * drifting apart on message shapes, since they cannot share TypeScript
- * types directly (the service worker is plain JS at runtime).
- */
-export type ServiceWorkerMessage = { type: "SKIP_WAITING" } | { type: "SYNC_NOW" };
+export const SERVICE_WORKER_MESSAGES = {
+  clearPrivateCache: "CLEAR_PRIVATE_CACHE",
+} as const;
 
-export function postMessageToServiceWorker(message: ServiceWorkerMessage): void {
-  if (typeof navigator === "undefined" || !navigator.serviceWorker?.controller) {
-    return;
-  }
-  navigator.serviceWorker.controller.postMessage(message);
+export async function clearPrivatePageCache(): Promise<void> {
+  if (typeof window === "undefined" || !("serviceWorker" in navigator)) return;
+  const registration = await navigator.serviceWorker.ready.catch(() => null);
+  registration?.active?.postMessage({ type: SERVICE_WORKER_MESSAGES.clearPrivateCache });
 }

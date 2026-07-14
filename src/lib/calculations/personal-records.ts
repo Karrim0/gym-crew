@@ -1,27 +1,35 @@
-import { NotImplementedError } from "@/lib/utils/errors";
-import type { PersonalRecord, WorkoutSet } from "@/types";
+import type { PersonalRecord, PersonalRecordType, WorkoutSet } from "@/types";
+
+export interface BrokenPersonalRecord {
+  recordType: PersonalRecordType;
+  previousValue: number | null;
+  value: number;
+}
 
 export interface PersonalRecordComparison {
   isNewRecord: boolean;
-  recordType: PersonalRecord["type"] | null;
-  previousValue: number | null;
+  records: BrokenPersonalRecord[];
 }
 
-/**
- * Compares a completed set against the user's existing personal records for
- * that exercise.
- *
- * Left as a documented placeholder because the real rule needs product
- * decisions before it can be implemented correctly, e.g.:
- * - Does a higher-weight set at fewer reps beat a max-volume record?
- * - Are records scoped per exercise variation (e.g. barbell vs dumbbell)?
- * - How are ties handled?
- */
 export function compareSetToPersonalRecord(
   set: WorkoutSet,
-  existingRecords: PersonalRecord[]
+  existingRecords: PersonalRecord[],
 ): PersonalRecordComparison {
-  void set;
-  void existingRecords;
-  throw new NotImplementedError("compareSetToPersonalRecord");
+  if (!set.isCompleted || set.isWarmup) return { isNewRecord: false, records: [] };
+
+  const values: Partial<Record<PersonalRecordType, number>> = {};
+  if (set.weightKg !== null) values.max_weight = set.weightKg;
+  if (set.reps !== null) values.max_reps = set.reps;
+  if (set.weightKg !== null && set.reps !== null) values.max_volume = set.weightKg * set.reps;
+
+  const existing = new Map(existingRecords.map((record) => [record.type, record.value]));
+  const records = (Object.entries(values) as Array<[PersonalRecordType, number]>)
+    .filter(([type, value]) => value > (existing.get(type) ?? -1))
+    .map(([recordType, value]) => ({
+      recordType,
+      value,
+      previousValue: existing.get(recordType) ?? null,
+    }));
+
+  return { isNewRecord: records.length > 0, records };
 }

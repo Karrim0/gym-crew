@@ -1,18 +1,16 @@
 "use client";
 
+import { SyncStatusIndicator } from "./SyncStatusIndicator";
 import { useNetworkStatus } from "@/hooks/use-network-status";
 
-/** Minimal banner shown when the app detects it is offline. */
 export function OfflineBanner() {
-  const { isOnline } = useNetworkStatus();
+  const { isOnline, pendingSyncCount, syncStatus } = useNetworkStatus();
 
-  if (isOnline) {
-    return null;
-  }
+  if (isOnline && pendingSyncCount === 0 && syncStatus !== "syncing") return null;
 
   return (
-    <div role="status" className="w-full p-2 text-center text-sm">
-      You&apos;re offline. Workouts will sync once you&apos;re back online.
+    <div role="status" className="flex w-full items-center justify-center border-b bg-neutral-50 px-3 py-2 dark:bg-neutral-900">
+      <SyncStatusIndicator />
     </div>
   );
 }

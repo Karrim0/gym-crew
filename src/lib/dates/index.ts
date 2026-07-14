@@ -1,6 +1,6 @@
 import { format, parseISO } from "date-fns";
 import { WEEKDAYS_STARTING_SATURDAY } from "@/constants/schedule";
-import type { ISODateString, Weekday } from "@/types";
+import type { ISODateOnlyString, ISODateString, Weekday } from "@/types";
 
 const WEEKDAY_BY_JS_DAY_INDEX: Weekday[] = [
   "sunday",
@@ -12,26 +12,64 @@ const WEEKDAY_BY_JS_DAY_INDEX: Weekday[] = [
   "saturday",
 ];
 
-/** Maps a JS `Date` to our `Weekday` union (`Date.getDay()` is 0 = Sunday). */
 export function getWeekdayFromDate(date: Date): Weekday {
   return WEEKDAY_BY_JS_DAY_INDEX[date.getDay()];
 }
 
-/**
- * Sorts weekdays so the week reads Saturday -> Friday, matching how the
- * group's schedule is displayed throughout the app.
- */
 export function sortWeekdaysStartingSaturday(weekdays: Weekday[]): Weekday[] {
   const order = WEEKDAYS_STARTING_SATURDAY;
   return [...weekdays].sort((a, b) => order.indexOf(a) - order.indexOf(b));
 }
 
-/** Formats an ISO date string for display, e.g. "Jul 13, 2026". */
 export function formatWorkoutDate(isoDate: ISODateString): string {
   return format(parseISO(isoDate), "MMM d, yyyy");
 }
 
-/** Today's date as an ISO date string (`yyyy-MM-dd`), in the local timezone. */
-export function getTodayISODate(): ISODateString {
+export function getTodayISODate(): ISODateOnlyString {
   return format(new Date(), "yyyy-MM-dd");
+}
+
+export function parseISODateOnly(value: ISODateOnlyString): Date {
+  return new Date(`${value}T12:00:00`);
+}
+
+export function toISODateOnly(date: Date): ISODateOnlyString {
+  return format(date, "yyyy-MM-dd");
+}
+
+export function addDaysToDate(date: Date, amount: number): Date {
+  const next = new Date(date);
+  next.setDate(next.getDate() + amount);
+  return next;
+}
+
+/** Saturday is day zero for Gym Crew's training week. */
+export function getTrainingWeekStart(date: Date): Date {
+  const dayOffsetFromSaturday = (date.getDay() + 1) % 7;
+  const start = addDaysToDate(date, -dayOffsetFromSaturday);
+  start.setHours(12, 0, 0, 0);
+  return start;
+}
+
+export function getTrainingWeekEnd(date: Date): Date {
+  return addDaysToDate(getTrainingWeekStart(date), 6);
+}
+
+export function enumerateDateRange(start: Date, end: Date): Date[] {
+  const dates: Date[] = [];
+  for (let current = new Date(start); current <= end; current = addDaysToDate(current, 1)) {
+    dates.push(new Date(current));
+  }
+  return dates;
+}
+
+export function getScheduledDatesInRange(
+  start: Date,
+  end: Date,
+  scheduledWeekdays: Weekday[],
+): ISODateOnlyString[] {
+  const scheduled = new Set(scheduledWeekdays);
+  return enumerateDateRange(start, end)
+    .filter((date) => scheduled.has(getWeekdayFromDate(date)))
+    .map(toISODateOnly);
 }

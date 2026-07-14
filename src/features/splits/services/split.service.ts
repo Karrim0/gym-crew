@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/client";
 import type { Tables } from "@/lib/supabase/types";
 import type { Exercise, SplitExercise, UUID, Weekday } from "@/types";
+import { cachePersonalSplit, getCachedPersonalSplit, cacheProfile, getCachedProfile } from "@/lib/offline";
 import { mapExercise } from "@/features/exercises/services/exercise.service";
 import type { SplitDayWithDetails, SplitExerciseWithDetails } from "../types";
 import { personalRestDaySchema } from "../schemas/personal-rest-day.schema";
@@ -64,16 +65,26 @@ export async function fetchGroupSplit(groupId: UUID): Promise<SplitDayWithDetail
 
 export async function fetchPersonalSplit(userId: UUID): Promise<SplitDayWithDetails[]> {
   const supabase = createClient();
-  const { error } = await supabase.rpc("ensure_personal_split");
-  if (error) throw new Error(error.message);
-  return fetchSplitRows("personal", userId);
+  try {
+    const { error } = await supabase.rpc("ensure_personal_split");
+    if (error) throw new Error(error.message);
+    const days = await fetchSplitRows("personal", userId);
+    await cachePersonalSplit(days);
+    return days;
+  } catch (caught) {
+    const cached = await getCachedPersonalSplit(userId);
+    if (cached.length > 0) return cached;
+    throw caught;
+  }
 }
 
 export async function resetPersonalSplitToGroup(userId: UUID): Promise<SplitDayWithDetails[]> {
   const supabase = createClient();
   const { error } = await supabase.rpc("reset_personal_split_to_group");
   if (error) throw new Error(error.message);
-  return fetchSplitRows("personal", userId);
+  const days = await fetchSplitRows("personal", userId);
+  await cachePersonalSplit(days);
+  return days;
 }
 
 export async function updatePersonalRestDays(
@@ -88,6 +99,14 @@ export async function updatePersonalRestDays(
     .eq("id", userId);
 
   if (error) throw new Error(error.message);
+  const cachedProfile = await getCachedProfile(userId);
+  if (cachedProfile) {
+    await cacheProfile({
+      ...cachedProfile,
+      additionalRestDays: parsed.additionalRestDays,
+      updatedAt: new Date().toISOString(),
+    });
+  }
 }
 
 export interface AddSplitExerciseInput {

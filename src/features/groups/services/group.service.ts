@@ -27,6 +27,7 @@ function mapGroup(row: GroupRow): WorkoutGroup {
     createdBy: row.created_by,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
+    isPersonal: row.is_personal,
   };
 }
 
@@ -227,5 +228,14 @@ export async function updateGroupName(groupId: UUID, name: string): Promise<Work
     .single();
 
   if (error) throw new Error(error.message);
+  return mapGroup(data);
+}
+
+export async function createSoloWorkspace(): Promise<WorkoutGroup> {
+  const supabase = createClient();
+  const { data, error } = await supabase.rpc("create_solo_workspace");
+
+  if (error) throw new Error(error.message);
+  if (!data) throw new Error("The solo workspace was not returned after creation.");
   return mapGroup(data);
 }

@@ -148,6 +148,7 @@ export type Database = {
           created_by: string
           id: string
           invite_code: string
+          is_personal: boolean
           name: string
           updated_at: string
         }
@@ -156,6 +157,7 @@ export type Database = {
           created_by: string
           id?: string
           invite_code: string
+          is_personal?: boolean
           name: string
           updated_at?: string
         }
@@ -164,6 +166,7 @@ export type Database = {
           created_by?: string
           id?: string
           invite_code?: string
+          is_personal?: boolean
           name?: string
           updated_at?: string
         }
@@ -183,8 +186,10 @@ export type Database = {
           exercise_id: string
           id: string
           record_type: Database["public"]["Enums"]["personal_record_type"]
+          reps: number | null
           user_id: string
           value: number
+          weight_kg: number | null
           workout_set_id: string
         }
         Insert: {
@@ -192,8 +197,10 @@ export type Database = {
           exercise_id: string
           id?: string
           record_type: Database["public"]["Enums"]["personal_record_type"]
+          reps?: number | null
           user_id: string
           value: number
+          weight_kg?: number | null
           workout_set_id: string
         }
         Update: {
@@ -201,8 +208,10 @@ export type Database = {
           exercise_id?: string
           id?: string
           record_type?: Database["public"]["Enums"]["personal_record_type"]
+          reps?: number | null
           user_id?: string
           value?: number
+          weight_kg?: number | null
           workout_set_id?: string
         }
         Relationships: [
@@ -543,6 +552,25 @@ export type Database = {
           created_by: string
           id: string
           invite_code: string
+          is_personal: boolean
+          name: string
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "groups"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      create_solo_workspace: {
+        Args: never
+        Returns: {
+          created_at: string
+          created_by: string
+          id: string
+          invite_code: string
+          is_personal: boolean
           name: string
           updated_at: string
         }
@@ -566,6 +594,7 @@ export type Database = {
           created_by: string
           id: string
           invite_code: string
+          is_personal: boolean
           name: string
           updated_at: string
         }
@@ -578,6 +607,10 @@ export type Database = {
       }
       move_split_exercise: {
         Args: { direction: number; target_split_exercise_id: string }
+        Returns: undefined
+      }
+      refresh_personal_records_for_session: {
+        Args: { target_session_id: string }
         Returns: undefined
       }
       reset_personal_split_to_group: { Args: never; Returns: undefined }

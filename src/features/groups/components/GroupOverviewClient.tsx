@@ -22,36 +22,45 @@ export function GroupOverviewClient({ group, role }: GroupOverviewClientProps) {
   return (
     <div className="space-y-4">
       <section className="rounded-3xl bg-neutral-950 p-5 text-white shadow-sm dark:bg-white dark:text-neutral-950">
-        <p className="text-sm opacity-70">Your crew</p>
+        <p className="text-sm opacity-70">{group.isPersonal ? "Personal training space" : "Your crew"}</p>
         <h2 className="mt-1 text-2xl font-bold">{group.name}</h2>
         <div className="mt-4 flex flex-wrap gap-3 text-sm">
           <span className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1.5 dark:bg-black/10">
             <ShieldCheck className="h-4 w-4" /> {role}
           </span>
           <span className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1.5 dark:bg-black/10">
-            <Users className="h-4 w-4" /> {memberCount ?? "—"} members
+            <Users className="h-4 w-4" /> {group.isPersonal ? "Solo" : `${memberCount ?? "—"} members`}
           </span>
         </div>
       </section>
 
-      <section className="rounded-2xl border bg-white p-4 dark:bg-neutral-950">
-        <p className="mb-2 text-sm font-medium">Invite your friends</p>
-        <GroupInviteCode inviteCode={group.inviteCode} />
-        <p className="mt-2 text-xs text-neutral-500">Anyone with this code can join your group.</p>
-      </section>
+      {group.isPersonal ? (
+        <section className="rounded-2xl border bg-white p-4 dark:bg-neutral-950">
+          <p className="font-semibold">Built for your own progress</p>
+          <p className="mt-1 text-sm text-neutral-500">Your split, workout history, records and streaks work without any social features.</p>
+        </section>
+      ) : (
+        <section className="rounded-2xl border bg-white p-4 dark:bg-neutral-950">
+          <p className="mb-2 text-sm font-medium">Invite your friends</p>
+          <GroupInviteCode inviteCode={group.inviteCode} />
+          <p className="mt-2 text-xs text-neutral-500">Anyone with this code can join your group.</p>
+        </section>
+      )}
 
       <div className="grid gap-3">
-        <Link href="/group/members" className="flex items-center justify-between rounded-2xl border bg-white p-4 dark:bg-neutral-950">
-          <span>
-            <span className="block font-semibold">Members & roles</span>
-            <span className="text-sm text-neutral-500">Owner, admin and member permissions</span>
-          </span>
-          <ChevronRight className="h-5 w-5" />
-        </Link>
+        {!group.isPersonal ? (
+          <Link href="/group/members" className="flex items-center justify-between rounded-2xl border bg-white p-4 dark:bg-neutral-950">
+            <span>
+              <span className="block font-semibold">Members & roles</span>
+              <span className="text-sm text-neutral-500">Owner, admin and member permissions</span>
+            </span>
+            <ChevronRight className="h-5 w-5" />
+          </Link>
+        ) : null}
         <Link href="/split/group" className="flex items-center justify-between rounded-2xl border bg-white p-4 dark:bg-neutral-950">
           <span>
-            <span className="block font-semibold">Group split</span>
-            <span className="text-sm text-neutral-500">Manage the shared PPL schedule</span>
+            <span className="block font-semibold">{group.isPersonal ? "Base split" : "Group split"}</span>
+            <span className="text-sm text-neutral-500">{group.isPersonal ? "The template behind your personal plan" : "Manage the shared PPL schedule"}</span>
           </span>
           <ChevronRight className="h-5 w-5" />
         </Link>

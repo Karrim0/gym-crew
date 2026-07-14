@@ -4,19 +4,13 @@ import { OFFLINE_TABLE_NAMES } from "./schema";
 import type {
   CachedExerciseRow,
   CachedSplitRow,
+  CachedProfileRow,
   SyncQueueRow,
   WorkoutExerciseRow,
   WorkoutSessionRow,
   WorkoutSetRow,
 } from "./schema";
 
-/**
- * The app's IndexedDB database via Dexie.
- *
- * Versioning: whenever a table's shape changes, bump `.version(n)` and add a
- * new `.stores(...)` call rather than mutating the existing version, so
- * Dexie can run its built-in upgrade path for users with existing data.
- */
 class GymCrewDatabase extends Dexie {
   workoutSessions!: EntityTable<WorkoutSessionRow, "id">;
   workoutExercises!: EntityTable<WorkoutExerciseRow, "id">;
@@ -24,6 +18,7 @@ class GymCrewDatabase extends Dexie {
   syncQueue!: EntityTable<SyncQueueRow, "id">;
   cachedSplits!: EntityTable<CachedSplitRow, "id">;
   cachedExercises!: EntityTable<CachedExerciseRow, "id">;
+  cachedProfiles!: EntityTable<CachedProfileRow, "id">;
 
   constructor() {
     super(OFFLINE_DATABASE_NAME);
@@ -36,13 +31,31 @@ class GymCrewDatabase extends Dexie {
       [OFFLINE_TABLE_NAMES.cachedSplits]: "id, groupId, ownerUserId, weekday",
       [OFFLINE_TABLE_NAMES.cachedExercises]: "id, workoutType",
     });
+
+    // Version 2 keeps the same keys while allowing cached split rows to hold
+    // their exercise templates. Dexie stores additional object fields without
+    // requiring an index migration.
+    this.version(2).stores({
+      [OFFLINE_TABLE_NAMES.workoutSessions]: "id, userId, groupId, scheduledDate, status, clientId, updatedAt",
+      [OFFLINE_TABLE_NAMES.workoutExercises]: "id, workoutSessionId, exerciseId, order",
+      [OFFLINE_TABLE_NAMES.workoutSets]: "id, workoutExerciseId, setNumber, updatedAt",
+      [OFFLINE_TABLE_NAMES.syncQueue]: "id, idempotencyKey, status, createdAt, updatedAt",
+      [OFFLINE_TABLE_NAMES.cachedSplits]: "id, groupId, ownerUserId, weekday, cachedAt",
+      [OFFLINE_TABLE_NAMES.cachedExercises]: "id, workoutType, cachedAt",
+    });
+
+    this.version(3).stores({
+      [OFFLINE_TABLE_NAMES.workoutSessions]: "id, userId, groupId, scheduledDate, status, clientId, updatedAt",
+      [OFFLINE_TABLE_NAMES.workoutExercises]: "id, workoutSessionId, exerciseId, order",
+      [OFFLINE_TABLE_NAMES.workoutSets]: "id, workoutExerciseId, setNumber, updatedAt",
+      [OFFLINE_TABLE_NAMES.syncQueue]: "id, idempotencyKey, status, createdAt, updatedAt",
+      [OFFLINE_TABLE_NAMES.cachedSplits]: "id, groupId, ownerUserId, weekday, cachedAt",
+      [OFFLINE_TABLE_NAMES.cachedExercises]: "id, workoutType, cachedAt",
+      [OFFLINE_TABLE_NAMES.cachedProfiles]: "id, updatedAt, cachedAt",
+    });
   }
 }
 
-/**
- * Lazily-created singleton. Dexie/IndexedDB only exists in the browser, so
- * this must never be instantiated during server rendering.
- */
 let dbInstance: GymCrewDatabase | null = null;
 
 export function getOfflineDatabase(): GymCrewDatabase {

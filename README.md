@@ -4,9 +4,9 @@ A mobile-first group workout tracker built with Next.js, TypeScript, Supabase an
 
 ## Current status
 
-The application currently includes working authentication, group onboarding, group roles, shared and personal PPL splits, profile editing, online workout recording, previous-performance lookup and workout history.
+The application currently includes authentication, optional group or solo onboarding, shared and personal PPL splits, local-first workout recording, automatic synchronization, personal records, adherence, streaks, exercise history and personal progress summaries.
 
-Offline synchronization, progress statistics, personal-record detection, streaks, charts and the body map remain planned for later phases.
+The next product phases focus on richer group activity, challenges, the full body map, final visual design and deployment hardening.
 
 ## Technology
 
@@ -15,7 +15,7 @@ Offline synchronization, progress statistics, personal-record detection, streaks
 - Tailwind CSS 4
 - Supabase Auth, PostgreSQL, Storage, Realtime-ready schema and RLS
 - React Hook Form and Zod
-- Dexie/IndexedDB scaffold for the later offline phase
+- Dexie/IndexedDB local-first workout storage and ordered sync queue
 
 ## Setup
 
@@ -40,13 +40,13 @@ npx supabase link --project-ref YOUR_PROJECT_REF
 npx supabase db push
 ```
 
-The Phase 3 migration is:
+The latest migration is:
 
 ```text
-supabase/migrations/202607140003_group_split_workouts.sql
+supabase/migrations/202607140004_offline_progress_solo.sql
 ```
 
-It adds the exercise library, starter group splits, personal-split helpers, workout-session helpers, member role policies and the avatar Storage bucket.
+It adds private solo workspaces, personal-record context and automatic record recalculation. Earlier migrations contain authentication, groups, splits, exercises and workout recording.
 
 Regenerate Supabase types after applying migrations:
 
@@ -87,5 +87,10 @@ npm run start
 - Record sets, weights, reps, notes and stopwatch duration.
 - Add exercises for one session or permanently.
 - Finish a workout and review workout history/details.
+- Record and finish workouts without internet, then synchronize automatically.
+- Restore an active workout and stopwatch after closing the app.
+- Track adherence, weekly streaks, duration, volume and muscle distribution.
+- Review automatic records and detailed progress for every exercise.
+- Use the complete personal experience in a private solo workspace.
 
-See [`docs/PHASE_3_IMPLEMENTATION.md`](docs/PHASE_3_IMPLEMENTATION.md) for the complete phase report.
+See [`docs/PHASE_4_5_OFFLINE_PROGRESS.md`](docs/PHASE_4_5_OFFLINE_PROGRESS.md) for the current implementation report.

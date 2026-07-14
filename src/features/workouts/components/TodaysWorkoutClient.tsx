@@ -30,6 +30,8 @@ export function TodaysWorkoutClient({ userId }: TodaysWorkoutClientProps) {
   const [activeSessionId, setActiveSessionId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isStarting, setIsStarting] = useState(false);
+  const [alternateDayId, setAlternateDayId] = useState("");
+  const [scheduledDate, setScheduledDate] = useState(new Date().toISOString().slice(0, 10));
   const [error, setError] = useState<string | null>(null);
 
   const load = useCallback(async () => {
@@ -57,12 +59,12 @@ export function TodaysWorkoutClient({ userId }: TodaysWorkoutClientProps) {
   const isPersonalRest = profile?.additionalRestDays.includes(weekday) ?? false;
   const isRest = !today || today.workoutType === "rest" || isPersonalRest;
 
-  async function start() {
-    if (!today || isRest) return;
+  async function start(day: SplitDayWithDetails | null = today, targetDate = new Date().toISOString().slice(0, 10)) {
+    if (!day || day.workoutType === "rest") return;
     setIsStarting(true);
     setError(null);
     try {
-      const session = await startWorkoutSession(userId, today.id);
+      const session = await startWorkoutSession(userId, day, targetDate);
       router.push(`/workout/active?session=${session.id}`);
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "Unable to start the workout.");
@@ -70,6 +72,23 @@ export function TodaysWorkoutClient({ userId }: TodaysWorkoutClientProps) {
       setIsStarting(false);
     }
   }
+
+  const trainableDays = days.filter((day) => day.workoutType !== "rest" && day.exercises.length > 0);
+  const alternateDay = trainableDays.find((day) => day.id === alternateDayId) ?? null;
+  const alternateStarter = (
+    <section className="rounded-2xl border bg-white p-4 dark:bg-neutral-950">
+      <h3 className="font-semibold">Train another day or log a make-up session</h3>
+      <p className="mt-1 text-sm text-neutral-500">This uses your personal split. Choose the planned date so adherence stays accurate.</p>
+      <div className="mt-3 grid gap-3 sm:grid-cols-2">
+        <select value={alternateDayId} onChange={(event) => setAlternateDayId(event.target.value)} className="rounded-xl border bg-transparent px-3 py-2.5">
+          <option value="">Choose split day…</option>
+          {trainableDays.map((day) => <option key={day.id} value={day.id}>{day.weekday} · {day.workoutType}</option>)}
+        </select>
+        <input type="date" value={scheduledDate} max={new Date().toISOString().slice(0, 10)} onChange={(event) => setScheduledDate(event.target.value)} className="rounded-xl border bg-transparent px-3 py-2.5" />
+      </div>
+      <button type="button" disabled={!alternateDay || isStarting} onClick={() => void start(alternateDay, scheduledDate)} className="mt-3 w-full rounded-xl border px-4 py-3 font-semibold disabled:opacity-40">Start selected workout</button>
+    </section>
+  );
 
   if (isLoading) return <p className="py-12 text-center text-sm text-neutral-500">Preparing today’s workout…</p>;
 
@@ -85,12 +104,15 @@ export function TodaysWorkoutClient({ userId }: TodaysWorkoutClientProps) {
 
   if (isRest) {
     return (
+      <div className="space-y-4">
       <section className="rounded-3xl border bg-white p-8 text-center dark:bg-neutral-950">
         <RotateCcw className="mx-auto h-10 w-10 text-neutral-400" />
         <h2 className="mt-3 text-2xl font-bold capitalize">{weekday} is a rest day</h2>
         <p className="mt-2 text-sm text-neutral-500">Rest days never break your planned streak.</p>
         <Link href="/split/personal" className="mt-5 inline-block text-sm font-semibold underline">Review personal split</Link>
       </section>
+      {alternateStarter}
+    </div>
     );
   }
 
@@ -121,6 +143,7 @@ export function TodaysWorkoutClient({ userId }: TodaysWorkoutClientProps) {
           ))}
         </ol>
       </section>
+      {alternateStarter}
     </div>
   );
 }

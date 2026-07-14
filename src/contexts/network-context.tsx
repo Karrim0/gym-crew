@@ -7,14 +7,13 @@ export interface NetworkContextValue {
   isOnline: boolean;
   syncStatus: SyncStatus;
   pendingSyncCount: number;
+  lastSyncError: string | null;
+  retrySync: () => Promise<void>;
+  refreshSyncState: () => Promise<void>;
 }
 
 export const NetworkContext = createContext<NetworkContextValue | undefined>(undefined);
 
-/**
- * Access online/offline status and pending-sync info. Must be used within
- * `NetworkProvider` (see `components/providers/NetworkProvider.tsx`).
- */
 export function useNetworkContext(): NetworkContextValue {
   const context = useContext(NetworkContext);
   if (!context) {

@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/client";
 import type { Tables } from "@/lib/supabase/types";
+import { cacheProfile, getCachedProfile } from "@/lib/offline";
 import type { UUID, UserProfile } from "@/types";
 import type { UpdateProfileInput } from "../schemas/update-profile.schema";
 
@@ -18,14 +19,22 @@ export function mapProfile(row: ProfileRow): UserProfile {
 
 export async function fetchProfile(userId: UUID): Promise<UserProfile | null> {
   const supabase = createClient();
-  const { data, error } = await supabase
-    .from("profiles")
-    .select("*")
-    .eq("id", userId)
-    .maybeSingle();
+  try {
+    const { data, error } = await supabase
+      .from("profiles")
+      .select("*")
+      .eq("id", userId)
+      .maybeSingle();
 
-  if (error) throw new Error(error.message);
-  return data ? mapProfile(data) : null;
+    if (error) throw new Error(error.message);
+    const profile = data ? mapProfile(data) : null;
+    if (profile) await cacheProfile(profile);
+    return profile;
+  } catch (caught) {
+    const cached = await getCachedProfile(userId);
+    if (cached) return cached;
+    throw caught;
+  }
 }
 
 export async function updateProfile(userId: UUID, input: UpdateProfileInput): Promise<UserProfile> {
@@ -41,7 +50,9 @@ export async function updateProfile(userId: UUID, input: UpdateProfileInput): Pr
     .single();
 
   if (error) throw new Error(error.message);
-  return mapProfile(data);
+  const profile = mapProfile(data);
+  await cacheProfile(profile);
+  return profile;
 }
 
 export async function uploadProfileAvatar(userId: UUID, file: File): Promise<string> {

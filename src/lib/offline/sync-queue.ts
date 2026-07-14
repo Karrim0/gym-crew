@@ -1,31 +1,208 @@
-import { NotImplementedError } from "@/lib/utils/errors";
-import type { OfflineMutation, WorkoutSession } from "@/types";
+import { generateClientId } from "@/lib/utils/id";
+import type {
+  OfflineMutation,
+  SyncQueueItem,
+  SyncQueueItemStatus,
+  UUID,
+  WorkoutExercise,
+  WorkoutSession,
+  WorkoutSet,
+} from "@/types";
+import { getOfflineDatabase } from "./database";
 
-/**
- * Persists a workout session to the local Dexie database so it survives a
- * reload while offline. Does not attempt to contact Supabase.
- *
- * @returns the saved session, unchanged, once local persistence is wired up.
- */
-export async function saveWorkoutLocally(session: WorkoutSession): Promise<WorkoutSession> {
-  void session;
-  throw new NotImplementedError("saveWorkoutLocally");
+export const SYNC_QUEUE_CHANGED_EVENT = "gym-crew:sync-queue-changed";
+
+function getMutationEntityId(mutation: OfflineMutation): UUID {
+  return mutation.payload.id;
 }
 
-/**
- * Adds a mutation to the local sync queue for later delivery to Supabase.
- * Must be idempotent-safe: queued mutations carry a `clientId` so replaying
- * them after a retry does not create duplicate server-side records.
- */
+function notifyQueueChanged(): void {
+  if (typeof window !== "undefined") {
+    window.dispatchEvent(new CustomEvent(SYNC_QUEUE_CHANGED_EVENT));
+  }
+}
+
+export function subscribeToSyncQueueChanges(listener: () => void): () => void {
+  if (typeof window === "undefined") return () => {};
+  window.addEventListener(SYNC_QUEUE_CHANGED_EVENT, listener);
+  return () => window.removeEventListener(SYNC_QUEUE_CHANGED_EVENT, listener);
+}
+
+function mergeMutation(existing: OfflineMutation, next: OfflineMutation): OfflineMutation {
+  if (existing.entity !== next.entity) return next;
+  if (existing.operation === "create" && next.operation === "update") {
+    return { ...existing, payload: next.payload } as OfflineMutation;
+  }
+  return next;
+}
+
+async function removeRelatedPendingCreates(mutation: OfflineMutation): Promise<boolean> {
+  if (mutation.operation !== "delete") return false;
+  const db = getOfflineDatabase();
+  const entityId = getMutationEntityId(mutation);
+  const rows = await db.syncQueue.toArray();
+  const existingCreate = rows.find(
+    (row) =>
+      row.mutation.entity === mutation.entity &&
+      row.mutation.operation === "create" &&
+      getMutationEntityId(row.mutation) === entityId,
+  );
+
+  if (!existingCreate) return false;
+
+  const idsToDelete = new Set<UUID>([existingCreate.id]);
+  if (mutation.entity === "workoutExercise") {
+    const exercise = mutation.payload as WorkoutExercise;
+    const setIds = new Set(exercise.sets.map((set) => set.id));
+    for (const row of rows) {
+      if (row.mutation.entity === "workoutSet" && setIds.has(getMutationEntityId(row.mutation))) {
+        idsToDelete.add(row.id);
+      }
+    }
+  }
+
+  await db.syncQueue.bulkDelete([...idsToDelete]);
+  notifyQueueChanged();
+  return true;
+}
+
 export async function enqueueOfflineMutation(mutation: OfflineMutation): Promise<void> {
-  void mutation;
-  throw new NotImplementedError("enqueueOfflineMutation");
+  const db = getOfflineDatabase();
+  if (await removeRelatedPendingCreates(mutation)) return;
+
+  const entityId = getMutationEntityId(mutation);
+  const existingRows = await db.syncQueue
+    .filter(
+      (row) =>
+        row.mutation.entity === mutation.entity &&
+        getMutationEntityId(row.mutation) === entityId &&
+        row.status !== "processing",
+    )
+    .toArray();
+
+  const now = new Date().toISOString();
+
+  // A locally-created session must reach the server as `in_progress` before
+  // its later completion update. Keeping these as two ordered queue items
+  // also guarantees workout exercises and sets exist before PR triggers run.
+  if (mutation.entity === "workoutSession" && mutation.operation === "update") {
+    const pendingCreate = existingRows.find((row) => row.mutation.operation === "create");
+    if (pendingCreate) {
+      const existingUpdate = existingRows.find((row) => row.mutation.operation === "update");
+      if (existingUpdate) {
+        await db.syncQueue.put({
+          ...existingUpdate,
+          mutation,
+          status: "pending",
+          updatedAt: now,
+          lastError: null,
+        });
+        const duplicateUpdates = existingRows
+          .filter((row) => row.mutation.operation === "update" && row.id !== existingUpdate.id)
+          .map((row) => row.id);
+        if (duplicateUpdates.length > 0) await db.syncQueue.bulkDelete(duplicateUpdates);
+      } else {
+        await db.syncQueue.add({
+          id: generateClientId(),
+          idempotencyKey: entityId,
+          mutation,
+          status: "pending",
+          createdAt: now,
+          updatedAt: now,
+          attempts: 0,
+          lastAttemptAt: null,
+          lastError: null,
+        });
+      }
+      notifyQueueChanged();
+      return;
+    }
+  }
+
+  const existing = existingRows[0];
+
+  if (existing) {
+    const nextRow: SyncQueueItem = {
+      ...existing,
+      mutation: mergeMutation(existing.mutation, mutation),
+      status: "pending",
+      updatedAt: now,
+      lastError: null,
+    };
+    await db.syncQueue.put(nextRow);
+    if (existingRows.length > 1) {
+      await db.syncQueue.bulkDelete(existingRows.slice(1).map((row) => row.id));
+    }
+  } else {
+    const item: SyncQueueItem = {
+      id: generateClientId(),
+      idempotencyKey: entityId,
+      mutation,
+      status: "pending",
+      createdAt: now,
+      updatedAt: now,
+      attempts: 0,
+      lastAttemptAt: null,
+      lastError: null,
+    };
+    await db.syncQueue.add(item);
+  }
+
+  notifyQueueChanged();
 }
 
-/**
- * Returns the number of mutations currently waiting to be synced. Used to
- * drive `SyncStatusIndicator`.
- */
 export async function getPendingSyncCount(): Promise<number> {
-  throw new NotImplementedError("getPendingSyncCount");
+  const db = getOfflineDatabase();
+  return db.syncQueue.where("status").anyOf(["pending", "processing", "failed"]).count();
+}
+
+export async function getSyncQueueItems(
+  statuses: SyncQueueItemStatus[] = ["pending", "failed"],
+): Promise<SyncQueueItem[]> {
+  const db = getOfflineDatabase();
+  const rows = await db.syncQueue.where("status").anyOf(statuses).toArray();
+  return rows.sort((a, b) => a.createdAt.localeCompare(b.createdAt));
+}
+
+export async function updateSyncQueueItem(item: SyncQueueItem): Promise<void> {
+  const db = getOfflineDatabase();
+  await db.syncQueue.put(item);
+  notifyQueueChanged();
+}
+
+export async function removeSyncQueueItem(id: UUID): Promise<void> {
+  const db = getOfflineDatabase();
+  await db.syncQueue.delete(id);
+  notifyQueueChanged();
+}
+
+export async function markFailedItemsPending(): Promise<void> {
+  const db = getOfflineDatabase();
+  const failed = await db.syncQueue.where("status").equals("failed").toArray();
+  const now = new Date().toISOString();
+  await db.syncQueue.bulkPut(
+    failed.map((item) => ({ ...item, status: "pending" as const, updatedAt: now, lastError: null })),
+  );
+  notifyQueueChanged();
+}
+
+export function workoutSessionMutation(
+  operation: "create" | "update",
+  payload: WorkoutSession,
+): OfflineMutation {
+  return { entity: "workoutSession", operation, payload };
+}
+
+export function workoutExerciseMutation(
+  operation: "create" | "update" | "delete",
+  payload: WorkoutExercise,
+): OfflineMutation {
+  return { entity: "workoutExercise", operation, payload };
+}
+
+export function workoutSetMutation(
+  operation: "create" | "update" | "delete",
+  payload: WorkoutSet,
+): OfflineMutation {
+  return { entity: "workoutSet", operation, payload };
 }
