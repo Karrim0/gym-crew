@@ -82,7 +82,7 @@ export function TodaysWorkoutClient({ userId }: TodaysWorkoutClientProps) {
       <div className="mt-3 grid gap-3 sm:grid-cols-2">
         <select value={alternateDayId} onChange={(event) => setAlternateDayId(event.target.value)} className="rounded-xl border bg-transparent px-3 py-2.5">
           <option value="">Choose split day…</option>
-          {trainableDays.map((day) => <option key={day.id} value={day.id}>{day.weekday} · {day.workoutType}</option>)}
+          {trainableDays.map((day) => <option key={day.id} value={day.id}>{day.weekday} · {day.displayName ?? day.workoutType}</option>)}
         </select>
         <input type="date" value={scheduledDate} max={new Date().toISOString().slice(0, 10)} onChange={(event) => setScheduledDate(event.target.value)} className="rounded-xl border bg-transparent px-3 py-2.5" />
       </div>
@@ -121,7 +121,7 @@ export function TodaysWorkoutClient({ userId }: TodaysWorkoutClientProps) {
       {error ? <p className="rounded-xl bg-red-50 p-3 text-sm text-red-700 dark:bg-red-950/30 dark:text-red-300">{error}</p> : null}
       <section className="rounded-3xl bg-neutral-950 p-6 text-white dark:bg-white dark:text-neutral-950">
         <p className="text-sm capitalize opacity-70">{weekday}</p>
-        <h2 className="mt-1 text-3xl font-bold capitalize">{today.workoutType} day</h2>
+        <h2 className="mt-1 text-3xl font-bold">{today.displayName ?? `${today.workoutType.charAt(0).toUpperCase()}${today.workoutType.slice(1)} day`}</h2>
         <p className="mt-2 text-sm opacity-70">{today.exercises.length} exercises ready</p>
         <button type="button" disabled={isStarting || today.exercises.length === 0} onClick={() => void start()} className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-white px-4 py-3 font-bold text-neutral-950 disabled:opacity-50 dark:bg-neutral-950 dark:text-white">
           <Play className="h-5 w-5" /> {isStarting ? "Starting…" : "Start workout"}

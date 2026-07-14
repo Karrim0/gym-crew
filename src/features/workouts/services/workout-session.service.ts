@@ -321,7 +321,7 @@ export async function updateWorkoutSessionNotes(sessionId: UUID, notes: string):
 export async function addExerciseToWorkout(
   sessionId: UUID,
   exerciseId: UUID,
-  setCount = 3,
+  setCount = 2,
   sessionOnly = true,
 ): Promise<UUID> {
   const session = await getLocalWorkoutSession(sessionId);

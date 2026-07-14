@@ -34,6 +34,7 @@ function mapSplitDay(row: SplitDayQueryRow): SplitDayWithDetails {
     ownerUserId: row.owner_user_id,
     weekday: row.weekday,
     workoutType: row.workout_type,
+    displayName: row.display_name,
     exercises: [...row.split_exercises]
       .sort((a, b) => a.position - b.position)
       .map(mapSplitExercise),
@@ -109,6 +110,26 @@ export async function updatePersonalRestDays(
   }
 }
 
+export async function updateSplitDaySettings(
+  splitDayId: UUID,
+  workoutType: SplitDayWithDetails["workoutType"],
+  displayName: string,
+): Promise<void> {
+  const supabase = createClient();
+  const { error } = await supabase.rpc("update_split_day_settings", {
+    target_split_day_id: splitDayId,
+    target_workout_type: workoutType,
+    target_display_name: displayName.trim() || undefined,
+  });
+  if (error) throw new Error(error.message);
+}
+
+export async function clearSplitDay(splitDayId: UUID): Promise<void> {
+  const supabase = createClient();
+  const { error } = await supabase.from("split_exercises").delete().eq("split_day_id", splitDayId);
+  if (error) throw new Error(error.message);
+}
+
 export interface AddSplitExerciseInput {
   splitDayId: UUID;
   exercise: Exercise;
@@ -121,7 +142,7 @@ export interface AddSplitExerciseInput {
 export async function addSplitExercise({
   splitDayId,
   exercise,
-  targetSets = 3,
+  targetSets = 2,
   targetRepsMin = 8,
   targetRepsMax = 12,
   isPersonalAddition = false,

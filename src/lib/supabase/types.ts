@@ -268,6 +268,7 @@ export type Database = {
       split_days: {
         Row: {
           created_at: string
+          display_name: string | null
           group_id: string
           id: string
           owner_user_id: string | null
@@ -277,6 +278,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          display_name?: string | null
           group_id: string
           id?: string
           owner_user_id?: string | null
@@ -286,6 +288,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          display_name?: string | null
           group_id?: string
           id?: string
           owner_user_id?: string | null
@@ -622,6 +625,14 @@ export type Database = {
       start_workout_from_split: {
         Args: { target_scheduled_date: string; target_split_day_id: string }
         Returns: string
+      }
+      update_split_day_settings: {
+        Args: {
+          target_display_name?: string
+          target_split_day_id: string
+          target_workout_type: Database["public"]["Enums"]["workout_type"]
+        }
+        Returns: undefined
       }
     }
     Enums: {

@@ -57,8 +57,15 @@ export async function fetchExerciseById(exerciseId: UUID): Promise<Exercise | nu
   return exercise;
 }
 
+export interface CreateCustomExerciseInput {
+  name: string;
+  primaryMuscle: Exercise["primaryMuscle"];
+  secondaryMuscles?: Exercise["secondaryMuscles"];
+  workoutType: Exercise["workoutType"];
+}
+
 export async function createCustomExercise(
-  exercise: Omit<Exercise, "id" | "isCustom">,
+  exercise: CreateCustomExerciseInput,
 ): Promise<Exercise> {
   const supabase = createClient();
   const { data: userData, error: userError } = await supabase.auth.getUser();
@@ -69,7 +76,7 @@ export async function createCustomExercise(
     .insert({
       name: exercise.name.trim(),
       primary_muscle: exercise.primaryMuscle,
-      secondary_muscles: exercise.secondaryMuscles,
+      secondary_muscles: exercise.secondaryMuscles ?? [],
       workout_type: exercise.workoutType,
       is_custom: true,
       created_by: userData.user.id,

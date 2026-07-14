@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import { BottomNavigation } from "@/components/navigation/BottomNavigation";
 import { DesktopSidebar } from "@/components/navigation/DesktopSidebar";
 import { OfflineBanner } from "@/components/feedback/OfflineBanner";
+import { RestTimerLauncher } from "@/features/workouts/components/RestTimerPanel";
 
 export interface AppShellProps {
   children: ReactNode;
@@ -18,8 +19,9 @@ export function AppShell({ children }: AppShellProps) {
       <DesktopSidebar />
       <div className="flex flex-1 flex-col">
         <OfflineBanner />
-        <main className="flex-1 pb-16 md:pb-0">{children}</main>
+        <main className="flex-1 pb-24 md:pb-0">{children}</main>
         <BottomNavigation />
+        <RestTimerLauncher />
       </div>
     </div>
   );

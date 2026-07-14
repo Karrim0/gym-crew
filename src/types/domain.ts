@@ -79,6 +79,7 @@ export interface SplitDay {
   groupId: UUID;
   weekday: Weekday;
   workoutType: WorkoutType;
+  displayName: string | null;
   exercises: SplitExercise[];
 }
 

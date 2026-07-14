@@ -5,6 +5,7 @@ import { registerServiceWorker } from "@/lib/pwa/register-service-worker";
 import { NetworkProvider } from "./NetworkProvider";
 import { SupabaseProvider } from "./SupabaseProvider";
 import { OfflineCacheWarmer } from "./OfflineCacheWarmer";
+import { RestTimerProvider } from "./RestTimerProvider";
 
 interface AppProvidersProps {
   children: ReactNode;
@@ -22,7 +23,7 @@ export function AppProviders({ children }: AppProvidersProps) {
 
   return (
     <SupabaseProvider>
-      <NetworkProvider><OfflineCacheWarmer />{children}</NetworkProvider>
+      <NetworkProvider><RestTimerProvider><OfflineCacheWarmer />{children}</RestTimerProvider></NetworkProvider>
     </SupabaseProvider>
   );
 }

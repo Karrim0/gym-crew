@@ -226,6 +226,7 @@ export async function getCachedPersonalSplit(
     groupId: row.groupId,
     weekday: row.weekday,
     workoutType: row.workoutType,
+    displayName: row.displayName ?? null,
     exercises: row.exercises.map((item) => ({
       ...item,
       exercise: exerciseMap.get(item.exerciseId) ?? { ...FALLBACK_EXERCISE, id: item.exerciseId },
