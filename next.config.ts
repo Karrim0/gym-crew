@@ -1,7 +1,11 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  poweredByHeader: false,
+  experimental: {
+    cpus: 2,
+    webpackBuildWorker: true,
+  },
 };
 
 export default nextConfig;

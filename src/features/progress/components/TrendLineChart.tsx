@@ -40,7 +40,7 @@ export function TrendLineChart({
   const labelIndexes = new Set([0, Math.floor((points.length - 1) / 2), points.length - 1]);
 
   return (
-    <div className="overflow-hidden rounded-2xl border bg-white p-2 dark:bg-neutral-950">
+    <div className="overflow-hidden rounded-2xl border border-white/[0.06] bg-black/20 p-2">
       <svg viewBox={`0 0 ${width} ${height}`} className="h-56 w-full" role="img" aria-label={`${valueLabel} trend chart`}>
         <title>{valueLabel} trend</title>
         {[0, 0.5, 1].map((ratio) => {
@@ -53,11 +53,11 @@ export function TrendLineChart({
             </g>
           );
         })}
-        <polygon points={area} className="fill-emerald-500/10" />
-        <polyline points={polyline} fill="none" className="stroke-emerald-500" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" />
+        <polygon points={area} className="fill-lime-300/10" />
+        <polyline points={polyline} fill="none" className="stroke-lime-300" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" />
         {coordinates.map((point, index) => (
           <g key={`${point.label}-${index}`}>
-            <circle cx={point.x} cy={point.y} r="5" className="fill-white stroke-emerald-500 dark:fill-neutral-950" strokeWidth="3" />
+            <circle cx={point.x} cy={point.y} r="5" className="fill-neutral-950 stroke-lime-300" strokeWidth="3" />
             {labelIndexes.has(index) ? <text x={point.x} y={height - 12} textAnchor="middle" fontSize="12" fill="currentColor" opacity="0.55">{point.label}</text> : null}
             <title>{point.label}: {formatValue(point.value)}</title>
           </g>

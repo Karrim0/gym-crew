@@ -14,7 +14,7 @@ export function WorkoutDetailsClient({ sessionId }: { sessionId: UUID }) {
   if (!session) return <p className="py-8 text-center text-sm text-neutral-500">Loading workout…</p>;
   return (
     <div className="space-y-4">
-      <section className="rounded-2xl bg-neutral-950 p-5 text-white dark:bg-white dark:text-neutral-950">
+      <section className="rounded-[26px] border border-lime-300/15 bg-[linear-gradient(135deg,rgba(183,255,60,.14),rgba(14,18,15,.98)_55%)] p-5 text-white">
         <p className="text-sm opacity-70">{new Date(`${session.scheduledDate}T12:00:00`).toLocaleDateString()}</p>
         <h2 className="text-2xl font-bold">Completed workout</h2>
         <p className="mt-2 text-sm opacity-70">{formatDuration(session.durationSeconds)} · {session.exercises.length} exercises</p>

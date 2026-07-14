@@ -62,7 +62,7 @@ export function RestTimerLauncher() {
   const timer = useRestTimer();
   return (
     <>
-      <button type="button" onClick={timer.open} className={`fixed bottom-[5.35rem] right-4 z-50 flex min-h-14 items-center gap-2 rounded-full px-4 shadow-xl transition md:bottom-6 ${timer.isRunning ? "bg-emerald-400 text-neutral-950 shadow-emerald-500/25" : "bg-neutral-950 text-white dark:bg-white dark:text-neutral-950"}`} aria-label="Open rest timer">
+      <button type="button" onClick={timer.open} className={`fixed bottom-[5.35rem] right-4 z-50 flex min-h-14 items-center gap-2 rounded-full px-4 shadow-xl transition md:bottom-6 ${timer.isRunning ? "bg-emerald-400 text-neutral-950 shadow-emerald-500/25" : "bg-neutral-950 text-white"}`} aria-label="Open rest timer">
         {timer.isRunning ? <TimerReset className="h-5 w-5 animate-pulse" /> : <TimerReset className="h-5 w-5" />}
         <span className="font-mono text-sm font-black tabular-nums">{timer.isRunning || timer.remainingSeconds !== timer.durationSeconds ? formatDuration(timer.remainingSeconds) : "REST"}</span>
       </button>

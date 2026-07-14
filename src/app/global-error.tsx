@@ -2,21 +2,11 @@
 
 import { ErrorState } from "@/components/feedback/ErrorState";
 
-export default function GlobalError({
-  error,
-  reset,
-}: {
-  error: Error & { digest?: string };
-  reset: () => void;
-}) {
+export default function GlobalError({ error, reset }: { error: Error & { digest?: string }; reset: () => void }) {
   return (
-    <html lang="en">
-      <body>
-        <ErrorState
-          title="Something went wrong"
-          description={error.message}
-          onRetry={reset}
-        />
+    <html lang="en" className="dark h-full">
+      <body className="min-h-full bg-[#070907] text-white">
+        <ErrorState title="Gym Crew hit a problem" description={error.message} onRetry={reset} />
       </body>
     </html>
   );

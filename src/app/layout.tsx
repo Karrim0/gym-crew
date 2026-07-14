@@ -4,14 +4,24 @@ import { APP_CONFIG } from "@/config/app";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: APP_CONFIG.name,
+  title: {
+    default: APP_CONFIG.name,
+    template: `%s · ${APP_CONFIG.name}`,
+  },
   description: APP_CONFIG.description,
+  applicationName: APP_CONFIG.name,
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: APP_CONFIG.name,
+  },
 };
 
 export const viewport: Viewport = {
-  themeColor: "#0a0a0a",
+  themeColor: "#070907",
   width: "device-width",
   initialScale: 1,
+  viewportFit: "cover",
 };
 
 export default function RootLayout({
@@ -20,8 +30,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="h-full antialiased">
-      <body className="min-h-full flex flex-col">
+    <html
+      lang="en"
+      className="dark h-full antialiased"
+      data-scroll-behavior="smooth"
+    >
+      <body suppressHydrationWarning className="min-h-full flex flex-col">
         <AppProviders>{children}</AppProviders>
       </body>
     </html>

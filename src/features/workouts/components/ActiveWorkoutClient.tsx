@@ -110,7 +110,7 @@ function SetEditor({ set, previousSet, onDelete, onSaved, onError }: SetEditorPr
         </label>
       </div>
 
-      <button type="button" disabled={saving} onClick={() => void toggle()} className={`mt-3 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-xl text-sm font-black transition ${completed ? "bg-emerald-500 text-neutral-950" : "bg-neutral-950 text-white dark:bg-white dark:text-neutral-950"}`}>
+      <button type="button" disabled={saving} onClick={() => void toggle()} className={`mt-3 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-xl text-sm font-black transition ${completed ? "bg-emerald-500 text-neutral-950" : "bg-lime-300 text-neutral-950"}`}>
         <Check className="h-5 w-5" /> {saving ? "Saving…" : completed ? "Set completed" : "Complete set"}
       </button>
     </div>
@@ -281,7 +281,7 @@ export function ActiveWorkoutClient() {
         {session.exercises.map((exercise, index) => {
           const done = exercise.sets.length > 0 && exercise.sets.every((set) => set.isCompleted);
           return (
-            <button key={exercise.id} type="button" onClick={() => setCurrentIndex(index)} className={`shrink-0 rounded-full border px-3 py-2 text-xs font-black transition ${index === currentIndex ? "border-neutral-950 bg-neutral-950 text-white dark:border-white dark:bg-white dark:text-neutral-950" : done ? "border-emerald-500/40 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300" : "bg-white dark:bg-neutral-950"}`}>
+            <button key={exercise.id} type="button" onClick={() => setCurrentIndex(index)} className={`shrink-0 rounded-full border px-3 py-2 text-xs font-black transition ${index === currentIndex ? "border-neutral-950 bg-lime-300 text-neutral-950 dark:border-white" : done ? "border-emerald-500/40 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300" : "bg-white dark:bg-neutral-950"}`}>
               {done ? "✓ " : `${index + 1}. `}{exercise.exercise.name}
             </button>
           );
@@ -289,7 +289,7 @@ export function ActiveWorkoutClient() {
       </div>
 
       <section className="overflow-hidden rounded-[28px] border bg-white shadow-sm dark:bg-neutral-950">
-        <div className="bg-neutral-950 p-5 text-white dark:bg-white dark:text-neutral-950">
+        <div className="bg-[linear-gradient(135deg,rgba(183,255,60,.14),rgba(14,18,15,.98)_55%)] p-5 text-white">
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0">
               <p className="text-xs font-bold uppercase tracking-[0.15em] opacity-55">Exercise {currentIndex + 1} of {session.exercises.length}</p>
@@ -334,7 +334,7 @@ export function ActiveWorkoutClient() {
       <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2">
         <button type="button" disabled={currentIndex === 0} onClick={() => move(-1)} className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl border font-black disabled:opacity-30"><ChevronLeft className="h-5 w-5" /> Previous</button>
         <span className={`grid h-12 w-12 place-items-center rounded-full ${currentComplete ? "bg-emerald-500 text-neutral-950" : "bg-neutral-100 dark:bg-neutral-800"}`}>{currentComplete ? <Check className="h-5 w-5" /> : <Dumbbell className="h-5 w-5" />}</span>
-        <button type="button" disabled={currentIndex === session.exercises.length - 1} onClick={() => move(1)} className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-neutral-950 font-black text-white disabled:opacity-30 dark:bg-white dark:text-neutral-950">Next <ChevronRight className="h-5 w-5" /></button>
+        <button type="button" disabled={currentIndex === session.exercises.length - 1} onClick={() => move(1)} className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-lime-300 font-black text-neutral-950 disabled:opacity-30">Next <ChevronRight className="h-5 w-5" /></button>
       </div>
 
       <section className="rounded-2xl border bg-white p-4 dark:bg-neutral-950">
@@ -352,7 +352,7 @@ export function ActiveWorkoutClient() {
             </select>
             <label className="flex items-center gap-2 text-sm font-semibold"><input type="checkbox" checked={permanent} onChange={(event) => setPermanent(event.target.checked)} /> Also add it permanently to this split day</label>
             {!isOnline && permanent ? <p className="text-xs font-semibold text-amber-600">Permanent split changes need internet. It will still be saved in this session.</p> : null}
-            <button type="button" disabled={!selectedExercise || busy} onClick={() => void addExercise()} className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-neutral-950 px-4 py-3 font-black text-white disabled:opacity-40 dark:bg-white dark:text-neutral-950"><Plus className="h-4 w-4" /> Add with 2 sets</button>
+            <button type="button" disabled={!selectedExercise || busy} onClick={() => void addExercise()} className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-lime-300 px-4 py-3 font-black text-neutral-950 disabled:opacity-40"><Plus className="h-4 w-4" /> Add with 2 sets</button>
             <button type="button" onClick={() => setShowCustomExercise((value) => !value)} className="w-full rounded-xl border px-4 py-3 text-sm font-black">Create an exercise with my own name</button>
             {showCustomExercise ? <CustomExerciseForm compact defaultWorkoutType="custom" onCreated={addExercise} onCancel={() => setShowCustomExercise(false)} /> : null}
           </div>

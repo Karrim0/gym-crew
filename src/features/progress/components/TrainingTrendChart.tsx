@@ -19,9 +19,15 @@ export function TrainingTrendChart({ userId }: { userId: UUID }) {
   const [metric, setMetric] = useState<Metric>("volume");
   const [points, setPoints] = useState<TrainingTrendPoint[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
 
   useEffect(() => {
-    fetchTrainingTrend(userId, 8).then(setPoints).finally(() => setLoading(false));
+    let active = true;
+    void fetchTrainingTrend(userId, 8)
+      .then((next) => { if (active) setPoints(next); })
+      .catch(() => { if (active) setError(true); })
+      .finally(() => { if (active) setLoading(false); });
+    return () => { active = false; };
   }, [userId]);
 
   const chartPoints = useMemo(() => points.map((point) => ({
@@ -32,22 +38,21 @@ export function TrainingTrendChart({ userId }: { userId: UUID }) {
   const format = metric === "volume" ? (value: number) => formatWeight(value) : (value: number) => Math.round(value).toString();
 
   return (
-    <section className="rounded-[26px] border bg-white p-4 dark:bg-neutral-950">
-      <div className="flex items-start justify-between gap-3">
-        <div>
-          <h3 className="font-black">8-week training trend</h3>
-          <p className="text-sm text-neutral-500">Your actual completed work, including offline sessions.</p>
-        </div>
+    <section className="gc-card p-4 sm:p-5">
+      <div>
+        <p className="gc-eyebrow">Training load</p>
+        <h3 className="mt-1 text-lg font-black">8-week trend</h3>
+        <p className="mt-1 text-sm text-neutral-500">Completed work including sessions logged offline.</p>
       </div>
       <div className="mt-4 flex gap-2 overflow-x-auto pb-1">
         {METRICS.map((item) => (
-          <button key={item.key} type="button" onClick={() => setMetric(item.key)} className={`inline-flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-black ${metric === item.key ? "bg-neutral-950 text-white dark:bg-white dark:text-neutral-950" : "border text-neutral-500"}`}>
+          <button key={item.key} type="button" onClick={() => setMetric(item.key)} className={`inline-flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-black transition ${metric === item.key ? "bg-lime-300 text-neutral-950" : "border border-white/[0.07] bg-white/[0.035] text-neutral-400"}`}>
             {item.icon}{item.label}
           </button>
         ))}
       </div>
       <div className="mt-4">
-        {loading ? <div className="h-56 animate-pulse rounded-2xl bg-neutral-100 dark:bg-neutral-900" /> : <TrendLineChart points={chartPoints} valueLabel={metric} formatValue={format} />}
+        {loading ? <div className="h-56 animate-pulse rounded-2xl bg-white/[0.035]" /> : error ? <div className="grid h-48 place-items-center rounded-2xl border border-dashed border-red-400/20 text-sm text-red-300">Unable to load trend data.</div> : <TrendLineChart points={chartPoints} valueLabel={metric} formatValue={format} />}
       </div>
     </section>
   );

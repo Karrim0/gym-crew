@@ -10,11 +10,14 @@ export interface DashboardHeaderProps {
 
 export function DashboardHeader({ title, showBackButton, actions }: DashboardHeaderProps) {
   return (
-    <header className="sticky top-0 z-30 border-b border-black/5 bg-background/90 px-4 py-3 backdrop-blur-xl dark:border-white/10">
-      <div className="mx-auto flex w-full max-w-2xl items-center justify-between gap-2">
-        <div className="flex min-w-0 items-center gap-2">
+    <header className="sticky top-0 z-30 border-b border-white/[0.06] bg-[#070907]/82 px-4 py-3 backdrop-blur-2xl sm:px-6 lg:px-8">
+      <div className="mx-auto flex w-full max-w-5xl items-center justify-between gap-3">
+        <div className="flex min-w-0 items-center gap-2.5">
           {showBackButton ? <BackButton /> : null}
-          <h1 className="truncate text-lg font-black tracking-tight">{title}</h1>
+          <div className="min-w-0">
+            <p className="gc-eyebrow hidden sm:block">Gym Crew</p>
+            <h1 className="truncate text-lg font-black tracking-[-0.02em] text-white sm:text-xl">{title}</h1>
+          </div>
         </div>
         <div className="flex items-center gap-2">
           {actions}

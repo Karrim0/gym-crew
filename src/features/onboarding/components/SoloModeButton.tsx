@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Dumbbell } from "lucide-react";
+import { ArrowRight, Dumbbell } from "lucide-react";
 import { createSoloWorkspace } from "@/features/groups/services/group.service";
 
 export function SoloModeButton() {
@@ -30,12 +30,20 @@ export function SoloModeButton() {
         type="button"
         onClick={() => void enableSoloMode()}
         disabled={isLoading}
-        className="inline-flex w-full items-center justify-center gap-2 rounded-md border p-2 font-medium disabled:opacity-50"
+        className="gc-card-interactive flex w-full items-center gap-4 p-4 text-left disabled:opacity-50"
       >
-        <Dumbbell className="h-4 w-4" />
-        {isLoading ? "Preparing your split…" : "Continue as a solo athlete"}
+        <span className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-lime-300 text-neutral-950">
+          <Dumbbell className="h-5 w-5" />
+        </span>
+        <span className="min-w-0 flex-1">
+          <span className="block font-black">Train solo</span>
+          <span className="mt-0.5 block text-sm text-neutral-400">
+            {isLoading ? "Preparing your space…" : "Build your own split and track private progress."}
+          </span>
+        </span>
+        <ArrowRight className="h-5 w-5 text-neutral-500" />
       </button>
-      {error ? <p className="text-sm text-red-600">{error}</p> : null}
+      {error ? <p className="rounded-xl bg-red-400/10 px-3 py-2 text-sm font-semibold text-red-300">{error}</p> : null}
     </div>
   );
 }

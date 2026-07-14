@@ -2,24 +2,24 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { Activity, Award, BarChart3, ChevronRight, Clock3, Dumbbell, Flame, ScanLine, Target } from "lucide-react";
+import { Activity, Award, ArrowUpRight, BarChart3, Clock3, Dumbbell, Flame, ScanLine, Target } from "lucide-react";
 import { formatDuration, formatWeight } from "@/lib/utils/format";
 import { formatAdherencePercentage } from "@/features/progress/utils/format-adherence";
 import type { UUID } from "@/types";
-import {
-  fetchPersonalProgressSummary,
-  type PersonalProgressSummary,
-} from "../services/progress.service";
+import { fetchPersonalProgressSummary, type PersonalProgressSummary } from "../services/progress.service";
 import { TrainingTrendChart } from "./TrainingTrendChart";
 
 interface ProgressDashboardClientProps { userId: UUID }
 
 function StatCard({ label, value, detail, icon }: { label: string; value: string; detail: string; icon: React.ReactNode }) {
   return (
-    <div className="rounded-2xl border bg-white p-4 dark:bg-neutral-950">
-      <div className="flex items-center justify-between text-neutral-500"><span className="text-xs font-semibold uppercase tracking-wide">{label}</span>{icon}</div>
-      <p className="mt-3 text-2xl font-black">{value}</p>
-      <p className="mt-1 text-xs text-neutral-500">{detail}</p>
+    <div className="gc-card p-4">
+      <div className="flex items-center justify-between text-neutral-500">
+        <span className="text-[10px] font-black uppercase tracking-[0.14em]">{label}</span>
+        <span className="text-lime-300">{icon}</span>
+      </div>
+      <p className="mt-3 text-2xl font-black tracking-[-0.035em]">{value}</p>
+      <p className="mt-1 text-xs leading-5 text-neutral-500">{detail}</p>
     </div>
   );
 }
@@ -29,28 +29,34 @@ export function ProgressDashboardClient({ userId }: ProgressDashboardClientProps
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    fetchPersonalProgressSummary(userId)
-      .then(setSummary)
-      .catch((caught) => setError(caught instanceof Error ? caught.message : "Unable to load progress."));
+    let active = true;
+    void fetchPersonalProgressSummary(userId)
+      .then((next) => { if (active) setSummary(next); })
+      .catch((caught) => { if (active) setError(caught instanceof Error ? caught.message : "Unable to load progress."); });
+    return () => { active = false; };
   }, [userId]);
 
-  if (error) return <p className="rounded-xl bg-red-50 p-4 text-sm text-red-700 dark:bg-red-950/30 dark:text-red-300">{error}</p>;
-  if (!summary) return <div className="space-y-3"><div className="h-36 animate-pulse rounded-[28px] bg-neutral-200 dark:bg-neutral-800" /><div className="grid grid-cols-2 gap-3">{Array.from({ length: 4 }, (_, index) => <div key={index} className="h-32 animate-pulse rounded-2xl bg-neutral-100 dark:bg-neutral-900" />)}</div></div>;
+  if (error) return <p className="rounded-2xl border border-red-400/20 bg-red-400/10 p-4 text-sm font-semibold text-red-300">{error}</p>;
+  if (!summary) return <div className="space-y-3"><div className="h-44 animate-pulse rounded-[30px] bg-white/[0.04]" /><div className="grid grid-cols-2 gap-3">{Array.from({ length: 4 }, (_, index) => <div key={index} className="h-32 animate-pulse rounded-2xl bg-white/[0.035]" />)}</div></div>;
 
   const topMuscle = summary.muscles[0];
 
   return (
-    <div className="space-y-5 pb-24">
-      <section className="rounded-[30px] bg-neutral-950 p-5 text-white shadow-sm dark:bg-white dark:text-neutral-950">
-        <p className="text-sm opacity-65">Your training, independent of any group</p>
-        <div className="mt-2 flex items-end justify-between gap-4">
-          <div><h2 className="text-3xl font-black">{summary.sessionsThisWeek} sessions</h2><p className="mt-1 text-sm opacity-65">this training week</p></div>
-          <Dumbbell className="h-11 w-11 opacity-45" />
+    <div className="space-y-5 pb-24 pt-5">
+      <section className="relative overflow-hidden rounded-[30px] border border-lime-300/15 bg-[linear-gradient(135deg,rgba(183,255,60,.16),rgba(14,18,15,.98)_52%,rgba(8,11,8,.98))] p-5 shadow-[0_30px_80px_rgba(0,0,0,.3)] sm:p-7">
+        <div className="absolute -right-12 -top-16 h-48 w-48 rounded-full bg-lime-300/10 blur-3xl" />
+        <div className="relative flex items-end justify-between gap-4">
+          <div>
+            <p className="gc-eyebrow">This training week</p>
+            <h2 className="mt-2 text-4xl font-black tracking-[-0.05em]">{summary.sessionsThisWeek} sessions</h2>
+            <p className="mt-2 text-sm text-neutral-400">{formatAdherencePercentage(summary.adherence.weekly)} of your personal plan completed.</p>
+          </div>
+          <Dumbbell className="hidden h-14 w-14 text-lime-300/35 sm:block" />
         </div>
-        {topMuscle ? <p className="mt-4 rounded-2xl bg-white/10 px-3 py-2 text-sm dark:bg-black/10">Most trained lately: <strong className="capitalize">{topMuscle.muscle}</strong></p> : null}
+        {topMuscle ? <p className="relative mt-5 inline-flex rounded-full border border-white/[0.07] bg-black/20 px-3 py-2 text-xs font-bold text-neutral-300">Most trained lately: <strong className="ml-1 capitalize text-lime-300">{topMuscle.muscle}</strong></p> : null}
       </section>
 
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         <StatCard label="Weekly adherence" value={formatAdherencePercentage(summary.adherence.weekly)} detail={`${summary.adherence.weeklyCompleted}/${summary.adherence.weeklyScheduled} planned sessions`} icon={<Target className="h-4 w-4" />} />
         <StatCard label="Current streak" value={`${summary.currentStreak} wk`} detail={`Longest: ${summary.longestStreak} weeks`} icon={<Flame className="h-4 w-4" />} />
         <StatCard label="Monthly volume" value={formatWeight(summary.volumeThisMonthKg)} detail={`${summary.sessionsThisMonth} completed sessions`} icon={<Activity className="h-4 w-4" />} />
@@ -59,25 +65,37 @@ export function ProgressDashboardClient({ userId }: ProgressDashboardClientProps
 
       <TrainingTrendChart userId={userId} />
 
-      <div className="grid gap-3 sm:grid-cols-3">
-        <Link href="/progress/body-map" className="flex items-center gap-3 rounded-2xl border bg-white p-4 dark:bg-neutral-950">
-          <span className="grid h-11 w-11 place-items-center rounded-xl bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40"><ScanLine className="h-5 w-5" /></span>
-          <span className="flex-1"><span className="block font-black">Body map</span><span className="text-sm text-neutral-500">Muscles by sets or volume</span></span><ChevronRight className="h-5 w-5" />
-        </Link>
-        <Link href="/progress/records" className="flex items-center gap-3 rounded-2xl border bg-white p-4 dark:bg-neutral-950">
-          <span className="grid h-11 w-11 place-items-center rounded-xl bg-amber-100 text-amber-700 dark:bg-amber-950/40"><Award className="h-5 w-5" /></span>
-          <span className="flex-1"><span className="block font-black">Personal records</span><span className="text-sm text-neutral-500">Weight, reps and set volume</span></span><ChevronRight className="h-5 w-5" />
-        </Link>
-        <Link href="/progress/exercises" className="flex items-center gap-3 rounded-2xl border bg-white p-4 dark:bg-neutral-950">
-          <span className="grid h-11 w-11 place-items-center rounded-xl bg-blue-100 text-blue-700 dark:bg-blue-950/40"><BarChart3 className="h-5 w-5" /></span>
-          <span className="flex-1"><span className="block font-black">Exercise progress</span><span className="text-sm text-neutral-500">Every lift across sessions</span></span><ChevronRight className="h-5 w-5" />
-        </Link>
+      <div className="grid gap-3 md:grid-cols-3">
+        {[
+          { href: "/progress/body-map", title: "Body map", detail: "Muscles by sets or volume", icon: ScanLine },
+          { href: "/progress/records", title: "Personal records", detail: "Weight, reps and set volume", icon: Award },
+          { href: "/progress/exercises", title: "Exercise progress", detail: "Every lift across sessions", icon: BarChart3 },
+        ].map(({ href, title, detail, icon: Icon }) => (
+          <Link key={href} href={href} className="gc-card-interactive flex items-center gap-3 p-4">
+            <span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-lime-300/10 text-lime-300"><Icon className="h-5 w-5" /></span>
+            <span className="min-w-0 flex-1"><span className="block font-black">{title}</span><span className="block text-sm text-neutral-500">{detail}</span></span>
+            <ArrowUpRight className="h-4 w-4 text-neutral-600" />
+          </Link>
+        ))}
       </div>
 
-      <section className="rounded-[26px] border bg-white p-4 dark:bg-neutral-950">
-        <div className="flex items-center justify-between gap-3"><div><h3 className="font-black">Recent records</h3><p className="text-sm text-neutral-500">Calculated from your personal history</p></div><Link href="/progress/records" className="text-sm font-bold">View all</Link></div>
-        {summary.recentRecords.length === 0 ? <p className="mt-4 rounded-xl bg-neutral-50 p-4 text-sm text-neutral-500 dark:bg-neutral-900">Complete a workout with weights and reps to start building records.</p> : (
-          <div className="mt-4 space-y-3">{summary.recentRecords.map((record) => <div key={`${record.exerciseId}-${record.type}`} className="flex items-center gap-3"><Award className="h-4 w-4 text-amber-500" /><div className="min-w-0 flex-1"><p className="truncate font-semibold">{record.exerciseName}</p><p className="text-xs capitalize text-neutral-500">{record.type.replaceAll("_", " ")}</p></div><strong>{record.type === "max_reps" ? `${record.value} reps` : formatWeight(record.value)}</strong></div>)}</div>
+      <section className="gc-card p-4 sm:p-5">
+        <div className="flex items-center justify-between gap-3">
+          <div><p className="gc-eyebrow">Milestones</p><h3 className="mt-1 text-lg font-black">Recent records</h3></div>
+          <Link href="/progress/records" className="text-xs font-black text-lime-300">View all</Link>
+        </div>
+        {summary.recentRecords.length === 0 ? (
+          <p className="mt-4 rounded-2xl border border-dashed border-white/10 p-4 text-sm leading-6 text-neutral-500">Complete a workout with weights and reps to start building records.</p>
+        ) : (
+          <div className="mt-4 divide-y divide-white/[0.06]">
+            {summary.recentRecords.map((record) => (
+              <div key={`${record.exerciseId}-${record.type}`} className="flex items-center gap-3 py-3 first:pt-0 last:pb-0">
+                <span className="grid h-9 w-9 place-items-center rounded-xl bg-amber-300/10 text-amber-300"><Award className="h-4 w-4" /></span>
+                <div className="min-w-0 flex-1"><p className="truncate font-bold">{record.exerciseName}</p><p className="text-xs capitalize text-neutral-500">{record.type.replaceAll("_", " ")}</p></div>
+                <strong className="text-sm">{record.type === "max_reps" ? `${record.value} reps` : formatWeight(record.value)}</strong>
+              </div>
+            ))}
+          </div>
         )}
       </section>
     </div>

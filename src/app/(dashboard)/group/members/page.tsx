@@ -11,7 +11,7 @@ export default async function GroupMembersPage() {
   return (
     <>
       <DashboardHeader title="Members" showBackButton />
-      <PageContainer className="pb-8"><GroupMembersClient groupId={membership.groupId} currentUserId={user.id} currentRole={membership.role} /></PageContainer>
+      <PageContainer className="pb-8 pt-5"><GroupMembersClient groupId={membership.groupId} currentUserId={user.id} currentRole={membership.role} /></PageContainer>
     </>
   );
 }

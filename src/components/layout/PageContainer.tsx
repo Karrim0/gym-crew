@@ -6,7 +6,10 @@ export interface PageContainerProps {
   className?: string;
 }
 
-/** Minimal shared content-width wrapper used inside page bodies. */
 export function PageContainer({ children, className }: PageContainerProps) {
-  return <div className={cn("mx-auto w-full max-w-2xl px-4", className)}>{children}</div>;
+  return (
+    <div className={cn("mx-auto w-full max-w-5xl px-4 sm:px-6 lg:px-8", className)}>
+      {children}
+    </div>
+  );
 }

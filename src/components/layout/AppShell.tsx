@@ -8,18 +8,13 @@ export interface AppShellProps {
   children: ReactNode;
 }
 
-/**
- * Top-level shell for authenticated dashboard routes: sidebar on larger
- * viewports, bottom navigation on mobile. Minimal placeholder markup only —
- * no finished visual design yet.
- */
 export function AppShell({ children }: AppShellProps) {
   return (
-    <div className="flex min-h-dvh flex-col md:flex-row">
+    <div className="gc-shell flex min-h-dvh flex-col md:flex-row">
       <DesktopSidebar />
-      <div className="flex flex-1 flex-col">
+      <div className="relative flex min-w-0 flex-1 flex-col md:ml-[17.5rem]">
         <OfflineBanner />
-        <main className="flex-1 pb-24 md:pb-0">{children}</main>
+        <main className="relative flex-1 pb-28 md:pb-8">{children}</main>
         <BottomNavigation />
         <RestTimerLauncher />
       </div>

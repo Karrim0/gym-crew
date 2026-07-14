@@ -38,7 +38,7 @@ export function BodyMapClient({ userId }: { userId: UUID }) {
 
   return (
     <div className="space-y-4 pb-24">
-      <section className="rounded-[28px] bg-neutral-950 p-5 text-white dark:bg-white dark:text-neutral-950">
+      <section className="rounded-[28px] border border-lime-300/15 bg-[linear-gradient(135deg,rgba(183,255,60,.14),rgba(14,18,15,.98)_55%)] p-5 text-white">
         <p className="text-xs font-bold uppercase tracking-[0.15em] opacity-60">Your training history</p>
         <h2 className="mt-2 text-2xl font-black">See where the work went</h2>
         <p className="mt-2 text-sm opacity-70">The map uses completed working sets, not what was merely scheduled.</p>
@@ -47,7 +47,7 @@ export function BodyMapClient({ userId }: { userId: UUID }) {
       <div className="flex items-center justify-between gap-3 overflow-x-auto">
         <div className="flex rounded-xl border bg-white p-1 dark:bg-neutral-950">
           {RANGES.map((value) => (
-            <button key={value} type="button" onClick={() => setRange(value)} className={`rounded-lg px-3 py-2 text-xs font-black ${range === value ? "bg-neutral-950 text-white dark:bg-white dark:text-neutral-950" : "text-neutral-500"}`}>
+            <button key={value} type="button" onClick={() => setRange(value)} className={`rounded-lg px-3 py-2 text-xs font-black ${range === value ? "bg-lime-300 text-neutral-950" : "text-neutral-500"}`}>
               {value} days
             </button>
           ))}

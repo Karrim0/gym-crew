@@ -32,39 +32,39 @@ export function UpdatePasswordForm() {
   }
 
   return (
-    <form onSubmit={handleSubmit(submit)} className="flex flex-col gap-3" noValidate>
+    <form onSubmit={handleSubmit(submit)} className="flex flex-col gap-4" noValidate>
       <div>
-        <label htmlFor="password" className="text-sm font-medium">
+        <label htmlFor="password" className="mb-1.5 block text-sm font-bold text-neutral-300">
           New password
         </label>
         <input
           id="password"
           type="password"
           autoComplete="new-password"
-          className="w-full rounded-md border p-2"
+          className="gc-input"
           {...register("password")}
         />
-        {errors.password ? <p className="text-xs text-red-600">{errors.password.message}</p> : null}
+        {errors.password ? <p className="mt-1.5 text-xs font-semibold text-red-400">{errors.password.message}</p> : null}
       </div>
       <div>
-        <label htmlFor="confirmPassword" className="text-sm font-medium">
+        <label htmlFor="confirmPassword" className="mb-1.5 block text-sm font-bold text-neutral-300">
           Confirm new password
         </label>
         <input
           id="confirmPassword"
           type="password"
           autoComplete="new-password"
-          className="w-full rounded-md border p-2"
+          className="gc-input"
           {...register("confirmPassword")}
         />
         {errors.confirmPassword ? (
-          <p className="text-xs text-red-600">{errors.confirmPassword.message}</p>
+          <p className="mt-1.5 text-xs font-semibold text-red-400">{errors.confirmPassword.message}</p>
         ) : null}
       </div>
 
       <AuthSubmitMessage message={submitError} />
 
-      <button type="submit" disabled={isSubmitting} className="rounded-md border p-2 font-medium">
+      <button type="submit" disabled={isSubmitting} className="gc-primary-button mt-1 w-full disabled:cursor-not-allowed disabled:opacity-50">
         {isSubmitting ? "Updating password…" : "Update password"}
       </button>
     </form>

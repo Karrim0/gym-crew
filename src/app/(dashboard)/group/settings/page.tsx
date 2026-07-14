@@ -11,7 +11,7 @@ export default async function GroupSettingsPage() {
   return (
     <>
       <DashboardHeader title="Group settings" showBackButton />
-      <PageContainer className="pb-24"><GroupPrivacySettingsClient userId={user.id} /></PageContainer>
+      <PageContainer className="pb-24 pt-5"><GroupPrivacySettingsClient userId={user.id} /></PageContainer>
     </>
   );
 }

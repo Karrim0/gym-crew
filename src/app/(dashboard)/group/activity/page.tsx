@@ -12,7 +12,7 @@ export default async function GroupActivityPage() {
   return (
     <>
       <DashboardHeader title="Crew activity" showBackButton />
-      <PageContainer className="space-y-5 pb-24">
+      <PageContainer className="space-y-5 pb-24 pt-5">
         <WeeklyLeaderboard groupId={membership.groupId} />
         <section><div className="mb-3"><h2 className="text-xl font-black">Latest from the crew</h2><p className="text-sm text-neutral-500">Only the summaries each member chose to share.</p></div><GroupActivityFeedClient groupId={membership.groupId} /></section>
       </PageContainer>

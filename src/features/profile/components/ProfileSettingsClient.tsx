@@ -69,7 +69,7 @@ export function ProfileSettingsClient({ userId }: ProfileSettingsClientProps) {
           ) : (
             <span className="grid h-24 w-24 place-items-center rounded-full border bg-neutral-100 dark:bg-neutral-900"><UserRound className="h-10 w-10" /></span>
           )}
-          <label className="absolute bottom-0 right-0 cursor-pointer rounded-full bg-neutral-950 p-2 text-white dark:bg-white dark:text-neutral-950">
+          <label className="absolute bottom-0 right-0 cursor-pointer rounded-full bg-lime-300 p-2 text-neutral-950">
             <Camera className="h-4 w-4" />
             <input type="file" accept="image/png,image/jpeg,image/webp" className="sr-only" onChange={(event) => void upload(event.target.files?.[0])} />
           </label>
@@ -87,7 +87,7 @@ export function ProfileSettingsClient({ userId }: ProfileSettingsClientProps) {
 
       {error ? <p className="text-sm text-red-600">{error}</p> : null}
       {message ? <p className="text-sm text-emerald-600">{message}</p> : null}
-      <button type="button" disabled={isSaving} onClick={() => void save()} className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-neutral-950 px-4 py-3 font-semibold text-white disabled:opacity-50 dark:bg-white dark:text-neutral-950">
+      <button type="button" disabled={isSaving} onClick={() => void save()} className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-lime-300 px-4 py-3 font-black text-neutral-950 disabled:opacity-50">
         <Save className="h-4 w-4" /> {isSaving ? "Saving…" : "Save profile"}
       </button>
     </div>

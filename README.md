@@ -94,3 +94,7 @@ npm run start
 - Use the complete personal experience in a private solo workspace.
 
 See [`docs/PHASE_4_5_OFFLINE_PROGRESS.md`](docs/PHASE_4_5_OFFLINE_PROGRESS.md) for the current implementation report.
+
+## v1.0 release candidate
+
+The current release candidate includes the final mobile-first dark UI, personal analytics, body map, group activity, offline workout logging, production-safe PWA caching and stable Webpack build scripts. See `PHASE_8_FINAL_RELEASE.md` for deployment and verification details.

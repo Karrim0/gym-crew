@@ -55,19 +55,19 @@ export function GroupActivityFeedClient({ groupId }: { groupId: UUID }) {
 
   useEffect(() => { void load(); }, [load]);
 
-  if (loading) return <div className="space-y-3">{Array.from({ length: 4 }, (_, index) => <div key={index} className="h-20 animate-pulse rounded-2xl bg-neutral-100 dark:bg-neutral-900" />)}</div>;
-  if (error) return <p className="rounded-xl bg-red-50 p-4 text-sm text-red-700 dark:bg-red-950/30 dark:text-red-300">{error}</p>;
+  if (loading) return <div className="space-y-3">{Array.from({ length: 4 }, (_, index) => <div key={index} className="h-20 animate-pulse rounded-2xl bg-white/[0.035]" />)}</div>;
+  if (error) return <p className="rounded-xl border border-red-400/20 bg-red-400/10 p-4 text-sm text-red-300">{error}</p>;
   if (items.length === 0) return <p className="rounded-2xl border border-dashed p-6 text-center text-sm text-neutral-500">The feed wakes up when members finish workouts, hit records or join the crew.</p>;
 
   return (
     <div className="space-y-3">
       {items.map((activity) => (
-        <article key={activity.id} className="flex gap-3 rounded-2xl border bg-white p-4 dark:bg-neutral-950">
+        <article key={activity.id} className="gc-card flex gap-3 p-4">
           {activity.actorAvatarUrl ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img src={activity.actorAvatarUrl} alt="" className="h-11 w-11 rounded-full object-cover" />
           ) : (
-            <span className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-neutral-100 dark:bg-neutral-800"><UserRound className="h-5 w-5" /></span>
+            <span className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-white/[0.06]"><UserRound className="h-5 w-5" /></span>
           )}
           <div className="min-w-0 flex-1">
             <div className="flex items-start gap-2">

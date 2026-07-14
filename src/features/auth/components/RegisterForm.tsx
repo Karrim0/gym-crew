@@ -51,71 +51,71 @@ export function RegisterForm({ onSubmit }: RegisterFormProps) {
   }
 
   return (
-    <form onSubmit={handleSubmit(submit)} className="flex flex-col gap-3" noValidate>
+    <form onSubmit={handleSubmit(submit)} className="flex flex-col gap-4" noValidate>
       <div>
-        <label htmlFor="displayName" className="text-sm font-medium">
+        <label htmlFor="displayName" className="mb-1.5 block text-sm font-bold text-neutral-300">
           Name
         </label>
         <input
           id="displayName"
           autoComplete="name"
-          className="w-full rounded-md border p-2"
+          className="gc-input"
           {...register("displayName")}
         />
-        {errors.displayName ? <p className="text-xs text-red-600">{errors.displayName.message}</p> : null}
+        {errors.displayName ? <p className="mt-1.5 text-xs font-semibold text-red-400">{errors.displayName.message}</p> : null}
       </div>
       <div>
-        <label htmlFor="email" className="text-sm font-medium">
+        <label htmlFor="email" className="mb-1.5 block text-sm font-bold text-neutral-300">
           Email
         </label>
         <input
           id="email"
           type="email"
           autoComplete="email"
-          className="w-full rounded-md border p-2"
+          className="gc-input"
           {...register("email")}
         />
-        {errors.email ? <p className="text-xs text-red-600">{errors.email.message}</p> : null}
+        {errors.email ? <p className="mt-1.5 text-xs font-semibold text-red-400">{errors.email.message}</p> : null}
       </div>
       <div>
-        <label htmlFor="password" className="text-sm font-medium">
+        <label htmlFor="password" className="mb-1.5 block text-sm font-bold text-neutral-300">
           Password
         </label>
         <input
           id="password"
           type="password"
           autoComplete="new-password"
-          className="w-full rounded-md border p-2"
+          className="gc-input"
           {...register("password")}
         />
-        {errors.password ? <p className="text-xs text-red-600">{errors.password.message}</p> : null}
+        {errors.password ? <p className="mt-1.5 text-xs font-semibold text-red-400">{errors.password.message}</p> : null}
       </div>
       <div>
-        <label htmlFor="confirmPassword" className="text-sm font-medium">
+        <label htmlFor="confirmPassword" className="mb-1.5 block text-sm font-bold text-neutral-300">
           Confirm password
         </label>
         <input
           id="confirmPassword"
           type="password"
           autoComplete="new-password"
-          className="w-full rounded-md border p-2"
+          className="gc-input"
           {...register("confirmPassword")}
         />
         {errors.confirmPassword ? (
-          <p className="text-xs text-red-600">{errors.confirmPassword.message}</p>
+          <p className="mt-1.5 text-xs font-semibold text-red-400">{errors.confirmPassword.message}</p>
         ) : null}
       </div>
 
       <AuthSubmitMessage message={submitError} />
       <AuthSubmitMessage message={successMessage} tone="success" />
 
-      <button type="submit" disabled={isSubmitting} className="rounded-md border p-2 font-medium">
+      <button type="submit" disabled={isSubmitting} className="gc-primary-button mt-1 w-full disabled:cursor-not-allowed disabled:opacity-50">
         {isSubmitting ? "Creating account…" : "Create account"}
       </button>
 
-      <p className="text-sm">
+      <p className="text-sm text-neutral-400">
         Already have an account?{" "}
-        <Link href="/login" className="underline">
+        <Link href="/login" className="font-bold text-white transition hover:text-lime-300">
           Log in
         </Link>
       </p>

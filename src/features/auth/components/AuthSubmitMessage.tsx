@@ -10,7 +10,11 @@ export function AuthSubmitMessage({ message, tone = "error" }: AuthSubmitMessage
     <p
       role={tone === "error" ? "alert" : "status"}
       aria-live="polite"
-      className={tone === "error" ? "text-sm text-red-600" : "text-sm text-green-700"}
+      className={`rounded-xl border px-3 py-2.5 text-sm font-semibold ${
+        tone === "error"
+          ? "border-red-400/20 bg-red-400/10 text-red-300"
+          : "border-lime-300/20 bg-lime-300/10 text-lime-200"
+      }`}
     >
       {message}
     </p>

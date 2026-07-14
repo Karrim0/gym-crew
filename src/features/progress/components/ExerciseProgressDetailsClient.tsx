@@ -32,7 +32,7 @@ export function ExerciseProgressDetailsClient({ userId, exerciseId }: { userId: 
 
   return (
     <div className="space-y-5 pb-24">
-      <section className="rounded-[30px] bg-neutral-950 p-5 text-white dark:bg-white dark:text-neutral-950">
+      <section className="rounded-[30px] border border-lime-300/15 bg-[linear-gradient(135deg,rgba(183,255,60,.14),rgba(14,18,15,.98)_55%)] p-5 text-white">
         <p className="text-sm capitalize opacity-65">{details.summary.primaryMuscle}</p>
         <h2 className="mt-1 text-2xl font-black">{details.summary.exerciseName}</h2>
         <div className="mt-5 grid grid-cols-3 gap-3 text-center">
@@ -46,7 +46,7 @@ export function ExerciseProgressDetailsClient({ userId, exerciseId }: { userId: 
         <div><h3 className="font-black">Progress trend</h3><p className="text-sm text-neutral-500">Compare strength, load or total work across sessions.</p></div>
         <div className="mt-4 flex rounded-xl border p-1">
           {([['e1rm', 'Estimated 1RM'], ['load', 'Max load'], ['volume', 'Volume']] as Array<[Metric, string]>).map(([key, label]) => (
-            <button key={key} type="button" onClick={() => setMetric(key)} className={`flex-1 rounded-lg px-2 py-2 text-xs font-black ${metric === key ? "bg-neutral-950 text-white dark:bg-white dark:text-neutral-950" : "text-neutral-500"}`}>{label}</button>
+            <button key={key} type="button" onClick={() => setMetric(key)} className={`flex-1 rounded-lg px-2 py-2 text-xs font-black ${metric === key ? "bg-lime-300 text-neutral-950" : "text-neutral-500"}`}>{label}</button>
           ))}
         </div>
         <div className="mt-4"><TrendLineChart points={chartPoints} valueLabel={metric} formatValue={(value) => formatWeight(value)} /></div>

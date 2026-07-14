@@ -22,6 +22,7 @@ export function OfflineCacheWarmer() {
   const { isOnline } = useNetworkStatus();
 
   useEffect(() => {
+    if (process.env.NODE_ENV !== "production") return;
     if (isLoading || !user || !isOnline || !("serviceWorker" in navigator)) return;
     let cancelled = false;
 

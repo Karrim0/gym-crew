@@ -38,16 +38,16 @@ export function CreateGroupForm({ onSubmit }: CreateGroupFormProps) {
   }
 
   return (
-    <form onSubmit={handleSubmit(submit)} className="flex flex-col gap-3" noValidate>
+    <form onSubmit={handleSubmit(submit)} className="flex flex-col gap-4" noValidate>
       <div>
-        <label htmlFor="name" className="text-sm font-medium">
+        <label htmlFor="name" className="mb-1.5 block text-sm font-bold text-neutral-300">
           Group name
         </label>
-        <input id="name" className="w-full rounded-md border p-2" {...register("name")} />
-        {errors.name ? <p className="text-xs text-red-600">{errors.name.message}</p> : null}
+        <input id="name" className="gc-input" {...register("name")} />
+        {errors.name ? <p className="mt-1.5 text-xs font-semibold text-red-400">{errors.name.message}</p> : null}
       </div>
-      {submitError ? <p role="alert" className="text-sm text-red-600">{submitError}</p> : null}
-      <button type="submit" disabled={isSubmitting} className="rounded-md border p-2 font-medium">
+      {submitError ? <p role="alert" className="rounded-xl bg-red-400/10 px-3 py-2 text-sm font-semibold text-red-300">{submitError}</p> : null}
+      <button type="submit" disabled={isSubmitting} className="gc-primary-button w-full disabled:opacity-50">
         {isSubmitting ? "Creating group…" : "Create group"}
       </button>
     </form>

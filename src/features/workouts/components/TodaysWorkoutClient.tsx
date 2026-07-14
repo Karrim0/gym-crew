@@ -94,10 +94,10 @@ export function TodaysWorkoutClient({ userId }: TodaysWorkoutClientProps) {
 
   if (activeSessionId) {
     return (
-      <section className="rounded-3xl bg-neutral-950 p-6 text-white dark:bg-white dark:text-neutral-950">
+      <section className="rounded-[30px] border border-lime-300/15 bg-[linear-gradient(135deg,rgba(183,255,60,.15),rgba(14,18,15,.98)_55%)] p-6 text-white">
         <p className="text-sm opacity-70">Workout in progress</p>
         <h2 className="mt-1 text-2xl font-bold">You already started a session.</h2>
-        <Link href={`/workout/active?session=${activeSessionId}`} className="mt-5 inline-flex items-center gap-2 rounded-xl bg-white px-4 py-3 font-semibold text-neutral-950 dark:bg-neutral-950 dark:text-white"><Play className="h-4 w-4" /> Continue workout</Link>
+        <Link href={`/workout/active?session=${activeSessionId}`} className="mt-5 inline-flex items-center gap-2 rounded-xl bg-lime-300 px-4 py-3 font-black text-neutral-950 dark:bg-neutral-950 dark:text-white"><Play className="h-4 w-4" /> Continue workout</Link>
       </section>
     );
   }
@@ -119,11 +119,11 @@ export function TodaysWorkoutClient({ userId }: TodaysWorkoutClientProps) {
   return (
     <div className="space-y-4">
       {error ? <p className="rounded-xl bg-red-50 p-3 text-sm text-red-700 dark:bg-red-950/30 dark:text-red-300">{error}</p> : null}
-      <section className="rounded-3xl bg-neutral-950 p-6 text-white dark:bg-white dark:text-neutral-950">
+      <section className="rounded-[30px] border border-lime-300/15 bg-[linear-gradient(135deg,rgba(183,255,60,.15),rgba(14,18,15,.98)_55%)] p-6 text-white">
         <p className="text-sm capitalize opacity-70">{weekday}</p>
         <h2 className="mt-1 text-3xl font-bold">{today.displayName ?? `${today.workoutType.charAt(0).toUpperCase()}${today.workoutType.slice(1)} day`}</h2>
         <p className="mt-2 text-sm opacity-70">{today.exercises.length} exercises ready</p>
-        <button type="button" disabled={isStarting || today.exercises.length === 0} onClick={() => void start()} className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-white px-4 py-3 font-bold text-neutral-950 disabled:opacity-50 dark:bg-neutral-950 dark:text-white">
+        <button type="button" disabled={isStarting || today.exercises.length === 0} onClick={() => void start()} className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-lime-300 px-4 py-3 font-black text-neutral-950 disabled:opacity-50 dark:bg-neutral-950 dark:text-white">
           <Play className="h-5 w-5" /> {isStarting ? "Starting…" : "Start workout"}
         </button>
       </section>

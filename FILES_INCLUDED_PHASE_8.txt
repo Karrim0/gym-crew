@@ -1,0 +1,31 @@
+Phase 8 changes include 65 modified/new files.
+
+Release and configuration:
+- package.json
+- next.config.ts
+- PHASE_8_FINAL_RELEASE.md
+- FILES_INCLUDED_PHASE_8.txt
+
+PWA/runtime:
+- public/sw.js
+- src/app/manifest.ts
+- src/lib/pwa/register-service-worker.ts
+- src/lib/pwa/service-worker-messages.ts
+- src/components/pwa/PwaInstallPrompt.tsx
+- src/components/providers/AppProviders.tsx
+- src/components/providers/OfflineCacheWarmer.tsx
+
+Theme and layout:
+- src/app/globals.css
+- src/app/layout.tsx
+- src/components/layout/*
+- src/components/navigation/*
+- src/components/feedback/*
+
+UI polish:
+- authentication and onboarding screens/forms
+- dashboard, workout and profile entry pages
+- progress dashboard and charts
+- body map controls
+- group overview, activity, leaderboard and privacy controls
+- split, workout and personal-record primary actions

@@ -330,7 +330,7 @@ export function SplitManager({ mode, groupId, userId, role }: SplitManagerProps)
                         <option value="">Choose an exercise…</option>
                         {available.map((exercise) => <option key={exercise.id} value={exercise.id}>{exercise.name}</option>)}
                       </select>
-                      <button type="button" disabled={!selectedExerciseByDay[day.id] || busyDay === day.id} onClick={() => void add(day)} className="inline-flex items-center gap-1 rounded-xl bg-neutral-950 px-4 py-3 text-sm font-black text-white disabled:opacity-40 dark:bg-white dark:text-neutral-950"><Plus className="h-4 w-4" /> Add</button>
+                      <button type="button" disabled={!selectedExerciseByDay[day.id] || busyDay === day.id} onClick={() => void add(day)} className="inline-flex items-center gap-1 rounded-xl bg-lime-300 px-4 py-3 text-sm font-black text-neutral-950 disabled:opacity-40"><Plus className="h-4 w-4" /> Add</button>
                     </div>
                     <div className="grid grid-cols-2 gap-2">
                       <button type="button" onClick={() => setCustomDayId(customDayId === day.id ? null : day.id)} className="rounded-xl border px-3 py-3 text-sm font-black">Create custom exercise</button>
