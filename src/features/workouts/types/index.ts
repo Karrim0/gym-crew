@@ -1,8 +1,16 @@
-import type { WorkoutExercise, WorkoutSession, WorkoutSet } from "@/types";
+import type { Exercise, WorkoutExercise, WorkoutSession, WorkoutSet } from "@/types";
 
-/** View-model shape used while a session is actively being recorded on screen. */
+export interface WorkoutExerciseWithDetails extends Omit<WorkoutExercise, "sets"> {
+  exercise: Exercise;
+  sets: WorkoutSet[];
+}
+
+export interface WorkoutSessionWithDetails extends Omit<WorkoutSession, "exercises"> {
+  exercises: WorkoutExerciseWithDetails[];
+}
+
 export interface ActiveWorkoutViewModel {
-  session: WorkoutSession;
+  session: WorkoutSessionWithDetails;
   isDirty: boolean;
 }
 

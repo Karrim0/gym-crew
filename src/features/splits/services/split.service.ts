@@ -1,30 +1,187 @@
-import { NotImplementedError } from "@/lib/utils/errors";
-import type { SplitDay, UUID, Weekday } from "@/types";
+import { createClient } from "@/lib/supabase/client";
+import type { Tables } from "@/lib/supabase/types";
+import type { Exercise, SplitExercise, UUID, Weekday } from "@/types";
+import { mapExercise } from "@/features/exercises/services/exercise.service";
+import type { SplitDayWithDetails, SplitExerciseWithDetails } from "../types";
+import { personalRestDaySchema } from "../schemas/personal-rest-day.schema";
 
-/** Fetches the group's shared default split (not customized per member). */
-export async function fetchGroupSplit(groupId: UUID): Promise<SplitDay[]> {
-  void groupId;
-  throw new NotImplementedError("fetchGroupSplit");
+type SplitDayRow = Tables<"split_days">;
+type SplitExerciseRow = Tables<"split_exercises">;
+type ExerciseRow = Tables<"exercises">;
+
+type SplitExerciseQueryRow = SplitExerciseRow & { exercises: ExerciseRow };
+type SplitDayQueryRow = SplitDayRow & { split_exercises: SplitExerciseQueryRow[] };
+
+function mapSplitExercise(row: SplitExerciseQueryRow): SplitExerciseWithDetails {
+  return {
+    id: row.id,
+    splitDayId: row.split_day_id,
+    exerciseId: row.exercise_id,
+    order: row.position,
+    targetSets: row.target_sets,
+    targetRepsMin: row.target_reps_min,
+    targetRepsMax: row.target_reps_max,
+    isPersonalAddition: row.is_personal_addition,
+    exercise: mapExercise(row.exercises),
+  };
 }
 
-/** Fetches a member's personal split copy (falls back to the group split until customized). */
-export async function fetchPersonalSplit(userId: UUID): Promise<SplitDay[]> {
-  void userId;
-  throw new NotImplementedError("fetchPersonalSplit");
+function mapSplitDay(row: SplitDayQueryRow): SplitDayWithDetails {
+  return {
+    id: row.id,
+    groupId: row.group_id,
+    ownerUserId: row.owner_user_id,
+    weekday: row.weekday,
+    workoutType: row.workout_type,
+    exercises: [...row.split_exercises]
+      .sort((a, b) => a.position - b.position)
+      .map(mapSplitExercise),
+  };
 }
 
-/** Resets a member's personal split back to the group's default. */
-export async function resetPersonalSplitToGroup(userId: UUID): Promise<SplitDay[]> {
-  void userId;
-  throw new NotImplementedError("resetPersonalSplitToGroup");
+async function fetchSplitRows(
+  mode: "group" | "personal",
+  identifier: UUID,
+): Promise<SplitDayWithDetails[]> {
+  const supabase = createClient();
+  let query = supabase
+    .from("split_days")
+    .select("*, split_exercises(*, exercises(*))")
+    .order("created_at", { ascending: true });
+
+  query = mode === "group"
+    ? query.eq("group_id", identifier).is("owner_user_id", null)
+    : query.eq("owner_user_id", identifier);
+
+  const { data, error } = await query;
+  if (error) throw new Error(error.message);
+  return (data as unknown as SplitDayQueryRow[]).map(mapSplitDay);
 }
 
-/** Updates a member's chosen additional rest days (Friday is always fixed, see `constants/schedule`). */
+export async function fetchGroupSplit(groupId: UUID): Promise<SplitDayWithDetails[]> {
+  return fetchSplitRows("group", groupId);
+}
+
+export async function fetchPersonalSplit(userId: UUID): Promise<SplitDayWithDetails[]> {
+  const supabase = createClient();
+  const { error } = await supabase.rpc("ensure_personal_split");
+  if (error) throw new Error(error.message);
+  return fetchSplitRows("personal", userId);
+}
+
+export async function resetPersonalSplitToGroup(userId: UUID): Promise<SplitDayWithDetails[]> {
+  const supabase = createClient();
+  const { error } = await supabase.rpc("reset_personal_split_to_group");
+  if (error) throw new Error(error.message);
+  return fetchSplitRows("personal", userId);
+}
+
 export async function updatePersonalRestDays(
   userId: UUID,
-  additionalRestDays: Weekday[]
+  additionalRestDays: Weekday[],
 ): Promise<void> {
-  void userId;
-  void additionalRestDays;
-  throw new NotImplementedError("updatePersonalRestDays");
+  const parsed = personalRestDaySchema.parse({ additionalRestDays });
+  const supabase = createClient();
+  const { error } = await supabase
+    .from("profiles")
+    .update({ additional_rest_days: parsed.additionalRestDays })
+    .eq("id", userId);
+
+  if (error) throw new Error(error.message);
+}
+
+export interface AddSplitExerciseInput {
+  splitDayId: UUID;
+  exercise: Exercise;
+  targetSets?: number;
+  targetRepsMin?: number;
+  targetRepsMax?: number;
+  isPersonalAddition?: boolean;
+}
+
+export async function addSplitExercise({
+  splitDayId,
+  exercise,
+  targetSets = 3,
+  targetRepsMin = 8,
+  targetRepsMax = 12,
+  isPersonalAddition = false,
+}: AddSplitExerciseInput): Promise<SplitExercise> {
+  const supabase = createClient();
+  const { data: existingRows, error: positionError } = await supabase
+    .from("split_exercises")
+    .select("position")
+    .eq("split_day_id", splitDayId)
+    .order("position", { ascending: false })
+    .limit(1);
+
+  if (positionError) throw new Error(positionError.message);
+  const position = (existingRows[0]?.position ?? -1) + 1;
+
+  const { data, error } = await supabase
+    .from("split_exercises")
+    .insert({
+      split_day_id: splitDayId,
+      exercise_id: exercise.id,
+      position,
+      target_sets: targetSets,
+      target_reps_min: targetRepsMin,
+      target_reps_max: targetRepsMax,
+      is_personal_addition: isPersonalAddition,
+    })
+    .select("*")
+    .single();
+
+  if (error) {
+    if (error.code === "23505") throw new Error("This exercise is already in that day.");
+    throw new Error(error.message);
+  }
+
+  return {
+    id: data.id,
+    splitDayId: data.split_day_id,
+    exerciseId: data.exercise_id,
+    order: data.position,
+    targetSets: data.target_sets,
+    targetRepsMin: data.target_reps_min,
+    targetRepsMax: data.target_reps_max,
+    isPersonalAddition: data.is_personal_addition,
+  };
+}
+
+export async function updateSplitExerciseTargets(
+  splitExerciseId: UUID,
+  values: { targetSets: number; targetRepsMin: number; targetRepsMax: number },
+): Promise<void> {
+  if (values.targetSets < 1 || values.targetSets > 20) throw new Error("Sets must be between 1 and 20.");
+  if (values.targetRepsMin < 1 || values.targetRepsMax < values.targetRepsMin) {
+    throw new Error("Check the target rep range.");
+  }
+
+  const supabase = createClient();
+  const { error } = await supabase
+    .from("split_exercises")
+    .update({
+      target_sets: values.targetSets,
+      target_reps_min: values.targetRepsMin,
+      target_reps_max: values.targetRepsMax,
+    })
+    .eq("id", splitExerciseId);
+
+  if (error) throw new Error(error.message);
+}
+
+export async function removeSplitExercise(splitExerciseId: UUID): Promise<void> {
+  const supabase = createClient();
+  const { error } = await supabase.from("split_exercises").delete().eq("id", splitExerciseId);
+  if (error) throw new Error(error.message);
+}
+
+export async function moveSplitExercise(splitExerciseId: UUID, direction: -1 | 1): Promise<void> {
+  const supabase = createClient();
+  const { error } = await supabase.rpc("move_split_exercise", {
+    target_split_exercise_id: splitExerciseId,
+    direction,
+  });
+  if (error) throw new Error(error.message);
 }

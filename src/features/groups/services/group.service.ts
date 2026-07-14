@@ -194,3 +194,38 @@ export async function joinGroupByInviteCode(
 
   return mapGroup(data);
 }
+
+export async function updateGroupMemberRole(
+  memberId: UUID,
+  role: "admin" | "member",
+): Promise<GroupMember> {
+  const supabase = createClient();
+  const { data, error } = await supabase
+    .from("group_members")
+    .update({ role })
+    .eq("id", memberId)
+    .select("*")
+    .single();
+
+  if (error) throw new Error(error.message);
+  return mapMember(data);
+}
+
+export async function removeGroupMember(memberId: UUID): Promise<void> {
+  const supabase = createClient();
+  const { error } = await supabase.from("group_members").delete().eq("id", memberId);
+  if (error) throw new Error(error.message);
+}
+
+export async function updateGroupName(groupId: UUID, name: string): Promise<WorkoutGroup> {
+  const supabase = createClient();
+  const { data, error } = await supabase
+    .from("groups")
+    .update({ name: name.trim() })
+    .eq("id", groupId)
+    .select("*")
+    .single();
+
+  if (error) throw new Error(error.message);
+  return mapGroup(data);
+}

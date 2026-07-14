@@ -1,5 +1,14 @@
 import { DashboardHeader } from "@/components/layout/DashboardHeader";
+import { PageContainer } from "@/components/layout/PageContainer";
+import { requireCurrentUser } from "@/features/auth/services/auth.server";
+import { TodaysWorkoutClient } from "@/features/workouts/components/TodaysWorkoutClient";
 
-export default function TodaysWorkoutPage() {
-  return <DashboardHeader title="Today's workout" showBackButton />;
+export default async function TodaysWorkoutPage() {
+  const user = await requireCurrentUser();
+  return (
+    <>
+      <DashboardHeader title="Today's workout" showBackButton />
+      <PageContainer className="pb-8"><TodaysWorkoutClient userId={user.id} /></PageContainer>
+    </>
+  );
 }

@@ -40,7 +40,7 @@ export function RestDaySelector({ selectedDays, onChange }: RestDaySelectorProps
           type="button"
           onClick={() => toggleDay(day)}
           aria-pressed={selectedDays.includes(day)}
-          className="rounded-full border px-3 py-1 text-sm capitalize"
+          className={`rounded-full border px-3 py-1 text-sm capitalize ${selectedDays.includes(day) ? "bg-neutral-950 text-white dark:bg-white dark:text-neutral-950" : ""}`}
         >
           {day}
         </button>

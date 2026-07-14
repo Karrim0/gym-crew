@@ -1,26 +1,40 @@
+/* eslint-disable react-hooks/set-state-in-effect */
 "use client";
 
-import { useState } from "react";
-import type { WorkoutSession } from "@/types";
+import { useCallback, useEffect, useState } from "react";
+import type { WorkoutSessionWithDetails } from "../types";
+import { fetchActiveWorkoutSession, fetchWorkoutSessionById } from "../services/workout-session.service";
 
 export interface UseActiveWorkoutResult {
-  session: WorkoutSession | null;
+  session: WorkoutSessionWithDetails | null;
   isLoading: boolean;
   error: Error | null;
+  reload: () => Promise<void>;
 }
 
-/**
- * Will load and hold the in-progress workout session for the active-workout
- * screen. Currently returns an empty, non-loading state — wire this up to
- * `features/workouts/services` and `lib/offline` once session recording is
- * implemented.
- */
-export function useActiveWorkout(): UseActiveWorkoutResult {
-  const [state] = useState<UseActiveWorkoutResult>({
-    session: null,
-    isLoading: false,
-    error: null,
-  });
+export function useActiveWorkout(sessionId?: string | null): UseActiveWorkoutResult {
+  const [session, setSession] = useState<WorkoutSessionWithDetails | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<Error | null>(null);
 
-  return state;
+  const reload = useCallback(async () => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const nextSession = sessionId
+        ? await fetchWorkoutSessionById(sessionId)
+        : await fetchActiveWorkoutSession();
+      setSession(nextSession);
+    } catch (caught) {
+      setError(caught instanceof Error ? caught : new Error("Unable to load the workout."));
+    } finally {
+      setIsLoading(false);
+    }
+  }, [sessionId]);
+
+  useEffect(() => {
+    void reload();
+  }, [reload]);
+
+  return { session, isLoading, error, reload };
 }

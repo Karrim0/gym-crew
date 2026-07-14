@@ -522,6 +522,19 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      add_workout_exercise: {
+        Args: {
+          session_only?: boolean
+          target_exercise_id: string
+          target_session_id: string
+          target_set_count?: number
+        }
+        Returns: string
+      }
+      add_workout_set: {
+        Args: { target_workout_exercise_id: string }
+        Returns: string
+      }
       array_is_unique: { Args: { values_array: unknown }; Returns: boolean }
       create_group_with_owner: {
         Args: { group_name: string }
@@ -541,6 +554,7 @@ export type Database = {
         }
       }
       current_user_group_id: { Args: never; Returns: string }
+      ensure_personal_split: { Args: never; Returns: undefined }
       generate_group_invite_code: { Args: never; Returns: string }
       is_group_admin: { Args: { target_group_id: string }; Returns: boolean }
       is_group_member: { Args: { target_group_id: string }; Returns: boolean }
@@ -562,7 +576,20 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      move_split_exercise: {
+        Args: { direction: number; target_split_exercise_id: string }
+        Returns: undefined
+      }
+      reset_personal_split_to_group: { Args: never; Returns: undefined }
+      seed_group_split: {
+        Args: { target_group_id: string }
+        Returns: undefined
+      }
       shares_group_with: { Args: { other_user_id: string }; Returns: boolean }
+      start_workout_from_split: {
+        Args: { target_scheduled_date: string; target_split_day_id: string }
+        Returns: string
+      }
     }
     Enums: {
       group_activity_type:

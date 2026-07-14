@@ -1,5 +1,18 @@
 import { DashboardHeader } from "@/components/layout/DashboardHeader";
+import { PageContainer } from "@/components/layout/PageContainer";
+import { requireCurrentUser } from "@/features/auth/services/auth.server";
+import { getGroupMembershipForUser } from "@/features/groups/services/group.server";
+import { GroupOverviewClient } from "@/features/groups/components/GroupOverviewClient";
 
-export default function GroupPage() {
-  return <DashboardHeader title="Group" />;
+export default async function GroupPage() {
+  const user = await requireCurrentUser();
+  const membership = await getGroupMembershipForUser(user.id);
+  if (!membership) return null;
+
+  return (
+    <>
+      <DashboardHeader title="Group" />
+      <PageContainer className="pb-8"><GroupOverviewClient group={membership.group} role={membership.role} /></PageContainer>
+    </>
+  );
 }
