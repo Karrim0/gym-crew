@@ -20,13 +20,13 @@ export function WeeklyLeaderboard({ groupId, compact = false }: { groupId: UUID;
   return (
     <section className="gc-card p-4 sm:p-5">
       <div className="flex items-start justify-between gap-3">
-        <div><h3 className="font-black">Weekly consistency</h3><p className="text-sm text-neutral-500">Ranked by adherence, never by who lifts the most.</p></div>
+        <div><h3 className="font-bold">Weekly consistency</h3><p className="text-sm text-neutral-500">Ranked by adherence, never by who lifts the most.</p></div>
         <Medal className="h-5 w-5 text-amber-500" />
       </div>
       <div className="mt-4 space-y-2">
         {visible.map((member, index) => (
           <article key={member.userId} className="flex items-center gap-3 rounded-2xl border border-white/[0.05] bg-white/[0.025] p-3">
-            <span className={`grid h-8 w-8 shrink-0 place-items-center rounded-full text-sm font-black ${index === 0 && member.adherencePercent !== null ? "bg-amber-400 text-neutral-950" : "bg-white/[0.06]"}`}>{index + 1}</span>
+            <span className={`grid h-8 w-8 shrink-0 place-items-center rounded-full text-sm font-bold ${index === 0 && member.adherencePercent !== null ? "bg-amber-400 text-neutral-950" : "bg-white/[0.06]"}`}>{index + 1}</span>
             {member.avatarUrl ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img src={member.avatarUrl} alt="" className="h-10 w-10 rounded-full object-cover" />

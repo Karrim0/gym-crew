@@ -45,13 +45,13 @@ export function PwaInstallPrompt() {
   }
 
   return (
-    <aside className="fixed inset-x-3 bottom-[6.1rem] z-[65] mx-auto max-w-md rounded-[22px] border border-lime-300/20 bg-[#121712]/95 p-3 shadow-2xl shadow-black/50 backdrop-blur-2xl md:bottom-5 md:left-auto md:right-5 md:mx-0">
+    <aside className="fixed inset-x-3 bottom-[6.1rem] z-[65] mx-auto max-w-md rounded-[22px] border border-indigo-300/20 bg-[#121712]/95 p-3 shadow-2xl shadow-black/50 backdrop-blur-2xl md:bottom-5 md:left-auto md:right-5 md:mx-0">
       <div className="flex items-center gap-3">
-        <span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-lime-300 text-neutral-950">
+        <span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-indigo-300 text-neutral-950">
           <Download className="h-5 w-5" />
         </span>
         <div className="min-w-0 flex-1">
-          <p className="font-black">Install Gym Crew</p>
+          <p className="font-bold">Install Gym Crew</p>
           <p className="text-xs text-neutral-400">Open faster and keep workout tools close.</p>
         </div>
         <button type="button" onClick={dismiss} className="grid h-9 w-9 place-items-center rounded-full text-neutral-400" aria-label="Dismiss install prompt">

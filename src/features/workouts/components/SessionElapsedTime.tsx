@@ -30,7 +30,7 @@ export function SessionElapsedTime({ startedAt, completedAt, compact = false }: 
   return (
     <div>
       <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-neutral-500">Session time</p>
-      <p className="mt-1 inline-flex items-center gap-2 font-mono text-xl font-black tabular-nums"><Clock3 className="h-5 w-5 text-emerald-500" /> {formatDuration(seconds)}</p>
+      <p className="mt-1 inline-flex items-center gap-2 font-mono text-xl font-bold tabular-nums"><Clock3 className="h-5 w-5 text-emerald-500" /> {formatDuration(seconds)}</p>
     </div>
   );
 }

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -16,7 +16,8 @@ export interface LoginFormProps {
 
 export function LoginForm({ onSubmit }: LoginFormProps) {
   const router = useRouter();
-  const [submitError, setSubmitError] = useState<string | null>(null);
+  const searchParams = useSearchParams();
+  const [submitError, setSubmitError] = useState<string | null>(searchParams.get("error"));
   const {
     register,
     handleSubmit,
@@ -80,10 +81,10 @@ export function LoginForm({ onSubmit }: LoginFormProps) {
       </button>
 
       <div className="flex justify-between gap-3 text-sm font-semibold text-neutral-400">
-        <Link href="/forgot-password" className="transition hover:text-lime-300">
+        <Link href="/forgot-password" className="transition hover:text-indigo-300">
           Forgot password?
         </Link>
-        <Link href="/register" className="transition hover:text-lime-300">
+        <Link href="/register" className="transition hover:text-indigo-300">
           Create account
         </Link>
       </div>

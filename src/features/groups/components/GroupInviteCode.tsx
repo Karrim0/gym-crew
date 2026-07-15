@@ -28,11 +28,11 @@ export function GroupInviteCode({ inviteCode }: GroupInviteCodeProps) {
 
   return (
     <div className="flex items-center gap-2 rounded-2xl border border-white/[0.07] bg-black/20 p-2.5">
-      <span className="min-w-0 flex-1 truncate px-2 font-mono text-base font-black tracking-[0.2em] text-white sm:text-lg">{inviteCode}</span>
+      <span className="min-w-0 flex-1 truncate px-2 font-mono text-base font-bold tracking-[0.2em] text-white sm:text-lg">{inviteCode}</span>
       <button type="button" onClick={() => void share()} className="grid h-10 w-10 shrink-0 place-items-center rounded-xl border border-white/[0.07] bg-white/[0.04] text-neutral-300" aria-label="Share invite code">
         <Share2 className="h-4 w-4" />
       </button>
-      <button type="button" onClick={() => void copy()} className="inline-flex h-10 shrink-0 items-center gap-1.5 rounded-xl bg-lime-300 px-3 text-xs font-black text-neutral-950">
+      <button type="button" onClick={() => void copy()} className="inline-flex h-10 shrink-0 items-center gap-1.5 rounded-xl bg-indigo-300 px-3 text-xs font-bold text-neutral-950">
         {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
         <span className="hidden sm:inline">{copied ? "Copied" : "Copy"}</span>
       </button>

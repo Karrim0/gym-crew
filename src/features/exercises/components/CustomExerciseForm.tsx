@@ -53,7 +53,7 @@ export function CustomExerciseForm({ defaultWorkoutType = "custom", compact = fa
     <div className={`rounded-2xl border border-dashed border-emerald-500/40 bg-emerald-500/[0.04] ${compact ? "p-3" : "p-4"}`}>
       <div className="flex items-center justify-between gap-2">
         <div>
-          <p className="text-sm font-black">Create your own exercise</p>
+          <p className="text-sm font-bold">Create your own exercise</p>
           <p className="text-xs text-neutral-500">Name it exactly the way you use it in the gym.</p>
         </div>
         {onCancel ? <button type="button" onClick={onCancel} className="grid h-9 w-9 place-items-center rounded-full border" aria-label="Close custom exercise form"><X className="h-4 w-4" /></button> : null}
@@ -70,7 +70,7 @@ export function CustomExerciseForm({ defaultWorkoutType = "custom", compact = fa
             {WORKOUT_TYPES.map((type) => <option key={type} value={type}>{type}</option>)}
           </select>
         </label>
-        <button type="button" disabled={busy || name.trim().length < 2} onClick={() => void submit()} className="mt-auto inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-emerald-500 px-4 py-2.5 text-sm font-black text-neutral-950 disabled:opacity-40"><Plus className="h-4 w-4" /> {busy ? "Creating…" : "Create"}</button>
+        <button type="button" disabled={busy || name.trim().length < 2} onClick={() => void submit()} className="mt-auto inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-emerald-500 px-4 py-2.5 text-sm font-bold text-neutral-950 disabled:opacity-40"><Plus className="h-4 w-4" /> {busy ? "Creating…" : "Create"}</button>
       </div>
       {error ? <p className="mt-2 text-xs font-semibold text-red-600">{error}</p> : null}
     </div>

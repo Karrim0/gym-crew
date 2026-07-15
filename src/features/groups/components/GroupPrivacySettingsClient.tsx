@@ -49,12 +49,12 @@ export function GroupPrivacySettingsClient({ userId }: { userId: UUID }) {
 
   return (
     <div className="space-y-4">
-      <section className="rounded-[26px] border border-lime-300/15 bg-[linear-gradient(135deg,rgba(183,255,60,.13),rgba(14,18,15,.98)_55%)] p-5 text-white"><p className="text-xs font-bold uppercase tracking-[0.15em] opacity-60">Your data, your choice</p><h2 className="mt-2 text-2xl font-black">Group privacy</h2><p className="mt-2 text-sm opacity-70">Your full workout history stays private. These controls only decide what small summaries appear to friends.</p></section>
+      <section className="rounded-[26px] border border-indigo-300/15 bg-[linear-gradient(135deg,rgba(139,158,255,.13),rgba(14,18,15,.98)_55%)] p-5 text-white"><p className="text-xs font-bold uppercase tracking-[0.15em] opacity-60">Your data, your choice</p><h2 className="mt-2 text-2xl font-bold">Group privacy</h2><p className="mt-2 text-sm opacity-70">Your full workout history stays private. These controls only decide what small summaries appear to friends.</p></section>
       <Toggle checked={summary} onChange={setSummary} title="Workout summaries" description="Let the group see completed workouts, weekly sessions and adherence." />
       <Toggle checked={records} onChange={setRecords} title="Personal records" description="Show when you hit a PR and your total PR count." />
       <Toggle checked={weights} onChange={setWeights} title="Record values" description="Include the actual weight or rep value in PR feed items. Off by default." />
       {message ? <p className="rounded-xl bg-neutral-100 p-3 text-sm dark:bg-neutral-900">{message}</p> : null}
-      <button type="button" disabled={saving} onClick={() => void save()} className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-lime-300 px-4 py-3 font-black text-neutral-950 disabled:opacity-50"><Save className="h-5 w-5" />{saving ? "Saving…" : "Save privacy settings"}</button>
+      <button type="button" disabled={saving} onClick={() => void save()} className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-indigo-300 px-4 py-3 font-bold text-neutral-950 disabled:opacity-50"><Save className="h-5 w-5" />{saving ? "Saving…" : "Save privacy settings"}</button>
     </div>
   );
 }

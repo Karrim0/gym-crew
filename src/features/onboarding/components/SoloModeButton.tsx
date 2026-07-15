@@ -32,11 +32,11 @@ export function SoloModeButton() {
         disabled={isLoading}
         className="gc-card-interactive flex w-full items-center gap-4 p-4 text-left disabled:opacity-50"
       >
-        <span className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-lime-300 text-neutral-950">
+        <span className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-indigo-300 text-neutral-950">
           <Dumbbell className="h-5 w-5" />
         </span>
         <span className="min-w-0 flex-1">
-          <span className="block font-black">Train solo</span>
+          <span className="block font-bold">Train solo</span>
           <span className="mt-0.5 block text-sm text-neutral-400">
             {isLoading ? "Preparing your space…" : "Build your own split and track private progress."}
           </span>

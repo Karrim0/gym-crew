@@ -77,7 +77,7 @@ export function GroupMembersClient({ groupId, currentUserId, currentRole }: Grou
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={member.profile.avatarUrl} alt="" className="h-12 w-12 rounded-full object-cover" />
               ) : <span className="grid h-12 w-12 place-items-center rounded-full bg-neutral-100 dark:bg-neutral-800"><UserRound className="h-5 w-5" /></span>}
-              <div className="min-w-0 flex-1"><p className="truncate font-black">{member.profile.displayName}{isSelf ? " (you)" : ""}</p><p className="inline-flex items-center gap-1 text-xs capitalize text-neutral-500"><Shield className="h-3 w-3" /> {member.role}</p></div>
+              <div className="min-w-0 flex-1"><p className="truncate font-bold">{member.profile.displayName}{isSelf ? " (you)" : ""}</p><p className="inline-flex items-center gap-1 text-xs capitalize text-neutral-500"><Shield className="h-3 w-3" /> {member.role}</p></div>
               {canManage ? <div className="flex items-center gap-2"><select value={member.role} disabled={busyId === member.id} onChange={(event) => void changeRole(member, event.target.value as "admin" | "member")} className="rounded-lg border bg-transparent px-2 py-1.5 text-sm"><option value="member">Member</option><option value="admin">Admin</option></select><button type="button" disabled={busyId === member.id} onClick={() => void remove(member)} className="rounded-lg border p-2 text-red-600" aria-label="Remove member"><Trash2 className="h-4 w-4" /></button></div> : null}
             </div>
             <div className="mt-3 grid grid-cols-3 gap-2 text-center">

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Dumbbell, Sparkles } from "lucide-react";
+import { Dumbbell } from "lucide-react";
 import { MAIN_NAVIGATION_ITEMS } from "@/constants/navigation";
 import { APP_CONFIG } from "@/config/app";
 
@@ -10,43 +10,27 @@ export function DesktopSidebar() {
   const pathname = usePathname();
 
   return (
-    <aside className="fixed inset-y-0 left-0 z-40 hidden w-[17.5rem] flex-col border-r border-white/[0.07] bg-[#090c09]/88 p-4 backdrop-blur-2xl md:flex">
-      <Link href="/dashboard" className="flex items-center gap-3 rounded-2xl px-2 py-2">
-        <span className="grid h-11 w-11 place-items-center rounded-2xl bg-lime-300 text-neutral-950 shadow-lg shadow-lime-400/10">
-          <Dumbbell className="h-6 w-6" />
-        </span>
-        <span>
-          <span className="block text-lg font-black tracking-[-0.03em]">{APP_CONFIG.name}</span>
-          <span className="text-[11px] font-bold uppercase tracking-[0.16em] text-neutral-500">Train together</span>
-        </span>
+    <aside className="fixed inset-y-0 left-0 z-40 hidden w-[16.5rem] flex-col border-r border-white/[0.06] bg-[#0d0f16]/92 p-4 backdrop-blur-2xl md:flex">
+      <Link href="/dashboard" className="flex items-center gap-3 rounded-xl px-2 py-2">
+        <span className="grid h-10 w-10 place-items-center rounded-xl bg-indigo-300 text-[#11131a]"><Dumbbell className="h-5 w-5" /></span>
+        <span><span className="block text-lg font-bold tracking-[-0.02em]">{APP_CONFIG.name}</span><span className="text-[11px] font-semibold text-neutral-500">Personal training first</span></span>
       </Link>
 
-      <nav className="mt-7 flex flex-col gap-1.5">
+      <nav className="mt-7 flex flex-col gap-1.5" aria-label="Desktop navigation">
         {MAIN_NAVIGATION_ITEMS.map((item) => {
           const Icon = item.icon;
-          const active = pathname === item.href || pathname.startsWith(`${item.href}/`);
+          const active = item.activePrefixes.some((prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`));
           return (
-            <Link
-              key={item.id}
-              href={item.href}
-              aria-current={active ? "page" : undefined}
-              className={`group flex min-h-12 items-center gap-3 rounded-2xl px-3.5 text-sm font-black transition ${
-                active
-                  ? "bg-lime-300 text-neutral-950 shadow-lg shadow-lime-500/10"
-                  : "text-neutral-400 hover:bg-white/[0.05] hover:text-white"
-              }`}
-            >
-              <Icon className={`h-5 w-5 ${active ? "stroke-[2.7]" : "group-hover:stroke-[2.4]"}`} aria-hidden />
-              {item.label}
+            <Link key={item.id} href={item.href} aria-current={active ? "page" : undefined} className={`flex min-h-11 items-center gap-3 rounded-xl px-3.5 text-sm font-semibold transition ${active ? "bg-indigo-300 text-[#11131a]" : "text-neutral-400 hover:bg-white/[0.05] hover:text-white"}`}>
+              <Icon className="h-5 w-5" aria-hidden /> {item.label}
             </Link>
           );
         })}
       </nav>
 
-      <div className="mt-auto rounded-[22px] border border-lime-300/15 bg-lime-300/[0.055] p-4">
-        <Sparkles className="h-5 w-5 text-lime-300" />
-        <p className="mt-3 font-black">Built for gym mode</p>
-        <p className="mt-1 text-xs leading-5 text-neutral-400">Quick sets, rest timer, offline sync and crew progress in one place.</p>
+      <div className="mt-auto rounded-xl border border-white/[0.06] bg-white/[0.025] p-4">
+        <p className="text-sm font-semibold">Simple order</p>
+        <p className="mt-1 text-xs leading-5 text-neutral-500">Plan your week, open today&apos;s session, train, then review progress.</p>
       </div>
     </aside>
   );

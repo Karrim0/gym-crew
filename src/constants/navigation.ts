@@ -1,22 +1,18 @@
 import type { LucideIcon } from "lucide-react";
-import { CalendarCheck, Dumbbell, TrendingUp, Users, User } from "lucide-react";
+import { ChartNoAxesCombined, CircleUserRound, Dumbbell, House, Rows3 } from "lucide-react";
 
 export interface NavigationItem {
-  /** English internal identifier, stable across locales. */
-  id: "dashboard" | "workout" | "progress" | "group" | "profile";
-  /** User-facing label. Kept as a single string today; swap for a lookup
-   * keyed by `id` once Arabic localization is added, rather than hard-coding
-   * translated strings throughout components. */
+  id: "home" | "plan" | "train" | "progress" | "more";
   label: string;
   href: string;
   icon: LucideIcon;
+  activePrefixes: readonly string[];
 }
 
-/** Primary bottom navigation shown on mobile and mirrored in the desktop sidebar. */
 export const MAIN_NAVIGATION_ITEMS: readonly NavigationItem[] = [
-  { id: "dashboard", label: "Dashboard", href: "/dashboard", icon: CalendarCheck },
-  { id: "workout", label: "Workout", href: "/workout", icon: Dumbbell },
-  { id: "progress", label: "Progress", href: "/progress", icon: TrendingUp },
-  { id: "group", label: "Group", href: "/group", icon: Users },
-  { id: "profile", label: "Profile", href: "/profile", icon: User },
+  { id: "home", label: "Home", href: "/dashboard", icon: House, activePrefixes: ["/dashboard"] },
+  { id: "plan", label: "Plan", href: "/split/personal", icon: Rows3, activePrefixes: ["/split"] },
+  { id: "train", label: "Train", href: "/workout/today", icon: Dumbbell, activePrefixes: ["/workout/today", "/workout/active"] },
+  { id: "progress", label: "Progress", href: "/progress", icon: ChartNoAxesCombined, activePrefixes: ["/progress"] },
+  { id: "more", label: "More", href: "/more", icon: CircleUserRound, activePrefixes: ["/more", "/profile", "/group", "/workout/history"] },
 ];

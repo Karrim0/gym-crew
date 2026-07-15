@@ -12,13 +12,13 @@ export const metadata: Metadata = {
   applicationName: APP_CONFIG.name,
   appleWebApp: {
     capable: true,
-    statusBarStyle: "black-translucent",
+    statusBarStyle: "black",
     title: APP_CONFIG.name,
   },
 };
 
 export const viewport: Viewport = {
-  themeColor: "#070907",
+  themeColor: "#0b0d13",
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",

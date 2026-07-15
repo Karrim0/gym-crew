@@ -10,11 +10,11 @@ export interface AppShellProps {
 
 export function AppShell({ children }: AppShellProps) {
   return (
-    <div className="gc-shell flex min-h-dvh flex-col md:flex-row">
+    <div className="gc-shell flex flex-col md:flex-row">
       <DesktopSidebar />
-      <div className="relative flex min-w-0 flex-1 flex-col md:ml-[17.5rem]">
+      <div className="relative flex min-w-0 flex-1 flex-col md:ml-[16.5rem]">
         <OfflineBanner />
-        <main className="relative flex-1 pb-28 md:pb-8">{children}</main>
+        <main className="gc-main-content relative flex-1">{children}</main>
         <BottomNavigation />
         <RestTimerLauncher />
       </div>

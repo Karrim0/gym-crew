@@ -4,27 +4,49 @@ import type { RegisterInput } from "../schemas/register.schema";
 import type { ForgotPasswordInput } from "../schemas/forgot-password.schema";
 import type { UpdatePasswordInput } from "../schemas/update-password.schema";
 
-function getBrowserOrigin(): string | undefined {
-  return typeof window === "undefined" ? undefined : window.location.origin;
+const configuredAppUrl = process.env.NEXT_PUBLIC_APP_URL?.trim().replace(/\/$/, "");
+
+function getAppOrigin(): string {
+  if (typeof window !== "undefined") {
+    return window.location.origin;
+  }
+
+  if (configuredAppUrl) {
+    return configuredAppUrl;
+  }
+
+  return "http://localhost:3000";
+}
+
+function buildAuthRedirect(path: string): string {
+  return new URL(path, `${getAppOrigin()}/`).toString();
 }
 
 export async function signInWithPassword({ email, password }: LoginInput) {
   const supabase = createClient();
-  return supabase.auth.signInWithPassword({ email, password });
+  return supabase.auth.signInWithPassword({ email: email.trim().toLowerCase(), password });
 }
 
 export async function signUpWithPassword({ email, password, displayName }: RegisterInput) {
   const supabase = createClient();
-  const origin = getBrowserOrigin();
 
   return supabase.auth.signUp({
-    email,
+    email: email.trim().toLowerCase(),
     password,
     options: {
       data: { display_name: displayName.trim() },
-      ...(origin
-        ? { emailRedirectTo: `${origin}/auth/callback?next=/onboarding` }
-        : {}),
+      emailRedirectTo: buildAuthRedirect("/auth/callback?next=/onboarding"),
+    },
+  });
+}
+
+export async function resendSignUpEmail(email: string) {
+  const supabase = createClient();
+  return supabase.auth.resend({
+    type: "signup",
+    email: email.trim().toLowerCase(),
+    options: {
+      emailRedirectTo: buildAuthRedirect("/auth/callback?next=/onboarding"),
     },
   });
 }
@@ -36,10 +58,9 @@ export async function signOut() {
 
 export async function sendPasswordResetEmail({ email }: ForgotPasswordInput) {
   const supabase = createClient();
-  const origin = getBrowserOrigin();
 
-  return supabase.auth.resetPasswordForEmail(email, {
-    ...(origin ? { redirectTo: `${origin}/auth/callback?next=/update-password` } : {}),
+  return supabase.auth.resetPasswordForEmail(email.trim().toLowerCase(), {
+    redirectTo: buildAuthRedirect("/auth/callback?next=/update-password"),
   });
 }
 

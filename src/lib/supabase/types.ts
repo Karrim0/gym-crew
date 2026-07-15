@@ -615,6 +615,10 @@ export type Database = {
         }
       }
       current_user_group_id: { Args: never; Returns: string }
+      delete_own_workout_session: {
+        Args: { target_session_id: string }
+        Returns: undefined
+      }
       ensure_personal_split: { Args: never; Returns: undefined }
       generate_group_invite_code: { Args: never; Returns: string }
       get_group_member_weekly_stats: {
@@ -659,6 +663,10 @@ export type Database = {
       }
       move_split_exercise: {
         Args: { direction: number; target_split_exercise_id: string }
+        Returns: undefined
+      }
+      recalculate_personal_records_for_exercise: {
+        Args: { target_exercise_id: string; target_user_id: string }
         Returns: undefined
       }
       refresh_personal_records_for_session: {

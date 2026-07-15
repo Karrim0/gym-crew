@@ -1,3 +1,4 @@
+import { redirect } from "next/navigation";
 import { DashboardHeader } from "@/components/layout/DashboardHeader";
 import { PageContainer } from "@/components/layout/PageContainer";
 import { requireCurrentUser } from "@/features/auth/services/auth.server";
@@ -7,7 +8,7 @@ import { SplitManager } from "@/features/splits/components/SplitManager";
 export default async function PersonalSplitPage() {
   const user = await requireCurrentUser();
   const membership = await getGroupMembershipForUser(user.id);
-  if (!membership) return null;
+  if (!membership) redirect("/onboarding");
   return (
     <>
       <DashboardHeader title="My split" showBackButton />

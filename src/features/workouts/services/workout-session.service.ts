@@ -8,6 +8,7 @@ import {
   getLocalWorkoutSession,
   getOfflineDatabase,
   requestSync,
+  removeLocalWorkoutSession,
   saveWorkoutLocally,
   workoutExerciseMutation,
   workoutSessionMutation,
@@ -415,6 +416,21 @@ export async function finishWorkoutSession(
   await enqueueOfflineMutation(workoutSessionMutation("update", completed));
   requestSync();
   return completed;
+}
+
+
+export async function deleteCompletedWorkoutSession(sessionId: UUID): Promise<void> {
+  if (typeof navigator !== "undefined" && !navigator.onLine) {
+    throw new Error("Connect to the internet before deleting a completed workout.");
+  }
+
+  const supabase = createClient();
+  const { error } = await supabase.rpc("delete_own_workout_session", {
+    target_session_id: sessionId,
+  });
+
+  if (error) throw new Error(error.message);
+  await removeLocalWorkoutSession(sessionId);
 }
 
 export type { WorkoutSession, WorkoutExercise };

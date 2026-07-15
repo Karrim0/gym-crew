@@ -63,7 +63,7 @@ export function ForgotPasswordForm({ onSubmit }: ForgotPasswordFormProps) {
         {isSubmitting ? "Sending…" : "Send reset link"}
       </button>
 
-      <Link href="/login" className="text-sm font-bold text-neutral-400 transition hover:text-lime-300">
+      <Link href="/login" className="text-sm font-bold text-neutral-400 transition hover:text-indigo-300">
         Back to login
       </Link>
     </form>

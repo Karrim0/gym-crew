@@ -77,9 +77,9 @@ function ExerciseEditor({ item, index, count, canEdit, onReload, onError }: Exer
   return (
     <li className="rounded-2xl border bg-neutral-50 p-3 dark:bg-neutral-900/60">
       <div className="flex items-center gap-3">
-        <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-white text-sm font-black shadow-sm dark:bg-neutral-800">{index + 1}</span>
+        <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-white text-sm font-bold shadow-sm dark:bg-neutral-800">{index + 1}</span>
         <button type="button" onClick={() => setExpanded((value) => !value)} className="min-w-0 flex-1 text-left">
-          <p className="truncate font-black">{item.exercise.name}</p>
+          <p className="truncate font-bold">{item.exercise.name}</p>
           <p className="text-xs capitalize text-neutral-500">{item.targetSets} sets · {item.targetRepsMin}–{item.targetRepsMax} reps · {item.exercise.primaryMuscle}{item.isPersonalAddition ? " · personal" : ""}</p>
         </button>
         {canEdit ? (
@@ -93,9 +93,9 @@ function ExerciseEditor({ item, index, count, canEdit, onReload, onError }: Exer
 
       {expanded ? (
         <div className="mt-3 grid grid-cols-[1fr_1fr_1fr_auto] gap-2 border-t pt-3">
-          <label className="text-[11px] font-bold uppercase tracking-wide text-neutral-500">Sets<input type="number" inputMode="numeric" min={1} max={20} disabled={!canEdit} value={sets} onChange={(event) => setSets(Number(event.target.value))} className="mt-1 w-full rounded-xl border bg-white px-2 py-2.5 text-center text-lg font-black text-neutral-950 dark:bg-neutral-950 dark:text-white" /></label>
-          <label className="text-[11px] font-bold uppercase tracking-wide text-neutral-500">Min reps<input type="number" inputMode="numeric" min={1} max={100} disabled={!canEdit} value={min} onChange={(event) => setMin(Number(event.target.value))} className="mt-1 w-full rounded-xl border bg-white px-2 py-2.5 text-center text-lg font-black text-neutral-950 dark:bg-neutral-950 dark:text-white" /></label>
-          <label className="text-[11px] font-bold uppercase tracking-wide text-neutral-500">Max reps<input type="number" inputMode="numeric" min={1} max={100} disabled={!canEdit} value={max} onChange={(event) => setMax(Number(event.target.value))} className="mt-1 w-full rounded-xl border bg-white px-2 py-2.5 text-center text-lg font-black text-neutral-950 dark:bg-neutral-950 dark:text-white" /></label>
+          <label className="text-[11px] font-bold uppercase tracking-wide text-neutral-500">Sets<input type="number" inputMode="numeric" min={1} max={20} disabled={!canEdit} value={sets} onChange={(event) => setSets(Number(event.target.value))} className="mt-1 w-full rounded-xl border bg-white px-2 py-2.5 text-center text-lg font-bold text-neutral-950 dark:bg-neutral-950 dark:text-white" /></label>
+          <label className="text-[11px] font-bold uppercase tracking-wide text-neutral-500">Min reps<input type="number" inputMode="numeric" min={1} max={100} disabled={!canEdit} value={min} onChange={(event) => setMin(Number(event.target.value))} className="mt-1 w-full rounded-xl border bg-white px-2 py-2.5 text-center text-lg font-bold text-neutral-950 dark:bg-neutral-950 dark:text-white" /></label>
+          <label className="text-[11px] font-bold uppercase tracking-wide text-neutral-500">Max reps<input type="number" inputMode="numeric" min={1} max={100} disabled={!canEdit} value={max} onChange={(event) => setMax(Number(event.target.value))} className="mt-1 w-full rounded-xl border bg-white px-2 py-2.5 text-center text-lg font-bold text-neutral-950 dark:bg-neutral-950 dark:text-white" /></label>
           {canEdit ? <button type="button" disabled={busy} onClick={() => void run(() => updateSplitExerciseTargets(item.id, { targetSets: sets, targetRepsMin: min, targetRepsMax: max }))} className="mt-5 grid h-11 w-11 place-items-center rounded-xl bg-emerald-500 text-neutral-950" aria-label="Save targets"><Save className="h-4 w-4" /></button> : null}
         </div>
       ) : null}
@@ -140,7 +140,7 @@ function DaySettings({ day, canEdit, onSave }: DaySettingsProps) {
         </select>
       </label>
       <div className="flex items-end gap-2">
-        <button type="button" disabled={busy} onClick={async () => { setBusy(true); await onSave(workoutType, displayName); setBusy(false); setEditing(false); }} className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-emerald-500 px-4 text-sm font-black text-neutral-950"><Save className="h-4 w-4" /> Save</button>
+        <button type="button" disabled={busy} onClick={async () => { setBusy(true); await onSave(workoutType, displayName); setBusy(false); setEditing(false); }} className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-emerald-500 px-4 text-sm font-bold text-neutral-950"><Save className="h-4 w-4" /> Save</button>
         <button type="button" onClick={() => setEditing(false)} className="h-11 rounded-xl border px-3 text-sm font-bold">Cancel</button>
       </div>
     </div>
@@ -270,14 +270,14 @@ export function SplitManager({ mode, groupId, userId, role }: SplitManagerProps)
   return (
     <div className="space-y-5 pb-20">
       {mode === "personal" ? (
-        <section className="space-y-3 rounded-[26px] border bg-white p-4 shadow-sm dark:bg-neutral-950">
+        <section className="space-y-3 gc-card p-4 sm:p-5">
           <div>
-            <p className="text-xs font-bold uppercase tracking-[0.15em] text-emerald-600">Your schedule</p>
-            <h2 className="mt-1 text-xl font-black">Build the week around you</h2>
+            <p className="gc-eyebrow">Your schedule</p>
+            <h2 className="mt-1 text-xl font-bold">Build the week around you</h2>
             <p className="mt-1 text-sm text-neutral-500">Friday stays fixed. Choose up to two extra rest days; your exercise plan stays saved underneath.</p>
           </div>
           <RestDaySelector selectedDays={restDays} onChange={(next) => void saveRestDays(next)} />
-          <button type="button" onClick={() => void reset()} className="inline-flex items-center gap-2 rounded-xl border px-3 py-2 text-sm font-bold"><RotateCcw className="h-4 w-4" /> Reset to group split</button>
+          <button type="button" onClick={() => void reset()} className="gc-secondary-button"><RotateCcw className="h-4 w-4" /> Reset to group split</button>
         </section>
       ) : (
         <p className="rounded-2xl border bg-white p-4 text-sm text-neutral-600 dark:bg-neutral-950 dark:text-neutral-300">
@@ -299,13 +299,13 @@ export function SplitManager({ mode, groupId, userId, role }: SplitManagerProps)
         const customDefaultType = day.workoutType === "rest" ? "custom" : day.workoutType;
 
         return (
-          <section key={day.id} className={`overflow-hidden rounded-[26px] border bg-white shadow-sm dark:bg-neutral-950 ${personalRest ? "border-amber-400/50" : ""}`}>
+          <section key={day.id} className={`gc-card overflow-hidden ${personalRest ? "border-amber-400/50" : ""}`}>
             <header className="p-4">
               <div className="flex items-center gap-3">
-                <button type="button" onClick={() => toggleDay(day.id)} className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-neutral-100 dark:bg-neutral-800" aria-label={open ? "Collapse day" : "Expand day"}>{open ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}</button>
+                <button type="button" onClick={() => toggleDay(day.id)} className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-white/[0.05] text-neutral-300" aria-label={open ? "Collapse day" : "Expand day"}>{open ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}</button>
                 <button type="button" onClick={() => toggleDay(day.id)} className="min-w-0 flex-1 text-left">
                   <p className="text-xs font-bold uppercase tracking-[0.14em] text-neutral-500">{day.weekday}</p>
-                  <h2 className="truncate text-lg font-black">{personalRest ? "Rest day" : defaultDayName(day)}</h2>
+                  <h2 className="truncate text-lg font-bold">{personalRest ? "Rest day" : defaultDayName(day)}</h2>
                   <p className="text-xs capitalize text-neutral-500">{fixedRest ? "Fixed weekly rest" : personalRest ? `${day.exercises.length} exercises kept for later` : `${day.workoutType} · ${day.exercises.length} exercises · usually 2 sets`}</p>
                 </button>
                 <DaySettings day={day} canEdit={canEdit && !personalRest} onSave={(type, name) => saveDay(day, type, name)} />
@@ -314,27 +314,27 @@ export function SplitManager({ mode, groupId, userId, role }: SplitManagerProps)
             </header>
 
             {open && !fixedRest ? (
-              <div className="border-t p-4">
+              <div className="border-t border-white/[0.06] p-4">
                 <ul className="space-y-2">
                   {day.exercises.map((item, index) => (
                     <ExerciseEditor key={item.id} item={item} index={index} count={day.exercises.length} canEdit={canEdit} onReload={load} onError={setError} />
                   ))}
                 </ul>
 
-                {day.exercises.length === 0 ? <p className="rounded-2xl border border-dashed p-5 text-center text-sm text-neutral-500">No exercises yet. Add the movements you actually use.</p> : null}
+                {day.exercises.length === 0 ? <p className="rounded-xl border border-dashed border-white/10 p-5 text-center text-sm text-neutral-500">No exercises yet. Add the movements you actually use.</p> : null}
 
                 {canEdit ? (
                   <div className="mt-4 space-y-3">
                     <div className="flex gap-2">
-                      <select value={selectedExerciseByDay[day.id] ?? ""} onChange={(event) => setSelectedExerciseByDay((current) => ({ ...current, [day.id]: event.target.value }))} className="min-w-0 flex-1 rounded-xl border bg-transparent px-3 py-3 text-sm">
+                      <select value={selectedExerciseByDay[day.id] ?? ""} onChange={(event) => setSelectedExerciseByDay((current) => ({ ...current, [day.id]: event.target.value }))} className="gc-input min-w-0 flex-1 text-sm">
                         <option value="">Choose an exercise…</option>
                         {available.map((exercise) => <option key={exercise.id} value={exercise.id}>{exercise.name}</option>)}
                       </select>
-                      <button type="button" disabled={!selectedExerciseByDay[day.id] || busyDay === day.id} onClick={() => void add(day)} className="inline-flex items-center gap-1 rounded-xl bg-lime-300 px-4 py-3 text-sm font-black text-neutral-950 disabled:opacity-40"><Plus className="h-4 w-4" /> Add</button>
+                      <button type="button" disabled={!selectedExerciseByDay[day.id] || busyDay === day.id} onClick={() => void add(day)} className="inline-flex items-center gap-1 rounded-xl bg-indigo-300 px-4 py-3 text-sm font-semibold text-[#11131a] disabled:opacity-40"><Plus className="h-4 w-4" /> Add</button>
                     </div>
                     <div className="grid grid-cols-2 gap-2">
-                      <button type="button" onClick={() => setCustomDayId(customDayId === day.id ? null : day.id)} className="rounded-xl border px-3 py-3 text-sm font-black">Create custom exercise</button>
-                      <button type="button" disabled={day.exercises.length === 0 || busyDay === day.id} onClick={() => void clearDay(day)} className="rounded-xl border px-3 py-3 text-sm font-black text-red-600 disabled:opacity-40">Clear day</button>
+                      <button type="button" onClick={() => setCustomDayId(customDayId === day.id ? null : day.id)} className="rounded-xl border border-white/[0.08] px-3 py-3 text-sm font-semibold">Create custom exercise</button>
+                      <button type="button" disabled={day.exercises.length === 0 || busyDay === day.id} onClick={() => void clearDay(day)} className="rounded-xl border border-white/[0.08] px-3 py-3 text-sm font-semibold text-red-600 disabled:opacity-40">Clear day</button>
                     </div>
                     {customDayId === day.id ? <CustomExerciseForm defaultWorkoutType={customDefaultType} onCreated={(exercise) => add(day, exercise)} onCancel={() => setCustomDayId(null)} /> : null}
                   </div>

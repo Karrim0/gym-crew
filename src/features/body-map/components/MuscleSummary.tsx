@@ -17,7 +17,7 @@ export function MuscleSummary({
   return (
     <section className="rounded-[26px] border bg-white p-4 dark:bg-neutral-950">
       <div>
-        <h3 className="font-black">Muscle breakdown</h3>
+        <h3 className="font-bold">Muscle breakdown</h3>
         <p className="text-sm text-neutral-500">Primary muscles count fully; secondary muscles count as supportive work.</p>
       </div>
       <div className="mt-4 space-y-3">
