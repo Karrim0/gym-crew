@@ -6,27 +6,33 @@ import {
   Check,
   ChevronLeft,
   ChevronRight,
-  ClipboardCopy,
   Dumbbell,
   ListPlus,
+  LogOut,
+  History,
   MessageSquareText,
   MoreHorizontal,
   Plus,
   Save,
+  TimerReset,
+  TrendingDown,
+  TrendingUp,
   Trash2,
+  XCircle,
 } from "lucide-react";
 import { useNetworkStatus } from "@/hooks/use-network-status";
 import { useRestTimer } from "@/contexts/rest-timer-context";
-import { SyncStatusIndicator } from "@/components/feedback/SyncStatusIndicator";
 import { fetchExerciseLibrary } from "@/features/exercises/services/exercise.service";
 import { CustomExerciseForm } from "@/features/exercises/components/CustomExerciseForm";
 import { addSplitExercise } from "@/features/splits/services/split.service";
 import type { Exercise, WorkoutSet } from "@/types";
+import { formatDuration } from "@/lib/utils/format";
 import { useActiveWorkout } from "../hooks/use-active-workout";
-import { usePreviousPerformance } from "../hooks/use-previous-performance";
+import { usePreviousPerformances } from "../hooks/use-previous-performance";
 import {
   addExerciseToWorkout,
   addWorkoutSet,
+  cancelWorkoutSession,
   deleteWorkoutExercise,
   deleteWorkoutSet,
   finishWorkoutSession,
@@ -41,25 +47,102 @@ interface SetEditorProps {
   previousSet?: WorkoutSet;
   onDelete: () => Promise<void>;
   onSaved: () => Promise<void>;
+  onCompleted: () => void;
+  onDraftChange: (setId: string, draft: { weight: string; reps: string }) => void;
+  onDraftSaved: (setId: string) => void;
   onError: (message: string) => void;
 }
 
-function SetEditor({ set, previousSet, onDelete, onSaved, onError }: SetEditorProps) {
-  const [weight, setWeight] = useState(set.weightKg?.toString() ?? "");
-  const [reps, setReps] = useState(set.reps?.toString() ?? "");
-  const [completed, setCompleted] = useState(set.isCompleted);
+function parseOptionalNumber(value: string) {
+  if (value.trim() === "") return null;
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : Number.NaN;
+}
+
+function formatNumber(value: number) {
+  return Number.isInteger(value) ? value.toString() : value.toFixed(1).replace(/\.0$/, "");
+}
+
+function getSetChanges(set: WorkoutSet, previousSet?: WorkoutSet) {
+  if (!set.isCompleted || !previousSet) return [];
+
+  const changes: Array<{ label: string; direction: "up" | "down" | "same" }> = [];
+  if (set.weightKg !== null && previousSet.weightKg !== null) {
+    const difference = set.weightKg - previousSet.weightKg;
+    if (difference !== 0) {
+      changes.push({
+        label: `${difference > 0 ? "+" : ""}${formatNumber(difference)} kg`,
+        direction: difference > 0 ? "up" : "down",
+      });
+    }
+  }
+  if (set.reps !== null && previousSet.reps !== null) {
+    const difference = set.reps - previousSet.reps;
+    if (difference !== 0) {
+      changes.push({
+        label: `${difference > 0 ? "+" : ""}${difference} ${Math.abs(difference) === 1 ? "rep" : "reps"}`,
+        direction: difference > 0 ? "up" : "down",
+      });
+    }
+  }
+
+  if (changes.length === 0) {
+    changes.push({ label: "Matched last time", direction: "same" });
+  }
+  return changes;
+}
+
+function SetEditor({
+  set,
+  previousSet,
+  onDelete,
+  onSaved,
+  onCompleted,
+  onDraftChange,
+  onDraftSaved,
+  onError,
+}: SetEditorProps) {
+  const [weight, setWeight] = useState(
+    set.weightKg?.toString() ?? previousSet?.weightKg?.toString() ?? "",
+  );
+  const [reps, setReps] = useState(
+    set.reps?.toString() ?? previousSet?.reps?.toString() ?? "",
+  );
   const [saving, setSaving] = useState(false);
+  const changes = getSetChanges(set, previousSet);
+  const isSuggested = Boolean(
+    previousSet &&
+      !set.isCompleted &&
+      set.weightKg === null &&
+      set.reps === null,
+  );
 
+  async function save(nextCompleted: boolean) {
+    const weightKg = parseOptionalNumber(weight);
+    const repsValue = parseOptionalNumber(reps);
+    if (Number.isNaN(weightKg) || (weightKg !== null && weightKg < 0)) {
+      onError("Enter a valid weight.");
+      return;
+    }
+    if (Number.isNaN(repsValue) || (repsValue !== null && (!Number.isInteger(repsValue) || repsValue < 0))) {
+      onError("Reps must be a valid whole number.");
+      return;
+    }
+    if (nextCompleted && (repsValue === null || repsValue <= 0)) {
+      onError("Add your reps before completing the set.");
+      return;
+    }
 
-  async function save(nextCompleted = completed) {
     setSaving(true);
     try {
       await updateWorkoutSet(set.id, {
-        weightKg: weight === "" ? null : Number(weight),
-        reps: reps === "" ? null : Number(reps),
+        weightKg,
+        reps: repsValue,
         isCompleted: nextCompleted,
       });
+      onDraftSaved(set.id);
       await onSaved();
+      if (nextCompleted && !set.isCompleted) onCompleted();
     } catch (caught) {
       onError(caught instanceof Error ? caught.message : "Unable to save the set.");
     } finally {
@@ -67,52 +150,150 @@ function SetEditor({ set, previousSet, onDelete, onSaved, onError }: SetEditorPr
     }
   }
 
-  async function toggle() {
-    if (!completed && reps.trim() === "") {
-      onError("Add your reps before completing the set.");
-      return;
-    }
-    const next = !completed;
-    setCompleted(next);
-    await save(next);
-  }
-
-  function copyPrevious() {
+  function restorePrevious() {
     if (!previousSet) return;
-    setWeight(previousSet.weightKg?.toString() ?? "");
-    setReps(previousSet.reps?.toString() ?? "");
+    const nextWeight = previousSet.weightKg?.toString() ?? "";
+    const nextReps = previousSet.reps?.toString() ?? "";
+    setWeight(nextWeight);
+    setReps(nextReps);
+    onDraftChange(set.id, { weight: nextWeight, reps: nextReps });
   }
 
   return (
-    <div className={`rounded-[18px] border p-3.5 transition ${completed ? "border-emerald-400/35 bg-emerald-400/[0.06]" : "border-white/[0.07] bg-white/[0.025]"}`}>
-      <div className="flex items-center justify-between gap-2">
-        <div className="flex items-center gap-2">
-          <span className={`grid h-9 w-9 place-items-center rounded-xl text-sm font-bold ${completed ? "bg-emerald-400 text-[#101319]" : "bg-white/[0.06] text-neutral-300"}`}>{set.setNumber}</span>
-          <div>
-            <p className="text-sm font-bold">Working set {set.setNumber}</p>
-            <button type="button" disabled={!previousSet} onClick={copyPrevious} className="text-left text-xs text-neutral-500 disabled:opacity-50">
-              {previousSet ? `Last: ${previousSet.weightKg ?? "—"} kg × ${previousSet.reps ?? "—"}` : "No previous set"}
+    <div
+      className={`rounded-2xl border p-3 transition ${
+        set.isCompleted
+          ? "border-emerald-400/35 bg-emerald-400/[0.06]"
+          : "border-white/[0.07] bg-white/[0.025]"
+      }`}
+    >
+      <div className="flex items-start gap-3">
+        <span
+          className={`grid h-10 w-10 shrink-0 place-items-center rounded-xl text-sm font-bold ${
+            set.isCompleted
+              ? "bg-emerald-400 text-[#101319]"
+              : "bg-white/[0.06] text-neutral-300"
+          }`}
+        >
+          {set.setNumber}
+        </span>
+
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center justify-between gap-2">
+            <div>
+              <p className="text-sm font-bold">Working set {set.setNumber}</p>
+              {previousSet ? (
+                <button
+                  type="button"
+                  onClick={restorePrevious}
+                  className="mt-0.5 text-left text-xs font-semibold text-indigo-200 hover:text-indigo-100"
+                >
+                  Last: {previousSet.weightKg ?? "—"} kg × {previousSet.reps ?? "—"} · tap to restore
+                </button>
+              ) : (
+                <p className="mt-0.5 text-xs text-neutral-500">First log for this set</p>
+              )}
+            </div>
+            <button
+              type="button"
+              onClick={() => {
+                if (window.confirm("Delete this set?")) void onDelete();
+              }}
+              className="grid h-9 w-9 shrink-0 place-items-center rounded-full text-neutral-500 hover:bg-red-400/10 hover:text-red-300"
+              aria-label="Delete set"
+            >
+              <Trash2 className="h-4 w-4" />
             </button>
           </div>
+
+          {isSuggested ? (
+            <p className="mt-2 rounded-lg bg-indigo-300/[0.08] px-2.5 py-1.5 text-[11px] font-semibold text-indigo-100">
+              Last workout is ready. Change only what changed, or tap ✓ to repeat it.
+            </p>
+          ) : null}
+
+          {changes.length > 0 ? (
+            <div className="mt-2 flex flex-wrap gap-1.5">
+              {changes.map((change) => (
+                <span
+                  key={`${change.direction}:${change.label}`}
+                  className={`inline-flex items-center gap-1 rounded-full px-2 py-1 text-[11px] font-bold ${
+                    change.direction === "up"
+                      ? "bg-emerald-400/10 text-emerald-300"
+                      : change.direction === "down"
+                        ? "bg-amber-300/10 text-amber-200"
+                        : "bg-white/[0.06] text-neutral-300"
+                  }`}
+                >
+                  {change.direction === "up" ? (
+                    <TrendingUp className="h-3 w-3" />
+                  ) : change.direction === "down" ? (
+                    <TrendingDown className="h-3 w-3" />
+                  ) : null}
+                  {change.label}
+                </span>
+              ))}
+            </div>
+          ) : null}
         </div>
-        <button type="button" onClick={() => void onDelete()} className="grid h-9 w-9 place-items-center rounded-full text-neutral-400 hover:bg-red-50 hover:text-red-600" aria-label="Delete set"><Trash2 className="h-4 w-4" /></button>
       </div>
 
-      <div className="mt-3 grid grid-cols-2 gap-2">
-        <label className="text-xs font-bold uppercase tracking-wide text-neutral-500">Weight
-          <div className="mt-1 flex items-center rounded-xl border border-white/[0.08] bg-white/[0.035] px-3">
-            <input inputMode="decimal" type="number" min={0} step="0.5" value={weight} onChange={(event) => setWeight(event.target.value)} onBlur={() => void save()} className="min-w-0 flex-1 bg-transparent py-3 text-center text-2xl font-bold outline-none" />
-            <span className="text-sm font-bold text-neutral-400">kg</span>
+      <div className="mt-3 grid grid-cols-[1fr_1fr_auto] gap-2">
+        <label className="text-[10px] font-bold uppercase tracking-wide text-neutral-500">
+          Today weight
+          <div className="mt-1 flex min-h-12 items-center rounded-xl border border-white/[0.08] bg-white/[0.035] px-2 focus-within:border-indigo-300/60">
+            <input
+              inputMode="decimal"
+              type="number"
+              min={0}
+              step="0.5"
+              value={weight}
+              onChange={(event) => {
+                const nextWeight = event.target.value;
+                setWeight(nextWeight);
+                onDraftChange(set.id, { weight: nextWeight, reps });
+              }}
+              className="min-w-0 flex-1 bg-transparent py-2 text-center text-xl font-bold outline-none"
+              aria-label={`Weight for set ${set.setNumber}`}
+            />
+            <span className="text-xs font-bold text-neutral-500">kg</span>
           </div>
         </label>
-        <label className="text-xs font-bold uppercase tracking-wide text-neutral-500">Reps
-          <input inputMode="numeric" type="number" min={0} value={reps} onChange={(event) => setReps(event.target.value)} onBlur={() => void save()} className="mt-1 w-full rounded-xl border border-white/[0.08] bg-white/[0.035] py-3.5 text-center text-2xl font-bold outline-none focus:border-indigo-300/60" />
+        <label className="text-[10px] font-bold uppercase tracking-wide text-neutral-500">
+          Today reps
+          <input
+            inputMode="numeric"
+            type="number"
+            min={0}
+            step={1}
+            value={reps}
+            onChange={(event) => {
+              const nextReps = event.target.value;
+              setReps(nextReps);
+              onDraftChange(set.id, { weight, reps: nextReps });
+            }}
+            className="mt-1 min-h-12 w-full rounded-xl border border-white/[0.08] bg-white/[0.035] px-2 text-center text-xl font-bold outline-none focus:border-indigo-300/60"
+            aria-label={`Reps for set ${set.setNumber}`}
+          />
         </label>
+        <button
+          type="button"
+          disabled={saving}
+          onClick={() => void save(!set.isCompleted)}
+          className={`mt-[1.35rem] grid h-12 w-12 place-items-center rounded-xl transition ${
+            set.isCompleted
+              ? "bg-emerald-400 text-[#101319]"
+              : "bg-indigo-300 text-[#11131a]"
+          }`}
+          aria-label={set.isCompleted ? "Mark set incomplete" : "Complete set"}
+        >
+          {saving ? (
+            <span className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+          ) : (
+            <Check className="h-5 w-5" />
+          )}
+        </button>
       </div>
-
-      <button type="button" disabled={saving} onClick={() => void toggle()} className={`mt-3 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-xl text-sm font-bold transition ${completed ? "bg-emerald-400 text-[#101319]" : "bg-indigo-300 text-[#11131a]"}`}>
-        <Check className="h-5 w-5" /> {saving ? "Saving…" : completed ? "Set completed" : "Complete set"}
-      </button>
     </div>
   );
 }
@@ -133,11 +314,12 @@ export function ActiveWorkoutClient() {
   const [showCustomExercise, setShowCustomExercise] = useState(false);
   const [showNotes, setShowNotes] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [setDrafts, setSetDrafts] = useState<Record<string, { weight: string; reps: string }>>({});
   const [error, setError] = useState<string | null>(null);
   const initializedSession = useRef<string | null>(null);
 
   useEffect(() => {
-    fetchExerciseLibrary().then(setLibrary).catch(() => setLibrary([]));
+    void fetchExerciseLibrary().then(setLibrary).catch(() => setLibrary([]));
   }, []);
 
   useEffect(() => {
@@ -146,10 +328,19 @@ export function ActiveWorkoutClient() {
     setSessionNotes(session.notes);
     const firstIncomplete = session.exercises.findIndex((exercise) => exercise.sets.some((set) => !set.isCompleted));
     setCurrentIndex(firstIncomplete >= 0 ? firstIncomplete : 0);
-  }, [session]);
+    restTimer.setScope(session.id);
+  }, [restTimer, session]);
 
+  const exerciseIds = useMemo(
+    () => session?.exercises.map((exercise) => exercise.exerciseId) ?? [],
+    [session],
+  );
+  const { performances, isLoading: previousPerformanceLoading } = usePreviousPerformances(exerciseIds);
   const currentExercise = session?.exercises[currentIndex] ?? null;
-  const { previousSets } = usePreviousPerformance(currentExercise?.exerciseId ?? "");
+  const previousPerformance = currentExercise
+    ? performances[currentExercise.exerciseId]
+    : undefined;
+  const previousSets = previousPerformance?.sets ?? [];
 
   const totals = useMemo(() => {
     const exercises = session?.exercises ?? [];
@@ -158,6 +349,58 @@ export function ActiveWorkoutClient() {
     const completedExercises = exercises.filter((exercise) => exercise.sets.length > 0 && exercise.sets.every((set) => set.isCompleted)).length;
     return { totalSets, completedSets, completedExercises };
   }, [session]);
+
+  function updateSetDraft(setId: string, draft: { weight: string; reps: string }) {
+    setSetDrafts((current) => ({ ...current, [setId]: draft }));
+  }
+
+  function removeSetDraft(setId: string) {
+    setSetDrafts((current) => {
+      if (!(setId in current)) return current;
+      const next = { ...current };
+      delete next[setId];
+      return next;
+    });
+  }
+
+  async function persistSetDrafts() {
+    if (!session) return;
+    const allSets = session.exercises.flatMap((exercise) => exercise.sets);
+    const updates = Object.entries(setDrafts).map(([setId, draft]) => {
+      const existing = allSets.find((set) => set.id === setId);
+      if (!existing) return null;
+      const weightKg = parseOptionalNumber(draft.weight);
+      const reps = parseOptionalNumber(draft.reps);
+      if (Number.isNaN(weightKg) || (weightKg !== null && weightKg < 0)) {
+        throw new Error("Enter a valid weight before leaving the workout.");
+      }
+      if (Number.isNaN(reps) || (reps !== null && (!Number.isInteger(reps) || reps < 0))) {
+        throw new Error("Reps must be a valid whole number before leaving the workout.");
+      }
+      return updateWorkoutSet(setId, {
+        weightKg,
+        reps,
+        isCompleted: existing.isCompleted,
+      });
+    });
+    await Promise.all(updates.filter((update): update is Promise<WorkoutSet> => update !== null));
+    setSetDrafts({});
+  }
+
+  async function leaveWorkout() {
+    if (!session) return;
+    setBusy(true);
+    setError(null);
+    try {
+      await persistSetDrafts();
+      await updateWorkoutSessionNotes(session.id, sessionNotes);
+      router.push("/dashboard");
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : "Unable to save the workout before leaving.");
+    } finally {
+      setBusy(false);
+    }
+  }
 
   async function addSet(exerciseId: string) {
     try {
@@ -171,6 +414,7 @@ export function ActiveWorkoutClient() {
   async function removeSet(setId: string) {
     try {
       await deleteWorkoutSet(setId);
+      removeSetDraft(setId);
       await reload();
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "Unable to delete the set.");
@@ -203,27 +447,6 @@ export function ActiveWorkoutClient() {
     }
   }
 
-  async function copyPreviousPerformance() {
-    if (!currentExercise || previousSets.length === 0) return;
-    setBusy(true);
-    try {
-      await Promise.all(currentExercise.sets.map((set, index) => {
-        const previous = previousSets[index];
-        if (!previous) return Promise.resolve(set);
-        return updateWorkoutSet(set.id, {
-          weightKg: previous.weightKg,
-          reps: previous.reps,
-          isCompleted: false,
-        });
-      }));
-      await reload();
-    } catch (caught) {
-      setError(caught instanceof Error ? caught.message : "Unable to copy the previous performance.");
-    } finally {
-      setBusy(false);
-    }
-  }
-
   async function finish() {
     if (!session) return;
     const incompleteSets = totals.totalSets - totals.completedSets;
@@ -231,9 +454,12 @@ export function ActiveWorkoutClient() {
     setBusy(true);
     setError(null);
     try {
+      await persistSetDrafts();
       await updateWorkoutSessionNotes(session.id, sessionNotes);
       const durationSeconds = Math.max(0, Math.floor((Date.now() - new Date(session.startedAt).getTime()) / 1000));
       await finishWorkoutSession(session.id, durationSeconds, sessionNotes);
+      restTimer.clear();
+      restTimer.setScope(null);
       router.replace(`/workout/${session.id}`);
       router.refresh();
     } catch (caught) {
@@ -243,8 +469,23 @@ export function ActiveWorkoutClient() {
     }
   }
 
-  if (isLoading) return <p className="py-12 text-center text-sm text-neutral-500">Loading active workout…</p>;
-  if (loadError || !session || !currentExercise) return <p className="rounded-xl bg-red-50 p-4 text-sm text-red-700">{loadError?.message ?? "No active workout found."}</p>;
+  async function discard() {
+    if (!session || !window.confirm("Discard this workout? All sets in this active session will be excluded from progress.")) return;
+    setBusy(true);
+    try {
+      await cancelWorkoutSession(session.id);
+      restTimer.clear();
+      restTimer.setScope(null);
+      router.replace("/dashboard");
+      router.refresh();
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : "Unable to discard the workout.");
+      setBusy(false);
+    }
+  }
+
+  if (isLoading) return <div className="h-72 animate-pulse rounded-[24px] border border-white/[0.06] bg-white/[0.035]" />;
+  if (loadError || !session || !currentExercise) return <p className="rounded-xl border border-red-400/20 bg-red-400/10 p-4 text-sm text-red-300">{loadError?.message ?? "No active workout found."}</p>;
 
   const currentComplete = currentExercise.sets.length > 0 && currentExercise.sets.every((set) => set.isCompleted);
   const progress = totals.totalSets > 0 ? (totals.completedSets / totals.totalSets) * 100 : 0;
@@ -257,36 +498,29 @@ export function ActiveWorkoutClient() {
   }
 
   return (
-    <div className="mx-auto max-w-xl space-y-4 pb-[calc(8rem+env(safe-area-inset-bottom,0px))]">
+    <div className="mx-auto max-w-xl space-y-4 pb-[calc(8rem+env(safe-area-inset-bottom,0px))] pt-2">
       <section className="gc-workout-sticky sticky z-30 -mx-4 border-b border-white/[0.06] px-4 pb-3 pt-2 backdrop-blur-xl">
         <div className="flex items-center justify-between gap-3">
           <div>
             <p className="text-xs font-bold uppercase tracking-[0.15em] text-indigo-200">Gym mode</p>
             <SessionElapsedTime startedAt={session.startedAt} compact />
           </div>
-          <SyncStatusIndicator />
+          <button type="button" disabled={busy} onClick={() => void leaveWorkout()} className="inline-flex min-h-10 items-center gap-2 rounded-xl border border-white/[0.08] bg-white/[0.03] px-3 text-xs font-bold disabled:opacity-50"><LogOut className="h-4 w-4" /> Save & leave</button>
         </div>
-        <div className="mt-3 h-2 overflow-hidden rounded-full bg-white/[0.06]">
-          <div className="h-full rounded-full bg-indigo-300 transition-all duration-300" style={{ width: `${progress}%` }} />
-        </div>
-        <div className="mt-2 flex items-center justify-between text-xs font-semibold text-neutral-500">
-          <span>{totals.completedSets}/{totals.totalSets} sets</span>
-          <span>{totals.completedExercises}/{session.exercises.length} exercises</span>
-        </div>
+        <div className="mt-3 h-2 overflow-hidden rounded-full bg-white/[0.06]"><div className="h-full rounded-full bg-indigo-300 transition-all duration-300" style={{ width: `${progress}%` }} /></div>
+        <div className="mt-2 flex items-center justify-between text-xs font-semibold text-neutral-500"><span>{totals.completedSets}/{totals.totalSets} sets</span><span>{totals.completedExercises}/{session.exercises.length} exercises</span></div>
       </section>
 
-      {error ? <p className="rounded-2xl bg-red-50 p-3 text-sm font-semibold text-red-700 dark:bg-red-950/30 dark:text-red-300">{error}</p> : null}
+      {error ? <p className="rounded-2xl border border-red-400/20 bg-red-400/10 p-3 text-sm font-semibold text-red-300">{error}</p> : null}
 
-      <div className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1 [scrollbar-width:none]">
-        {session.exercises.map((exercise, index) => {
-          const done = exercise.sets.length > 0 && exercise.sets.every((set) => set.isCompleted);
-          return (
-            <button key={exercise.id} type="button" onClick={() => setCurrentIndex(index)} className={`shrink-0 rounded-full border px-3 py-2 text-xs font-bold transition ${index === currentIndex ? "border-indigo-200/50 bg-indigo-300 text-[#11131a]" : done ? "border-emerald-400/30 bg-emerald-400/10 text-emerald-300" : "bg-white/[0.025]"}`}>
-              {done ? "✓ " : `${index + 1}. `}{exercise.exercise.name}
-            </button>
-          );
-        })}
-      </div>
+      <label className="block text-xs font-bold uppercase tracking-wide text-neutral-500">Current exercise
+        <select value={currentIndex} onChange={(event) => setCurrentIndex(Number(event.target.value))} className="gc-input mt-1 text-sm font-bold">
+          {session.exercises.map((exercise, index) => {
+            const done = exercise.sets.length > 0 && exercise.sets.every((set) => set.isCompleted);
+            return <option key={exercise.id} value={index}>{done ? "✓ " : ""}{index + 1}. {exercise.exercise.name}</option>;
+          })}
+        </select>
+      </label>
 
       <section className="gc-card overflow-hidden">
         <div className="bg-[linear-gradient(135deg,rgba(139,158,255,.13),rgba(23,27,37,.98)_58%)] p-5 text-white">
@@ -296,40 +530,92 @@ export function ActiveWorkoutClient() {
               <h1 className="mt-1 truncate text-2xl font-bold">{currentExercise.exercise.name}</h1>
               <p className="mt-1 text-sm capitalize opacity-60">{currentExercise.exercise.primaryMuscle}{currentExercise.isSessionOnlyAddition ? " · session only" : ""}</p>
             </div>
-            <button type="button" onClick={async () => {
-              if (!window.confirm("Remove this exercise from the active workout?")) return;
-              await deleteWorkoutExercise(currentExercise.id);
-              await reload();
-              setCurrentIndex((index) => Math.max(0, Math.min(index, session.exercises.length - 2)));
-            }} className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-white/[0.06] text-red-300" aria-label="Remove exercise"><Trash2 className="h-4 w-4" /></button>
+            <details className="relative">
+              <summary className="grid h-10 w-10 list-none place-items-center rounded-full bg-white/[0.06] [&::-webkit-details-marker]:hidden" aria-label="Exercise options"><MoreHorizontal className="h-5 w-5" /></summary>
+              <div className="absolute right-0 top-12 z-20 w-48 rounded-xl border border-white/[0.1] bg-[#171b25] p-1.5 shadow-2xl">
+                <button type="button" onClick={() => {
+                  if (!window.confirm("Remove this exercise from the active workout?")) return;
+                  void deleteWorkoutExercise(currentExercise.id).then(async () => {
+                    await reload();
+                    setCurrentIndex((index) => Math.max(0, Math.min(index, session.exercises.length - 2)));
+                  }).catch((caught: Error) => setError(caught.message));
+                }} className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-red-300"><Trash2 className="h-4 w-4" /> Remove exercise</button>
+              </div>
+            </details>
           </div>
 
-          <div className="mt-4 flex gap-2">
-            <button type="button" disabled={previousSets.length === 0 || busy} onClick={() => void copyPreviousPerformance()} className="inline-flex flex-1 items-center justify-center gap-2 rounded-xl bg-white/[0.06] px-3 py-2.5 text-xs font-semibold disabled:opacity-40"><ClipboardCopy className="h-4 w-4" /> Copy last session</button>
-            <button type="button" onClick={() => setShowNotes((value) => !value)} className="inline-flex items-center justify-center gap-2 rounded-xl bg-white/[0.06] px-3 py-2.5 text-xs font-semibold"><MessageSquareText className="h-4 w-4" /> Notes</button>
+          <div className="mt-4 rounded-2xl border border-white/[0.08] bg-black/10 p-3">
+            <div className="flex items-start gap-3">
+              <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-white/[0.06] text-indigo-100">
+                <History className="h-5 w-5" />
+              </span>
+              <div className="min-w-0 flex-1">
+                {previousPerformanceLoading ? (
+                  <>
+                    <p className="text-sm font-bold">Loading your last workout…</p>
+                    <p className="mt-0.5 text-xs opacity-55">Your previous weights and reps will appear automatically.</p>
+                  </>
+                ) : previousPerformance ? (
+                  <>
+                    <p className="text-sm font-bold">
+                      Last workout · {new Date(`${previousPerformance.scheduledDate}T12:00:00`).toLocaleDateString()}
+                    </p>
+                    <p className="mt-0.5 text-xs opacity-60">
+                      Those numbers are already loaded below. Change only what changed today.
+                    </p>
+                  </>
+                ) : (
+                  <>
+                    <p className="text-sm font-bold">First time logging this exercise</p>
+                    <p className="mt-0.5 text-xs opacity-55">Complete your sets today and they will become next workout&apos;s baseline.</p>
+                  </>
+                )}
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowNotes((value) => !value)}
+                className="inline-flex min-h-10 shrink-0 items-center justify-center gap-2 rounded-xl bg-white/[0.06] px-3 text-xs font-semibold"
+              >
+                <MessageSquareText className="h-4 w-4" /> Notes
+              </button>
+            </div>
+            {previousPerformance?.exerciseNotes ? (
+              <p className="mt-3 rounded-xl bg-white/[0.045] px-3 py-2 text-xs leading-5 text-neutral-300">
+                <span className="font-bold text-white">Last note:</span> {previousPerformance.exerciseNotes}
+              </p>
+            ) : null}
           </div>
         </div>
 
         <div className="space-y-3 p-4">
-          {currentExercise.sets.map((set, index) => (
-            <SetEditor key={`${set.id}:${set.updatedAt}`} set={set} previousSet={previousSets[index]} onDelete={() => removeSet(set.id)} onSaved={reload} onError={setError} />
-          ))}
+          {currentExercise.sets.map((set, index) => {
+            const previousSet = previousSets[index];
+            return (
+              <SetEditor
+                key={`${set.id}:${set.updatedAt}:${previousSet?.id ?? "no-previous"}`}
+                set={set}
+                previousSet={previousSet}
+                onDelete={() => removeSet(set.id)}
+                onSaved={reload}
+                onCompleted={() => restTimer.start(restTimer.durationSeconds)}
+                onDraftChange={updateSetDraft}
+                onDraftSaved={removeSetDraft}
+                onError={setError}
+              />
+            );
+          })}
 
           <button type="button" onClick={() => void addSet(currentExercise.id)} className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl border border-dashed border-white/10 text-sm font-semibold text-neutral-300"><Plus className="h-4 w-4" /> Add working set</button>
 
-          {showNotes ? (
-            <textarea defaultValue={currentExercise.notes} onBlur={(event) => void updateWorkoutExerciseNotes(currentExercise.id, event.target.value).catch((caught: Error) => setError(caught.message))} rows={3} placeholder="Setup, cues, machine position…" className="gc-input text-sm" />
-          ) : null}
+          {showNotes ? <textarea defaultValue={currentExercise.notes} onBlur={(event) => void updateWorkoutExerciseNotes(currentExercise.id, event.target.value).catch((caught: Error) => setError(caught.message))} rows={3} placeholder="Setup, cues, machine position…" className="gc-input text-sm" /> : null}
         </div>
       </section>
 
-      <section className="grid grid-cols-3 gap-2">
-        {[180, 240, 300].map((seconds) => (
-          <button key={seconds} type="button" onClick={() => { restTimer.setDuration(seconds); restTimer.open(); }} className="rounded-xl border border-white/[0.07] bg-white/[0.03] px-2 py-3 text-sm font-semibold hover:border-indigo-300/30">
-            Rest {seconds / 60}:00
-          </button>
-        ))}
-      </section>
+      <button type="button" onClick={restTimer.open} className="gc-card-interactive flex w-full items-center gap-3 p-4 text-left">
+        <span className={`grid h-11 w-11 place-items-center rounded-xl ${restTimer.isRunning ? "bg-emerald-400 text-[#11131a]" : "bg-white/[0.06] text-indigo-200"}`}><TimerReset className="h-5 w-5" /></span>
+        <span className="min-w-0 flex-1"><span className="block font-bold">{restTimer.isRunning ? `${formatDuration(restTimer.remainingSeconds)} rest remaining` : `Rest timer · ${formatDuration(restTimer.durationSeconds)}`}</span><span className="block text-xs text-neutral-500">Starts automatically after a completed set</span></span>
+        <ChevronRight className="h-5 w-5 text-neutral-500" />
+      </button>
 
       <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2">
         <button type="button" disabled={currentIndex === 0} onClick={() => move(-1)} className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl border border-white/[0.08] font-semibold disabled:opacity-30"><ChevronLeft className="h-5 w-5" /> Previous</button>
@@ -346,26 +632,22 @@ export function ActiveWorkoutClient() {
 
         {showExercisePicker ? (
           <div className="mt-4 space-y-3">
-            <select value={selectedExercise} onChange={(event) => setSelectedExercise(event.target.value)} className="gc-input text-sm">
-              <option value="">Choose exercise…</option>
-              {availableExercises.map((exercise) => <option key={exercise.id} value={exercise.id}>{exercise.name}</option>)}
-            </select>
+            <select value={selectedExercise} onChange={(event) => setSelectedExercise(event.target.value)} className="gc-input text-sm"><option value="">Choose exercise…</option>{availableExercises.map((exercise) => <option key={exercise.id} value={exercise.id}>{exercise.name}</option>)}</select>
             <label className="flex items-center gap-2 text-sm font-semibold"><input type="checkbox" checked={permanent} onChange={(event) => setPermanent(event.target.checked)} /> Also add it permanently to this split day</label>
-            {!isOnline && permanent ? <p className="text-xs font-semibold text-amber-600">Permanent split changes need internet. It will still be saved in this session.</p> : null}
-            <button type="button" disabled={!selectedExercise || busy} onClick={() => void addExercise()} className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-indigo-300 px-4 py-3 font-semibold text-[#11131a] disabled:opacity-40"><Plus className="h-4 w-4" /> Add with 2 sets</button>
-            <button type="button" onClick={() => setShowCustomExercise((value) => !value)} className="w-full rounded-xl border border-white/[0.08] px-4 py-3 text-sm font-semibold">Create an exercise with my own name</button>
+            {!isOnline && permanent ? <p className="text-xs font-semibold text-amber-300">Permanent split changes need internet. It will still be saved in this session.</p> : null}
+            <button type="button" disabled={!selectedExercise || busy} onClick={() => void addExercise()} className="gc-primary-button w-full disabled:opacity-40"><Plus className="h-4 w-4" /> Add with 2 sets</button>
+            <button type="button" onClick={() => setShowCustomExercise((value) => !value)} className="gc-secondary-button w-full">Create a custom exercise</button>
             {showCustomExercise ? <CustomExerciseForm compact defaultWorkoutType="custom" onCreated={addExercise} onCancel={() => setShowCustomExercise(false)} /> : null}
           </div>
         ) : null}
       </section>
 
       <section className="gc-card p-4">
-        <label className="text-sm font-bold">Session notes
-          <textarea value={sessionNotes} onChange={(event) => setSessionNotes(event.target.value)} onBlur={() => void updateWorkoutSessionNotes(session.id, sessionNotes)} rows={3} className="gc-input mt-2 font-normal" placeholder="Energy, pain-free adjustments, anything worth remembering…" />
-        </label>
+        <label className="text-sm font-bold">Session notes<textarea value={sessionNotes} onChange={(event) => setSessionNotes(event.target.value)} onBlur={() => void updateWorkoutSessionNotes(session.id, sessionNotes)} rows={3} className="gc-input mt-2 font-normal" placeholder="Energy, pain-free adjustments, anything worth remembering…" /></label>
       </section>
 
       <button type="button" disabled={busy} onClick={() => void finish()} className="inline-flex min-h-16 w-full items-center justify-center gap-2 rounded-[18px] bg-indigo-300 px-4 text-lg font-bold text-[#11131a] shadow-lg shadow-indigo-500/15 disabled:opacity-50"><Save className="h-5 w-5" /> {busy ? "Finishing…" : "Finish workout"}</button>
+      <button type="button" disabled={busy} onClick={() => void discard()} className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-xl text-sm font-semibold text-red-300 disabled:opacity-40"><XCircle className="h-4 w-4" /> Discard workout</button>
     </div>
   );
 }

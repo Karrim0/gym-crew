@@ -11,7 +11,7 @@ export default async function GroupPage() {
 
   return (
     <>
-      <DashboardHeader title={membership.group.isPersonal ? "Training space" : "Group"} />
+      <DashboardHeader title="Crew" />
       <PageContainer><GroupOverviewClient group={membership.group} role={membership.role} currentUserId={user.id} /></PageContainer>
     </>
   );

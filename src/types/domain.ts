@@ -19,7 +19,7 @@ export interface UserProfile {
   id: UUID;
   displayName: string;
   avatarUrl: string | null;
-  /** Friday is implicit and must never appear in this array. */
+  /** Legacy compatibility only. Rest days are defined by split_days.workoutType. */
   additionalRestDays: Weekday[];
   shareWorkoutSummary: boolean;
   sharePersonalRecords: boolean;

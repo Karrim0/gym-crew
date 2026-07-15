@@ -1,8 +1,8 @@
 import type { LucideIcon } from "lucide-react";
-import { ChartNoAxesCombined, CircleUserRound, Dumbbell, House, Rows3 } from "lucide-react";
+import { ChartNoAxesCombined, Dumbbell, House, Rows3, Users } from "lucide-react";
 
 export interface NavigationItem {
-  id: "home" | "plan" | "train" | "progress" | "more";
+  id: "home" | "split" | "workout" | "crew" | "progress";
   label: string;
   href: string;
   icon: LucideIcon;
@@ -11,8 +11,8 @@ export interface NavigationItem {
 
 export const MAIN_NAVIGATION_ITEMS: readonly NavigationItem[] = [
   { id: "home", label: "Home", href: "/dashboard", icon: House, activePrefixes: ["/dashboard"] },
-  { id: "plan", label: "Plan", href: "/split/personal", icon: Rows3, activePrefixes: ["/split"] },
-  { id: "train", label: "Train", href: "/workout/today", icon: Dumbbell, activePrefixes: ["/workout/today", "/workout/active"] },
-  { id: "progress", label: "Progress", href: "/progress", icon: ChartNoAxesCombined, activePrefixes: ["/progress"] },
-  { id: "more", label: "More", href: "/more", icon: CircleUserRound, activePrefixes: ["/more", "/profile", "/group", "/workout/history"] },
+  { id: "split", label: "My split", href: "/split/personal", icon: Rows3, activePrefixes: ["/split"] },
+  { id: "workout", label: "Workout", href: "/workout/today", icon: Dumbbell, activePrefixes: ["/workout"] },
+  { id: "crew", label: "Crew", href: "/group", icon: Users, activePrefixes: ["/group"] },
+  { id: "progress", label: "Progress", href: "/progress", icon: ChartNoAxesCombined, activePrefixes: ["/progress", "/workout/history"] },
 ];

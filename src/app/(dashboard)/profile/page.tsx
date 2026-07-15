@@ -18,7 +18,7 @@ export default async function ProfilePage() {
 
   return (
     <>
-      <DashboardHeader title="Profile" actions={<LogoutButton />} />
+      <DashboardHeader title="Profile & settings" actions={<LogoutButton />} showProfile={false} />
       <PageContainer className="space-y-4 pb-8 pt-5">
         <section className="relative overflow-hidden rounded-[30px] border border-indigo-300/15 bg-[linear-gradient(135deg,rgba(139,158,255,.14),rgba(14,18,15,.98)_55%)] p-5 sm:p-6">
           <div className="flex items-center gap-4">
@@ -39,7 +39,7 @@ export default async function ProfilePage() {
         <div className="grid gap-3 sm:grid-cols-2">
           <Link href="/profile/settings" className="gc-card-interactive flex items-center gap-3 p-4">
             <span className="grid h-11 w-11 place-items-center rounded-2xl bg-indigo-300/10 text-indigo-300"><Settings className="h-5 w-5" /></span>
-            <span className="min-w-0 flex-1"><span className="block font-bold">Edit profile</span><span className="block text-sm text-neutral-500">Name, avatar and rest days</span></span>
+            <span className="min-w-0 flex-1"><span className="block font-bold">Edit profile</span><span className="block text-sm text-neutral-500">Name and avatar</span></span>
             <ArrowUpRight className="h-4 w-4 text-neutral-600" />
           </Link>
           <Link href="/split/personal" className="gc-card-interactive flex items-center gap-3 p-4">

@@ -5,6 +5,7 @@ import { useState } from "react";
 import { LogOut } from "lucide-react";
 import { signOut } from "../services/auth.service";
 import { clearPrivatePageCache } from "@/lib/pwa/service-worker-messages";
+import { clearAllLocalPrivateData } from "@/lib/offline";
 
 export function LogoutButton() {
   const router = useRouter();
@@ -17,7 +18,7 @@ export function LogoutButton() {
       setIsPending(false);
       return;
     }
-    await clearPrivatePageCache();
+    await Promise.all([clearPrivatePageCache(), clearAllLocalPrivateData()]);
     router.replace("/login");
     router.refresh();
   }

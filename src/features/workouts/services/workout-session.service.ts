@@ -18,7 +18,7 @@ import { generateClientId } from "@/lib/utils/id";
 import type { UUID, WorkoutExercise, WorkoutSession, WorkoutSet } from "@/types";
 import { fetchExerciseById, mapExercise } from "@/features/exercises/services/exercise.service";
 import type { SplitDayWithDetails } from "@/features/splits/types";
-import type { WorkoutSessionWithDetails } from "../types";
+import type { PreviousExercisePerformance, PreviousPerformanceMap, WorkoutSessionWithDetails } from "../types";
 
 type SessionRow = Tables<"workout_sessions">;
 type WorkoutExerciseRow = Tables<"workout_exercises">;
@@ -189,7 +189,7 @@ export async function startWorkoutSession(
   splitDay: SplitDayWithDetails,
   scheduledDate = new Date().toISOString().slice(0, 10),
 ): Promise<WorkoutSessionWithDetails> {
-  const existing = await getLocalActiveWorkout(userId);
+  const existing = await fetchActiveWorkoutSession().catch(() => getLocalActiveWorkout(userId));
   if (existing) return existing;
 
   const now = new Date().toISOString();
@@ -249,6 +249,15 @@ export async function updateWorkoutSet(
   setId: UUID,
   values: { weightKg: number | null; reps: number | null; isCompleted: boolean; isWarmup?: boolean },
 ): Promise<WorkoutSet> {
+  if (values.weightKg !== null && (!Number.isFinite(values.weightKg) || values.weightKg < 0 || values.weightKg > 5000)) {
+    throw new Error("Enter a valid weight.");
+  }
+  if (values.reps !== null && (!Number.isInteger(values.reps) || values.reps < 0 || values.reps > 1000)) {
+    throw new Error("Enter a valid whole-number rep count.");
+  }
+  if (values.isCompleted && (values.reps === null || values.reps <= 0)) {
+    throw new Error("Add at least one rep before completing the set.");
+  }
   const db = getOfflineDatabase();
   const existing = await db.workoutSets.get(setId);
   if (!existing) throw new Error("The set is not available on this device.");
@@ -382,18 +391,71 @@ export async function deleteWorkoutExercise(workoutExerciseId: UUID): Promise<vo
   requestSync();
 }
 
-export async function fetchPreviousPerformance(exerciseId: UUID): Promise<WorkoutSet[]> {
+export async function fetchPreviousPerformances(
+  exerciseIds: UUID[],
+  options: { excludeSessionId?: UUID } = {},
+): Promise<PreviousPerformanceMap> {
+  const uniqueExerciseIds = [...new Set(exerciseIds.filter(Boolean))];
+  if (uniqueExerciseIds.length === 0) return {};
+
   const supabase = createClient();
   const { data: sessionData } = await supabase.auth.getSession();
   const currentUser = sessionData.session?.user;
-  if (!currentUser) return [];
+  if (!currentUser) return {};
 
+  const remaining = new Set(uniqueExerciseIds);
+  const result: PreviousPerformanceMap = {};
   const history = await fetchWorkoutHistory(currentUser.id);
+
   for (const session of history) {
-    const match = session.exercises.find((item) => item.exerciseId === exerciseId);
-    if (match) return match.sets.filter((set) => set.isCompleted);
+    if (session.id === options.excludeSessionId) continue;
+
+    for (const exercise of session.exercises) {
+      if (!remaining.has(exercise.exerciseId)) continue;
+      const completedSets = exercise.sets
+        .filter((set) => set.isCompleted)
+        .sort((a, b) => a.setNumber - b.setNumber);
+      if (completedSets.length === 0) continue;
+
+      const performance: PreviousExercisePerformance = {
+        sessionId: session.id,
+        scheduledDate: session.scheduledDate,
+        completedAt: session.completedAt,
+        exerciseNotes: exercise.notes,
+        sets: completedSets,
+      };
+      result[exercise.exerciseId] = performance;
+      remaining.delete(exercise.exerciseId);
+    }
+
+    if (remaining.size === 0) break;
   }
-  return [];
+
+  return result;
+}
+
+export async function fetchPreviousPerformance(
+  exerciseId: UUID,
+  options: { excludeSessionId?: UUID } = {},
+): Promise<PreviousExercisePerformance | null> {
+  const performances = await fetchPreviousPerformances([exerciseId], options);
+  return performances[exerciseId] ?? null;
+}
+
+
+export async function cancelWorkoutSession(sessionId: UUID): Promise<void> {
+  const session = await getLocalWorkoutSession(sessionId);
+  if (!session) throw new Error("The workout session is not available locally.");
+  const now = new Date().toISOString();
+  const cancelled: WorkoutSessionWithDetails = {
+    ...session,
+    status: "cancelled",
+    completedAt: null,
+    updatedAt: now,
+  };
+  await saveWorkoutLocally(cancelled);
+  await enqueueOfflineMutation(workoutSessionMutation("update", cancelled));
+  requestSync();
 }
 
 export async function finishWorkoutSession(

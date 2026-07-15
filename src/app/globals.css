@@ -77,6 +77,20 @@ textarea {
   outline: none;
 }
 
+select {
+  color-scheme: dark;
+}
+
+select option,
+select optgroup {
+  background: #171b25;
+  color: #f4f5f8;
+}
+
+select option:disabled {
+  color: #7f8798;
+}
+
 input::placeholder,
 textarea::placeholder {
   color: #6f7686;

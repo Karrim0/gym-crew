@@ -60,6 +60,7 @@ export function RestTimerPanel() {
 
 export function RestTimerLauncher() {
   const timer = useRestTimer();
+  if (!timer.scopeId) return null;
   return (
     <>
       <button type="button" onClick={timer.open} className={`fixed bottom-[5.35rem] right-4 z-50 flex min-h-14 items-center gap-2 rounded-full px-4 shadow-xl transition md:bottom-6 ${timer.isRunning ? "bg-emerald-400 text-neutral-950 shadow-emerald-500/25" : "bg-neutral-950 text-white"}`} aria-label="Open rest timer">

@@ -17,6 +17,8 @@ export function SyncStatusIndicator() {
 
   const Icon = !isOnline ? CloudOff : syncStatus === "syncing" ? LoaderCircle : Cloud;
 
+  if (isOnline && pendingSyncCount === 0 && (syncStatus === "idle" || syncStatus === "synced")) return null;
+
   return (
     <div
       className="flex min-h-9 items-center gap-1.5 rounded-full border border-white/[0.07] bg-white/[0.035] px-2.5 text-[11px] font-bold text-neutral-400"

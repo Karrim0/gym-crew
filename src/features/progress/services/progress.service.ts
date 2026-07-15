@@ -7,7 +7,6 @@ import {
   parseISODateOnly,
 } from "@/lib/dates";
 import { fetchPersonalRecords } from "@/features/personal-records/services/personal-record.service";
-import { fetchProfile } from "@/features/profile/services/profile.service";
 import { fetchPersonalSplit } from "@/features/splits/services/split.service";
 import { fetchWorkoutStreak } from "@/features/streaks/services/streak.service";
 import { fetchWorkoutHistory } from "@/features/workouts/services/workout-session.service";
@@ -72,10 +71,9 @@ function getEstimatedOneRepMax(set: WorkoutSet): number {
 }
 
 async function getSchedule(userId: UUID): Promise<Weekday[]> {
-  const [profile, split] = await Promise.all([fetchProfile(userId), fetchPersonalSplit(userId)]);
-  const personalRestDays = new Set(profile?.additionalRestDays ?? []);
+  const split = await fetchPersonalSplit(userId);
   return split
-    .filter((day) => day.workoutType !== "rest" && !personalRestDays.has(day.weekday))
+    .filter((day) => day.workoutType !== "rest")
     .map((day) => day.weekday);
 }
 

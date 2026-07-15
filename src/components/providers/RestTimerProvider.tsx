@@ -16,14 +16,19 @@ interface PersistedTimer {
   completedAt: string | null;
 }
 
-const STORAGE_KEY = "gym-crew:rest-timer";
+const STORAGE_PREFIX = "gym-crew:rest-timer";
 const DEFAULT_DURATION = 180;
 
 function clampDuration(seconds: number) {
   return Math.min(15 * 60, Math.max(30, Math.floor(seconds)));
 }
 
+function storageKey(scopeId: string) {
+  return `${STORAGE_PREFIX}:${scopeId}`;
+}
+
 export function RestTimerProvider({ children }: RestTimerProviderProps) {
+  const [scopeId, setScopeId] = useState<string | null>(null);
   const [durationSeconds, setDurationSeconds] = useState(DEFAULT_DURATION);
   const [remainingSeconds, setRemainingSeconds] = useState(DEFAULT_DURATION);
   const [endsAt, setEndsAt] = useState<number | null>(null);
@@ -32,28 +37,49 @@ export function RestTimerProvider({ children }: RestTimerProviderProps) {
   const [completedAt, setCompletedAt] = useState<string | null>(null);
   const [hydrated, setHydrated] = useState(false);
 
-  useEffect(() => {
-    const raw = window.localStorage.getItem(STORAGE_KEY);
-    if (raw) {
-      try {
-        const stored = JSON.parse(raw) as PersistedTimer;
-        const nextRemaining = stored.isRunning && stored.endsAt
-          ? Math.max(0, Math.ceil((stored.endsAt - Date.now()) / 1000))
-          : stored.remainingSeconds;
-        setDurationSeconds(clampDuration(stored.durationSeconds));
-        setRemainingSeconds(Math.max(0, nextRemaining));
-        setEndsAt(stored.isRunning && nextRemaining > 0 ? stored.endsAt : null);
-        setIsRunning(stored.isRunning && nextRemaining > 0);
-        setCompletedAt(nextRemaining === 0 ? stored.completedAt ?? new Date().toISOString() : stored.completedAt);
-      } catch {
-        window.localStorage.removeItem(STORAGE_KEY);
-      }
-    }
-    setHydrated(true);
+  const resetState = useCallback(() => {
+    setDurationSeconds(DEFAULT_DURATION);
+    setRemainingSeconds(DEFAULT_DURATION);
+    setEndsAt(null);
+    setIsRunning(false);
+    setCompletedAt(null);
+    setIsOpen(false);
   }, []);
 
   useEffect(() => {
-    if (!hydrated) return;
+    setHydrated(false);
+    if (!scopeId) {
+      resetState();
+      setHydrated(true);
+      return;
+    }
+
+    const raw = window.localStorage.getItem(storageKey(scopeId));
+    if (!raw) {
+      resetState();
+      setHydrated(true);
+      return;
+    }
+
+    try {
+      const stored = JSON.parse(raw) as PersistedTimer;
+      const nextRemaining = stored.isRunning && stored.endsAt
+        ? Math.max(0, Math.ceil((stored.endsAt - Date.now()) / 1000))
+        : stored.remainingSeconds;
+      setDurationSeconds(clampDuration(stored.durationSeconds));
+      setRemainingSeconds(Math.max(0, nextRemaining));
+      setEndsAt(stored.isRunning && nextRemaining > 0 ? stored.endsAt : null);
+      setIsRunning(stored.isRunning && nextRemaining > 0);
+      setCompletedAt(nextRemaining === 0 ? stored.completedAt ?? new Date().toISOString() : stored.completedAt);
+    } catch {
+      window.localStorage.removeItem(storageKey(scopeId));
+      resetState();
+    }
+    setHydrated(true);
+  }, [resetState, scopeId]);
+
+  useEffect(() => {
+    if (!hydrated || !scopeId) return;
     const payload: PersistedTimer = {
       durationSeconds,
       remainingSeconds,
@@ -61,8 +87,8 @@ export function RestTimerProvider({ children }: RestTimerProviderProps) {
       endsAt,
       completedAt,
     };
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
-  }, [completedAt, durationSeconds, endsAt, hydrated, isRunning, remainingSeconds]);
+    window.localStorage.setItem(storageKey(scopeId), JSON.stringify(payload));
+  }, [completedAt, durationSeconds, endsAt, hydrated, isRunning, remainingSeconds, scopeId]);
 
   useEffect(() => {
     if (!isRunning || !endsAt) return;
@@ -81,6 +107,10 @@ export function RestTimerProvider({ children }: RestTimerProviderProps) {
     const interval = window.setInterval(tick, 250);
     return () => window.clearInterval(interval);
   }, [endsAt, isRunning]);
+
+  const setScope = useCallback((nextScopeId: string | null) => {
+    setScopeId(nextScopeId);
+  }, []);
 
   const setDuration = useCallback((seconds: number) => {
     const safe = clampDuration(seconds);
@@ -114,6 +144,11 @@ export function RestTimerProvider({ children }: RestTimerProviderProps) {
     setCompletedAt(null);
   }, [durationSeconds]);
 
+  const clear = useCallback(() => {
+    if (scopeId) window.localStorage.removeItem(storageKey(scopeId));
+    resetState();
+  }, [resetState, scopeId]);
+
   const addTime = useCallback((seconds: number) => {
     setCompletedAt(null);
     if (isRunning && endsAt) {
@@ -126,19 +161,22 @@ export function RestTimerProvider({ children }: RestTimerProviderProps) {
   }, [endsAt, isRunning]);
 
   const value = useMemo<RestTimerContextValue>(() => ({
+    scopeId,
     durationSeconds,
     remainingSeconds,
     isRunning,
     isOpen,
     completedAt,
+    setScope,
     open: () => setIsOpen(true),
     close: () => setIsOpen(false),
     setDuration,
     start,
     pause,
     reset,
+    clear,
     addTime,
-  }), [addTime, completedAt, durationSeconds, isOpen, isRunning, pause, remainingSeconds, reset, setDuration, start]);
+  }), [addTime, clear, completedAt, durationSeconds, isOpen, isRunning, pause, remainingSeconds, reset, scopeId, setDuration, setScope, start]);
 
   return <RestTimerContext value={value}>{children}</RestTimerContext>;
 }

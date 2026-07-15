@@ -262,3 +262,36 @@ export async function getCachedProfile(userId: UUID): Promise<UserProfile | null
   const row = await db.cachedProfiles.get(userId);
   return row ? stripCachedAt(row) : null;
 }
+
+/** Clears all user-scoped offline data on this device. Call after sign-out. */
+export async function clearAllLocalPrivateData(): Promise<void> {
+  const db = getOfflineDatabase();
+  await db.transaction(
+    "rw",
+    [
+      db.workoutSessions,
+      db.workoutExercises,
+      db.workoutSets,
+      db.syncQueue,
+      db.cachedSplits,
+      db.cachedExercises,
+      db.cachedProfiles,
+    ],
+    async () => {
+      await Promise.all([
+        db.workoutSessions.clear(),
+        db.workoutExercises.clear(),
+        db.workoutSets.clear(),
+        db.syncQueue.clear(),
+        db.cachedSplits.clear(),
+        db.cachedExercises.clear(),
+        db.cachedProfiles.clear(),
+      ]);
+    },
+  );
+
+  for (let index = window.localStorage.length - 1; index >= 0; index -= 1) {
+    const key = window.localStorage.key(index);
+    if (key?.startsWith("gym-crew:")) window.localStorage.removeItem(key);
+  }
+}

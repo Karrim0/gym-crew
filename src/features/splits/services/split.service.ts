@@ -1,10 +1,9 @@
 import { createClient } from "@/lib/supabase/client";
 import type { Tables } from "@/lib/supabase/types";
-import type { Exercise, SplitExercise, UUID, Weekday } from "@/types";
-import { cachePersonalSplit, getCachedPersonalSplit, cacheProfile, getCachedProfile } from "@/lib/offline";
+import type { Exercise, SplitExercise, UUID } from "@/types";
+import { cachePersonalSplit, getCachedPersonalSplit } from "@/lib/offline";
 import { mapExercise } from "@/features/exercises/services/exercise.service";
 import type { SplitDayWithDetails, SplitExerciseWithDetails } from "../types";
-import { personalRestDaySchema } from "../schemas/personal-rest-day.schema";
 
 type SplitDayRow = Tables<"split_days">;
 type SplitExerciseRow = Tables<"split_exercises">;
@@ -86,28 +85,6 @@ export async function resetPersonalSplitToGroup(userId: UUID): Promise<SplitDayW
   const days = await fetchSplitRows("personal", userId);
   await cachePersonalSplit(days);
   return days;
-}
-
-export async function updatePersonalRestDays(
-  userId: UUID,
-  additionalRestDays: Weekday[],
-): Promise<void> {
-  const parsed = personalRestDaySchema.parse({ additionalRestDays });
-  const supabase = createClient();
-  const { error } = await supabase
-    .from("profiles")
-    .update({ additional_rest_days: parsed.additionalRestDays })
-    .eq("id", userId);
-
-  if (error) throw new Error(error.message);
-  const cachedProfile = await getCachedProfile(userId);
-  if (cachedProfile) {
-    await cacheProfile({
-      ...cachedProfile,
-      additionalRestDays: parsed.additionalRestDays,
-      updatedAt: new Date().toISOString(),
-    });
-  }
 }
 
 export async function updateSplitDaySettings(
