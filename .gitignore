@@ -61,4 +61,11 @@ npm-debug.log*
 # Editor and OS
 .vscode/
 .DS_Store
-Thumbs.db
+Thumbs.db.env.local
+.env*.local
+.next/
+node_modules/
+supabase/.temp/
+tsconfig.tsbuildinfo
+*.patch
+.vercel/

@@ -63,6 +63,14 @@ function formatNumber(value: number) {
   return Number.isInteger(value) ? value.toString() : value.toFixed(1).replace(/\.0$/, "");
 }
 
+function formatWorkoutDate(value: string) {
+  return new Intl.DateTimeFormat("en-GB", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  }).format(new Date(`${value}T12:00:00`));
+}
+
 function getSetChanges(set: WorkoutSet, previousSet?: WorkoutSet) {
   if (!set.isCompleted || !previousSet) return [];
 
@@ -161,7 +169,7 @@ function SetEditor({
 
   return (
     <div
-      className={`rounded-2xl border p-3 transition ${
+      className={`min-w-0 rounded-2xl border p-3 transition ${
         set.isCompleted
           ? "border-emerald-400/35 bg-emerald-400/[0.06]"
           : "border-white/[0.07] bg-white/[0.025]"
@@ -238,10 +246,10 @@ function SetEditor({
         </div>
       </div>
 
-      <div className="mt-3 grid grid-cols-[1fr_1fr_auto] gap-2">
-        <label className="text-[10px] font-bold uppercase tracking-wide text-neutral-500">
-          Today weight
-          <div className="mt-1 flex min-h-12 items-center rounded-xl border border-white/[0.08] bg-white/[0.035] px-2 focus-within:border-indigo-300/60">
+      <div className="mt-3 grid min-w-0 grid-cols-[minmax(0,1fr)_minmax(0,1fr)_3rem] gap-2">
+        <label className="min-w-0 text-[10px] font-bold uppercase tracking-wide text-neutral-500">
+          <span className="block">Weight</span>
+          <div className="mt-1 flex min-h-12 w-full min-w-0 items-center overflow-hidden rounded-xl border border-white/[0.08] bg-white/[0.035] px-2 focus-within:border-indigo-300/60">
             <input
               inputMode="decimal"
               type="number"
@@ -253,14 +261,14 @@ function SetEditor({
                 setWeight(nextWeight);
                 onDraftChange(set.id, { weight: nextWeight, reps });
               }}
-              className="min-w-0 flex-1 bg-transparent py-2 text-center text-xl font-bold outline-none"
+              className="w-0 min-w-0 flex-1 bg-transparent py-2 text-center text-xl font-bold tabular-nums outline-none"
               aria-label={`Weight for set ${set.setNumber}`}
             />
             <span className="text-xs font-bold text-neutral-500">kg</span>
           </div>
         </label>
-        <label className="text-[10px] font-bold uppercase tracking-wide text-neutral-500">
-          Today reps
+        <label className="min-w-0 text-[10px] font-bold uppercase tracking-wide text-neutral-500">
+          <span className="block">Reps</span>
           <input
             inputMode="numeric"
             type="number"
@@ -272,7 +280,7 @@ function SetEditor({
               setReps(nextReps);
               onDraftChange(set.id, { weight, reps: nextReps });
             }}
-            className="mt-1 min-h-12 w-full rounded-xl border border-white/[0.08] bg-white/[0.035] px-2 text-center text-xl font-bold outline-none focus:border-indigo-300/60"
+            className="mt-1 min-h-12 w-full min-w-0 max-w-full rounded-xl border border-white/[0.08] bg-white/[0.035] px-2 text-center text-xl font-bold tabular-nums outline-none focus:border-indigo-300/60"
             aria-label={`Reps for set ${set.setNumber}`}
           />
         </label>
@@ -498,7 +506,7 @@ export function ActiveWorkoutClient() {
   }
 
   return (
-    <div className="mx-auto max-w-xl space-y-4 pb-[calc(8rem+env(safe-area-inset-bottom,0px))] pt-2">
+    <div className="mx-auto w-full min-w-0 max-w-xl space-y-4 pb-[calc(8rem+env(safe-area-inset-bottom,0px))] pt-2">
       <section className="gc-workout-sticky sticky z-30 -mx-4 border-b border-white/[0.06] px-4 pb-3 pt-2 backdrop-blur-xl">
         <div className="flex items-center justify-between gap-3">
           <div>
@@ -522,7 +530,7 @@ export function ActiveWorkoutClient() {
         </select>
       </label>
 
-      <section className="gc-card overflow-hidden">
+      <section className="gc-card min-w-0 overflow-hidden">
         <div className="bg-[linear-gradient(135deg,rgba(139,158,255,.13),rgba(23,27,37,.98)_58%)] p-5 text-white">
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0">
@@ -558,7 +566,7 @@ export function ActiveWorkoutClient() {
                 ) : previousPerformance ? (
                   <>
                     <p className="text-sm font-bold">
-                      Last workout · {new Date(`${previousPerformance.scheduledDate}T12:00:00`).toLocaleDateString()}
+                      Last workout · {formatWorkoutDate(previousPerformance.scheduledDate)}
                     </p>
                     <p className="mt-0.5 text-xs opacity-60">
                       Those numbers are already loaded below. Change only what changed today.
