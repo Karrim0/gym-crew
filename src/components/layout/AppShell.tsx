@@ -1,4 +1,7 @@
+"use client";
+
 import type { ReactNode } from "react";
+import { usePathname } from "next/navigation";
 import { BottomNavigation } from "@/components/navigation/BottomNavigation";
 import { DesktopSidebar } from "@/components/navigation/DesktopSidebar";
 import { OfflineBanner } from "@/components/feedback/OfflineBanner";
@@ -9,12 +12,19 @@ export interface AppShellProps {
 }
 
 export function AppShell({ children }: AppShellProps) {
+  const pathname = usePathname();
+  const gymMode = pathname.startsWith("/workout/active");
+
   return (
-    <div className="gc-shell flex flex-col md:flex-row">
+    <div className={`gc-shell flex flex-col md:flex-row ${gymMode ? "gc-shell-gym-mode" : ""}`}>
       <DesktopSidebar />
-      <div className="relative flex min-w-0 flex-1 flex-col md:ml-[16.5rem]">
+      <div
+        className={`relative flex min-w-0 flex-1 flex-col ${gymMode ? "md:ml-0" : "md:ml-[16.5rem]"}`}
+      >
         <OfflineBanner />
-        <main className="gc-main-content relative flex-1">{children}</main>
+        <main className={`relative flex-1 ${gymMode ? "gc-gym-main" : "gc-main-content"}`}>
+          {children}
+        </main>
         <BottomNavigation />
         <RestTimerLauncher />
       </div>

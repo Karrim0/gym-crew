@@ -17,20 +17,20 @@ export function RestTimerPanel() {
   const circumference = 2 * Math.PI * radius;
 
   return (
-    <div className="fixed inset-0 z-[80] flex items-end bg-black/55 p-3 backdrop-blur-md sm:items-center sm:justify-center" role="dialog" aria-modal="true" aria-label="Rest timer">
-      <section className="w-full max-w-md overflow-hidden rounded-[30px] border border-indigo-300/15 bg-[linear-gradient(155deg,#171b29,#0f121a_62%)] text-white shadow-[0_30px_100px_rgba(0,0,0,.65)]">
+    <div className="fixed inset-0 z-[80] flex items-end overflow-y-auto bg-black/55 p-2 pb-[max(.5rem,env(safe-area-inset-bottom,0px))] backdrop-blur-md sm:items-center sm:justify-center sm:p-3" role="dialog" aria-modal="true" aria-label="Rest timer">
+      <section className="max-h-[calc(100vh-1rem)] max-h-[calc(100svh-1rem)] w-full max-w-md overflow-y-auto rounded-[24px] border border-indigo-300/15 bg-[linear-gradient(155deg,#171b29,#0f121a_62%)] text-white shadow-[0_30px_100px_rgba(0,0,0,.65)] min-[380px]:rounded-[30px]">
         <div className="flex items-center justify-between px-5 pt-5">
           <div><p className="gc-eyebrow">Rest timer</p><h2 className="mt-1 text-xl font-bold">Recover. Then own the next set.</h2></div>
           <button type="button" onClick={timer.close} className="grid h-10 w-10 place-items-center rounded-full border border-white/10 bg-white/[0.04]" aria-label="Close rest timer"><X className="h-5 w-5" /></button>
         </div>
 
-        <div className="px-5 py-6 text-center">
-          <div className="relative mx-auto grid h-52 w-52 place-items-center">
+        <div className="px-3 py-4 text-center min-[380px]:px-5 min-[380px]:py-6">
+          <div className="relative mx-auto grid h-44 w-44 place-items-center min-[380px]:h-52 min-[380px]:w-52">
             <svg className="absolute inset-0 h-full w-full -rotate-90" viewBox="0 0 200 200" aria-hidden>
               <circle cx="100" cy="100" r={radius} fill="none" stroke="rgba(255,255,255,.08)" strokeWidth="12" />
               <circle cx="100" cy="100" r={radius} fill="none" stroke="rgb(165 180 252)" strokeWidth="12" strokeLinecap="round" strokeDasharray={circumference} strokeDashoffset={circumference * (1 - remainingRatio)} className="transition-[stroke-dashoffset] duration-300" />
             </svg>
-            <div><p className="font-mono text-5xl font-bold tabular-nums tracking-[-0.05em]">{formatDuration(timer.remainingSeconds)}</p><p className="mt-2 text-sm font-semibold text-white/55">{timer.completedAt && timer.remainingSeconds === 0 ? "Rest complete · next set is ready" : timer.isRunning ? "Breathe and reset" : "Start when the set ends"}</p></div>
+            <div><p className="font-mono text-4xl font-bold tabular-nums tracking-[-0.05em] min-[380px]:text-5xl">{formatDuration(timer.remainingSeconds)}</p><p className="mt-2 text-sm font-semibold text-white/55">{timer.completedAt && timer.remainingSeconds === 0 ? "Rest complete · next set is ready" : timer.isRunning ? "Breathe and reset" : "Start when the set ends"}</p></div>
           </div>
 
           <div className="mt-5 grid grid-cols-4 gap-2">

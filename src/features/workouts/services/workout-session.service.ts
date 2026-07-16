@@ -377,6 +377,47 @@ export async function addExerciseToWorkout(
   return workoutExerciseId;
 }
 
+export async function reorderWorkoutExercises(
+  sessionId: UUID,
+  orderedExerciseIds: UUID[],
+): Promise<void> {
+  const session = await getLocalWorkoutSession(sessionId);
+  if (!session) throw new Error("Active workout not found locally.");
+
+  const currentIds = new Set(session.exercises.map((exercise) => exercise.id));
+  if (
+    orderedExerciseIds.length !== session.exercises.length ||
+    orderedExerciseIds.some((id) => !currentIds.has(id))
+  ) {
+    throw new Error("Exercise order is out of date. Refresh and try again.");
+  }
+
+  const db = getOfflineDatabase();
+  const updates = orderedExerciseIds.map((id, order) => {
+    const exercise = session.exercises.find((item) => item.id === id);
+    if (!exercise) throw new Error("Workout exercise not found.");
+    return { ...exercise, order };
+  });
+
+  await db.transaction("rw", db.workoutExercises, async () => {
+    await db.workoutExercises.bulkPut(
+      updates.map((item) => ({
+        id: item.id,
+        workoutSessionId: item.workoutSessionId,
+        exerciseId: item.exerciseId,
+        order: item.order,
+        isSessionOnlyAddition: item.isSessionOnlyAddition,
+        notes: item.notes,
+      })),
+    );
+  });
+
+  for (const exercise of updates) {
+    await enqueueOfflineMutation(workoutExerciseMutation("update", exercise));
+  }
+  requestSync();
+}
+
 export async function deleteWorkoutExercise(workoutExerciseId: UUID): Promise<void> {
   const db = getOfflineDatabase();
   const exerciseRow = await db.workoutExercises.get(workoutExerciseId);
