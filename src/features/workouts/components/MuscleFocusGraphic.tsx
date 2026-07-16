@@ -60,7 +60,7 @@ export function MuscleFocusGraphic({
         <path d="M93 89 Q110 83 127 89 L124 105 Q110 111 96 105 Z" className={regionClass("glutes", primary, secondary)} opacity=".88" />
         <path d="M91 43 Q110 35 129 43 L130 83 Q111 92 90 83 Z" className={regionClass("back", primary, secondary)} opacity={primary === "back" || secondary.includes("back") ? 0.72 : 0.16} />
       </svg>
-      <div className="pointer-events-none absolute inset-x-2 bottom-2 rounded-xl bg-[#111520]/88 px-2.5 py-1.5 text-center backdrop-blur-sm">
+      <div className="gc-muscle-caption pointer-events-none absolute inset-x-2 bottom-2 rounded-xl px-2.5 py-1.5 text-center">
         <p className="truncate text-[10px] font-bold uppercase tracking-[0.12em] text-indigo-100">
           {MUSCLE_LABELS[primary]}
         </p>

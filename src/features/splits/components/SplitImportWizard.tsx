@@ -122,14 +122,14 @@ export function SplitImportWizard({ onClose, onImported }: SplitImportWizardProp
   }
 
   return (
-    <div className="fixed inset-0 z-[90] overflow-y-auto bg-black/70 p-3 backdrop-blur-md sm:p-6" role="dialog" aria-modal="true" aria-label="دخّل جدولك الجاهز">
-      <section className="mx-auto min-h-full w-full max-w-3xl rounded-[28px] border border-white/10 bg-[#11141d] shadow-2xl">
-        <header className="sticky top-0 z-10 flex items-center justify-between gap-3 rounded-t-[28px] border-b border-white/[0.07] bg-[#11141d]/95 px-4 py-4 backdrop-blur-xl sm:px-6">
+    <div className="gc-modal-backdrop fixed inset-0 z-[90] overflow-y-auto p-2 sm:p-6" role="dialog" aria-modal="true" aria-label="دخّل جدولك الجاهز">
+      <section className="gc-modal-card mx-auto min-h-full w-full max-w-3xl rounded-[24px] sm:rounded-[28px]">
+        <header className="gc-modal-header sticky top-0 z-10 flex min-w-0 items-center justify-between gap-3 rounded-t-[24px] px-4 py-4 sm:rounded-t-[28px] sm:px-6">
           <div>
             <p className="gc-eyebrow">إدخال الجدول الذكي</p>
             <h2 className="mt-1 text-xl font-bold">حوّل ملفك لجدول تمرين</h2>
           </div>
-          <button type="button" onClick={onClose} className="grid h-10 w-10 place-items-center rounded-full border border-white/10 bg-white/[0.04]" aria-label="قفل"><X className="h-5 w-5" /></button>
+          <button type="button" onClick={onClose} className="gc-icon-button rounded-full" aria-label="قفل"><X className="h-5 w-5" /></button>
         </header>
 
         <div className="space-y-5 p-4 sm:p-6">
@@ -199,12 +199,12 @@ export function SplitImportWizard({ onClose, onImported }: SplitImportWizardProp
                     {day.workoutType === "rest" ? <p className="mt-3 text-sm text-neutral-500">يوم راحة متخططلها. مش هنضيف تمارين لليوم ده.</p> : (
                       <div className="mt-3 space-y-2">
                         {day.exercises.map((exercise, exerciseIndex) => (
-                          <div key={`${exercise.name}-${exerciseIndex}`} className={`grid grid-cols-3 items-end gap-2 rounded-xl border p-2.5 sm:grid-cols-[minmax(0,1fr)_4rem_4rem_4rem_2.5rem] ${Number(exercise.confidence ?? 1) < 0.75 ? "border-amber-300/25 bg-amber-300/[0.04]" : "border-white/[0.06] bg-black/10"}`}>
-                            <label className="col-span-3 min-w-0 text-[9px] font-bold uppercase tracking-wide text-neutral-600 sm:col-span-1">التمرين<input value={exercise.name} onChange={(event) => updateExercise(dayIndex, exerciseIndex, { name: event.target.value })} className="gc-input mt-1 min-w-0 text-sm normal-case" /></label>
+                          <div key={`${exercise.name}-${exerciseIndex}`} className={`gc-import-exercise-row grid grid-cols-2 items-end gap-2 rounded-xl border p-2.5 sm:grid-cols-[minmax(0,1fr)_4rem_4rem_4rem_2.5rem] ${Number(exercise.confidence ?? 1) < 0.75 ? "border-amber-300/25 bg-amber-300/[0.04]" : "border-white/[0.06] bg-black/10"}`}>
+                            <label className="col-span-2 min-w-0 text-[9px] font-bold uppercase tracking-wide text-neutral-600 sm:col-span-1">التمرين<input value={exercise.name} onChange={(event) => updateExercise(dayIndex, exerciseIndex, { name: event.target.value })} className="gc-input mt-1 min-w-0 text-sm normal-case" /></label>
                             <label className="min-w-0 text-[9px] font-bold uppercase tracking-wide text-neutral-600">السِتات<input type="number" inputMode="numeric" min={1} max={20} value={exercise.sets} onChange={(event) => updateExercise(dayIndex, exerciseIndex, { sets: Math.max(1, Number(event.target.value) || 1) })} className="gc-input mt-1 min-w-0 px-2 text-center" /></label>
                             <label className="min-w-0 text-[9px] font-bold uppercase tracking-wide text-neutral-600">أقل<input type="number" inputMode="numeric" min={1} max={100} value={exercise.repsMin} onChange={(event) => updateExercise(dayIndex, exerciseIndex, { repsMin: Math.max(1, Number(event.target.value) || 1) })} className="gc-input mt-1 min-w-0 px-2 text-center" /></label>
                             <label className="min-w-0 text-[9px] font-bold uppercase tracking-wide text-neutral-600">أعلى<input type="number" inputMode="numeric" min={1} max={100} value={exercise.repsMax} onChange={(event) => updateExercise(dayIndex, exerciseIndex, { repsMax: Math.max(1, Number(event.target.value) || 1) })} className="gc-input mt-1 min-w-0 px-2 text-center" /></label>
-                            <button type="button" onClick={() => removeExercise(dayIndex, exerciseIndex)} className="col-span-3 min-h-10 rounded-xl border border-red-300/15 text-xs font-bold text-red-300 sm:col-span-1 sm:grid sm:h-10 sm:min-h-0 sm:w-10 sm:place-items-center" aria-label={`شيل ${exercise.name}`}><Trash2 className="mx-auto h-4 w-4" /></button>
+                            <button type="button" onClick={() => removeExercise(dayIndex, exerciseIndex)} className="min-h-10 rounded-xl border border-red-300/15 text-xs font-bold text-red-300 sm:col-span-1 sm:grid sm:h-10 sm:min-h-0 sm:w-10 sm:place-items-center" aria-label={`شيل ${exercise.name}`}><Trash2 className="mx-auto h-4 w-4" /></button>
                           </div>
                         ))}
                       </div>

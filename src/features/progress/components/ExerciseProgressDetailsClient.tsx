@@ -33,10 +33,10 @@ export function ExerciseProgressDetailsClient({ userId, exerciseId }: { userId: 
 
   return (
     <div className="space-y-5 pb-24">
-      <section className="rounded-[30px] border border-indigo-300/15 bg-[linear-gradient(135deg,rgba(139,158,255,.14),rgba(14,18,15,.98)_55%)] p-5 text-white">
+      <section className="gc-hero-card rounded-[30px] p-5">
         <p className="text-sm capitalize opacity-65">{muscleLabelAr(details.summary.primaryMuscle)}</p>
         <h2 className="mt-1 text-2xl font-bold">{translateExerciseName(details.summary.exerciseName)}</h2>
-        <div className="mt-5 grid grid-cols-3 gap-3 text-center">
+        <div className="mt-5 grid grid-cols-1 gap-3 text-center min-[360px]:grid-cols-3">
           <div><strong className="block text-lg">{formatWeight(details.summary.maxWeightKg)}</strong><span className="text-xs opacity-60">أعلى وزن</span></div>
           <div><strong className="block text-lg">{formatWeight(details.summary.estimatedOneRepMaxKg)}</strong><span className="text-xs opacity-60">أقصى عدة متوقعة</span></div>
           <div><strong className="block text-lg">{details.summary.sessionCount}</strong><span className="text-xs opacity-60">التمرينات</span></div>

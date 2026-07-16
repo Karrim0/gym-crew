@@ -45,7 +45,7 @@ export function ProgressDashboardClient({ userId }: ProgressDashboardClientProps
 
   return (
     <div className="space-y-5 pb-24 pt-5">
-      <section className="relative overflow-hidden rounded-[30px] border border-indigo-300/15 bg-[linear-gradient(135deg,rgba(139,158,255,.16),rgba(14,18,15,.98)_52%,rgba(8,11,8,.98))] p-5 shadow-[0_30px_80px_rgba(0,0,0,.3)] sm:p-7">
+      <section className="gc-hero-card relative overflow-hidden rounded-[30px] p-5 sm:p-7">
         <div className="absolute -right-12 -top-16 h-48 w-48 rounded-full bg-indigo-300/10 blur-3xl" />
         <div className="relative flex items-end justify-between gap-4">
           <div>

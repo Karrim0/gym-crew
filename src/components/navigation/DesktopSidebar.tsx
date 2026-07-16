@@ -12,10 +12,10 @@ export function DesktopSidebar() {
   if (pathname.startsWith("/workout/active")) return null;
 
   return (
-    <aside className="gc-desktop-sidebar fixed inset-y-0 z-40 hidden w-[16.5rem] flex-col border-white/[0.06] bg-[#0d0f16]/92 p-4 backdrop-blur-2xl md:flex">
+    <aside className="gc-desktop-sidebar gc-navigation-surface fixed inset-y-0 z-40 hidden w-[16.5rem] flex-col p-4 md:flex">
       <Link href="/dashboard" className="flex items-center gap-3 rounded-xl px-2 py-2">
-        <span className="grid h-10 w-10 place-items-center rounded-xl bg-indigo-300 text-[#11131a]"><Dumbbell className="h-5 w-5" /></span>
-        <span><span className="block text-lg font-bold tracking-[-0.02em]">{APP_CONFIG.name}</span><span className="text-[11px] font-semibold text-neutral-500">تمرينك الشخصي أولاً</span></span>
+        <span className="gc-brand-mark grid h-10 w-10 place-items-center rounded-xl"><Dumbbell className="h-5 w-5" /></span>
+        <span className="min-w-0"><span className="block truncate text-lg font-bold tracking-[-0.02em]">{APP_CONFIG.name}</span><span className="gc-muted block text-[11px] font-semibold">تمرينك الشخصي أولاً</span></span>
       </Link>
 
       <nav className="mt-7 flex flex-col gap-1.5" aria-label="التنقل الرئيسي">
@@ -24,16 +24,16 @@ export function DesktopSidebar() {
           const active = item.activePrefixes.some((prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`))
             && !(item.id === "workout" && pathname.startsWith("/workout/history"));
           return (
-            <Link key={item.id} href={item.href} aria-current={active ? "page" : undefined} className={`flex min-h-11 items-center gap-3 rounded-xl px-3.5 text-sm font-semibold transition ${active ? "bg-indigo-300 text-[#11131a]" : "text-neutral-400 hover:bg-white/[0.05] hover:text-white"}`}>
-              <Icon className="h-5 w-5" aria-hidden /> {item.label}
+            <Link key={item.id} href={item.href} aria-current={active ? "page" : undefined} className={`gc-side-nav-item ${active ? "gc-side-nav-item-active" : ""}`}>
+              <Icon className="h-5 w-5" aria-hidden /> <span className="truncate">{item.label}</span>
             </Link>
           );
         })}
       </nav>
 
-      <div className="mt-auto rounded-xl border border-white/[0.06] bg-white/[0.025] p-4">
+      <div className="gc-sidebar-tip mt-auto p-4">
         <p className="text-sm font-semibold">كل حاجة في مكانها</p>
-        <p className="mt-1 text-xs leading-5 text-neutral-500">رتّب أسبوعك، افتح تمرينة النهارده، العب وسجّل، وبعدها راجع تقدمك.</p>
+        <p className="gc-muted mt-1 text-xs leading-5">رتّب أسبوعك، افتح تمرينة النهارده، العب وسجّل، وبعدها راجع تقدمك.</p>
       </div>
     </aside>
   );

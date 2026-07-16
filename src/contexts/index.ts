@@ -5,3 +5,5 @@ export * from "./stopwatch-context";
 export * from "./rest-timer-context";
 
 export * from "./language-context";
+
+export * from "./theme-context";

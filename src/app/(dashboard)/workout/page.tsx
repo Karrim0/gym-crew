@@ -10,7 +10,7 @@ export default function WorkoutPage() {
       <PageContainer className="space-y-4 pb-8 pt-5">
         <Link
           href="/workout/today"
-          className="relative block overflow-hidden rounded-[30px] border border-indigo-300/15 bg-[linear-gradient(135deg,rgba(139,158,255,.18),rgba(14,18,15,.96)_52%,rgba(7,9,7,.98))] p-5 sm:p-7"
+          className="gc-hero-card relative block overflow-hidden rounded-[30px] p-5 sm:p-7"
         >
           <div className="absolute -right-10 -top-12 h-40 w-40 rounded-full bg-indigo-300/10 blur-3xl" />
           <div className="relative flex items-start gap-4">

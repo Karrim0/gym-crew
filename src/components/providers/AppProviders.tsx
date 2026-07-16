@@ -4,6 +4,7 @@ import { useEffect, type ReactNode } from "react";
 import { registerServiceWorker } from "@/lib/pwa/register-service-worker";
 import { PwaInstallPrompt } from "@/components/pwa/PwaInstallPrompt";
 import { LanguageProvider } from "@/contexts/language-context";
+import { ThemeProvider } from "@/contexts/theme-context";
 import { NetworkProvider } from "./NetworkProvider";
 import { SupabaseProvider } from "./SupabaseProvider";
 import { OfflineCacheWarmer } from "./OfflineCacheWarmer";
@@ -17,7 +18,8 @@ export function AppProviders({ children }: AppProvidersProps) {
   useEffect(() => registerServiceWorker(), []);
 
   return (
-    <LanguageProvider>
+    <ThemeProvider>
+      <LanguageProvider>
       <SupabaseProvider>
         <NetworkProvider>
           <RestTimerProvider>
@@ -27,6 +29,7 @@ export function AppProviders({ children }: AppProvidersProps) {
           </RestTimerProvider>
         </NetworkProvider>
       </SupabaseProvider>
-    </LanguageProvider>
+      </LanguageProvider>
+    </ThemeProvider>
   );
 }

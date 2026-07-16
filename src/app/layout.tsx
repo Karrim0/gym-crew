@@ -18,23 +18,36 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#0b0d13",
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#f6f7fb" },
+    { media: "(prefers-color-scheme: dark)", color: "#0b0d13" },
+  ],
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",
 };
 
-const languageBootstrap = `
+const appBootstrap = `
 (function () {
   try {
-    var key = "gym-crew:language";
-    var language = localStorage.getItem(key);
-    if (language !== "ar" && language !== "en") language = "ar";
     var root = document.documentElement;
+
+    var language = localStorage.getItem("gym-crew:language");
+    if (language !== "ar" && language !== "en") language = "ar";
     root.lang = language === "ar" ? "ar-EG" : "en";
     root.dir = language === "ar" ? "rtl" : "ltr";
     root.dataset.gcLanguage = language;
     if (language === "en") root.dataset.gcI18nPending = "true";
+
+    var theme = localStorage.getItem("gym-crew:theme");
+    if (theme !== "light" && theme !== "dark") {
+      theme = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+    }
+    root.classList.remove("light", "dark");
+    root.classList.add(theme);
+    root.dataset.gcTheme = theme;
+    root.style.colorScheme = theme;
+
     setTimeout(function () { root.removeAttribute("data-gc-i18n-pending"); }, 1800);
   } catch (_) {}
 })();`;
@@ -49,11 +62,11 @@ export default function RootLayout({
       lang="ar-EG"
       dir="rtl"
       suppressHydrationWarning
-      className="dark h-full antialiased"
+      className="light h-full antialiased"
       data-scroll-behavior="smooth"
     >
       <head>
-        <script dangerouslySetInnerHTML={{ __html: languageBootstrap }} />
+        <script dangerouslySetInnerHTML={{ __html: appBootstrap }} />
       </head>
       <body suppressHydrationWarning className="min-h-full flex flex-col">
         <AppProviders>{children}</AppProviders>

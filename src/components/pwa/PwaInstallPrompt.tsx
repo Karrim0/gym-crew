@@ -45,16 +45,16 @@ export function PwaInstallPrompt() {
   }
 
   return (
-    <aside className="fixed inset-x-3 bottom-[6.1rem] z-[65] mx-auto max-w-md rounded-[22px] border border-indigo-300/20 bg-[#121712]/95 p-3 shadow-2xl shadow-black/50 backdrop-blur-2xl md:bottom-5 md:left-auto md:right-5 md:mx-0">
+    <aside className="gc-pwa-prompt fixed inset-x-3 bottom-[6.1rem] z-[65] mx-auto max-w-md rounded-[22px] p-3 md:bottom-5 md:inset-x-auto md:end-5 md:mx-0">
       <div className="flex items-center gap-3">
-        <span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-indigo-300 text-neutral-950">
+        <span className="gc-brand-mark grid h-11 w-11 shrink-0 place-items-center rounded-2xl">
           <Download className="h-5 w-5" />
         </span>
         <div className="min-w-0 flex-1">
           <p className="font-bold">نزّل Gym Crew</p>
-          <p className="text-xs text-neutral-400">افتحه أسرع وخلي أدوات التمرين دايمًا معاك.</p>
+          <p className="gc-muted text-xs">افتحه أسرع وخلي أدوات التمرين دايمًا معاك.</p>
         </div>
-        <button type="button" onClick={dismiss} className="grid h-9 w-9 place-items-center rounded-full text-neutral-400" aria-label="اقفل اقتراح التثبيت">
+        <button type="button" onClick={dismiss} className="gc-icon-button rounded-full" aria-label="اقفل اقتراح التثبيت">
           <X className="h-4 w-4" />
         </button>
       </div>

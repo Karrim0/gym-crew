@@ -52,7 +52,7 @@ export function PersonalDashboardSummary({ userId }: { userId: UUID }) {
 
   return (
     <Link href="/progress" className="gc-card-interactive block p-4 sm:p-5" aria-label="افتح التقدم">
-      <div className="grid grid-cols-3 gap-2 sm:gap-3">
+      <div className="grid grid-cols-1 gap-2 min-[360px]:grid-cols-3 sm:gap-3">
         {stats.map(({ label, value, detail, icon: Icon, tone }) => (
           <div key={label} className="gc-stat min-w-0">
             <Icon className={`h-4 w-4 ${tone}`} />

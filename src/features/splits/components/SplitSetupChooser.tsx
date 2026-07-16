@@ -44,7 +44,7 @@ export function SplitSetupChooser({ onChanged }: SplitSetupChooserProps) {
 
   return (
     <>
-      <section className="relative overflow-hidden rounded-[28px] border border-indigo-300/15 bg-[linear-gradient(135deg,rgba(139,158,255,.14),rgba(17,20,29,.98)_55%)] p-4 sm:p-5">
+      <section className="gc-hero-card relative overflow-hidden rounded-[28px] p-4 sm:p-5">
         <div className="absolute -right-10 -top-12 h-40 w-40 rounded-full bg-indigo-300/10 blur-3xl" />
         <div className="relative">
           <div className="flex items-center gap-2"><Sparkles className="h-4 w-4 text-indigo-200" /><p className="gc-eyebrow">اعمل جدولك أو غيّره</p></div>
@@ -73,9 +73,9 @@ export function SplitSetupChooser({ onChanged }: SplitSetupChooserProps) {
       </section>
 
       {starterOpen ? (
-        <div className="fixed inset-0 z-[85] flex items-end bg-black/65 p-3 backdrop-blur-sm sm:items-center sm:justify-center" role="dialog" aria-modal="true" aria-label="اختار جدول جاهز">
-          <section className="w-full max-w-lg rounded-[26px] border border-white/10 bg-[#12151e] p-4 shadow-2xl sm:p-5">
-            <div className="flex items-start justify-between gap-3"><div><p className="gc-eyebrow">جداول جاهزة</p><h3 className="mt-1 text-xl font-bold">اختار عدد أيام تمرينك</h3><p className="mt-1 text-sm text-neutral-500">تقدر تعدّل كل اسم ويوم وتمرين وهدف براحتك.</p></div><button type="button" onClick={() => setStarterOpen(false)} className="grid h-10 w-10 place-items-center rounded-full border border-white/10"><X className="h-5 w-5" /></button></div>
+        <div className="gc-modal-backdrop fixed inset-0 z-[85] flex items-end p-2 sm:items-center sm:justify-center sm:p-3" role="dialog" aria-modal="true" aria-label="اختار جدول جاهز">
+          <section className="gc-modal-card w-full max-w-lg rounded-[24px] p-4 sm:rounded-[26px] sm:p-5">
+            <div className="flex items-start justify-between gap-3"><div><p className="gc-eyebrow">جداول جاهزة</p><h3 className="mt-1 text-xl font-bold">اختار عدد أيام تمرينك</h3><p className="mt-1 text-sm text-neutral-500">تقدر تعدّل كل اسم ويوم وتمرين وهدف براحتك.</p></div><button type="button" onClick={() => setStarterOpen(false)} className="gc-icon-button rounded-full"><X className="h-5 w-5" /></button></div>
             <div className="mt-4 space-y-2">
               {STARTERS.map((starter) => (
                 <button key={starter.key} type="button" disabled={Boolean(busyKey)} onClick={() => void apply(starter.key)} className="flex w-full items-center gap-3 rounded-2xl border border-white/[0.08] bg-white/[0.03] p-4 text-start transition hover:border-indigo-300/30">

@@ -168,33 +168,43 @@ function ExerciseEditor({ item, index, count, canEdit, onReload, onError }: Exer
   }
 
   return (
-    <li className="rounded-2xl border border-white/[0.07] bg-white/[0.025] p-3.5">
-      <div className="flex items-center gap-3">
-        <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-white/[0.06] text-sm font-bold">{index + 1}</span>
+    <li className="gc-split-exercise-card rounded-2xl p-3.5">
+      <div className="flex min-w-0 items-center gap-3">
+        <span className="gc-stat grid h-10 w-10 shrink-0 place-items-center p-0 text-sm font-bold">{index + 1}</span>
         <button type="button" onClick={() => canEdit && setEditing((value) => !value)} className="min-w-0 flex-1 text-start">
           <p className="truncate font-bold">{translateExerciseName(item.exercise.name)}</p>
           <p className="mt-0.5 truncate text-xs capitalize text-neutral-500">{item.targetSets} سِتات · {item.targetRepsMin}–{item.targetRepsMax} عدات · {muscleLabelAr(item.exercise.primaryMuscle)}</p>
         </button>
         {canEdit ? (
-          <details className="relative">
-            <summary className="grid h-9 w-9 list-none place-items-center rounded-full border border-white/[0.08] text-neutral-400 [&::-webkit-details-marker]:hidden" aria-label="خيارات التمرين"><MoreVertical className="h-4 w-4" /></summary>
-            <div className="absolute start-0 top-11 z-20 w-44 rounded-xl border border-white/[0.09] bg-[#171b25] p-1.5 shadow-2xl">
-              <button type="button" disabled={busy || index === 0} onClick={() => void run(() => moveSplitExercise(item.id, -1))} className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-start text-sm disabled:opacity-30"><ArrowUp className="h-4 w-4" /> طلّع لفوق</button>
-              <button type="button" disabled={busy || index === count - 1} onClick={() => void run(() => moveSplitExercise(item.id, 1))} className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-start text-sm disabled:opacity-30"><ArrowDown className="h-4 w-4" /> نزّل لتحت</button>
+          <details className="gc-exercise-desktop-menu relative shrink-0">
+            <summary className="gc-icon-button list-none [&::-webkit-details-marker]:hidden" aria-label="خيارات التمرين"><MoreVertical className="h-4 w-4" /></summary>
+            <div className="gc-action-menu">
+              <button type="button" disabled={busy || index === 0} onClick={() => void run(() => moveSplitExercise(item.id, -1))} className="gc-action-menu-item disabled:opacity-30"><ArrowUp className="h-4 w-4" /> طلّع لفوق</button>
+              <button type="button" disabled={busy || index === count - 1} onClick={() => void run(() => moveSplitExercise(item.id, 1))} className="gc-action-menu-item disabled:opacity-30"><ArrowDown className="h-4 w-4" /> نزّل لتحت</button>
               <button type="button" disabled={busy} onClick={() => {
                 if (window.confirm(`تشيل ${translateExerciseName(item.exercise.name)} من اليوم ده؟`)) void run(() => removeSplitExercise(item.id));
-              }} className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-start text-sm text-red-300"><Trash2 className="h-4 w-4" /> شيل</button>
+              }} className="gc-action-menu-item text-red-500"><Trash2 className="h-4 w-4" /> شيل</button>
             </div>
           </details>
         ) : null}
       </div>
 
+      {canEdit ? (
+        <div className="gc-exercise-mobile-actions">
+          <button type="button" disabled={busy || index === 0} onClick={() => void run(() => moveSplitExercise(item.id, -1))} className="gc-exercise-mobile-action disabled:opacity-30"><ArrowUp className="h-4 w-4" /> طلّع</button>
+          <button type="button" disabled={busy || index === count - 1} onClick={() => void run(() => moveSplitExercise(item.id, 1))} className="gc-exercise-mobile-action disabled:opacity-30"><ArrowDown className="h-4 w-4" /> نزّل</button>
+          <button type="button" disabled={busy} onClick={() => {
+            if (window.confirm(`تشيل ${translateExerciseName(item.exercise.name)} من اليوم ده؟`)) void run(() => removeSplitExercise(item.id));
+          }} className="gc-exercise-mobile-action gc-exercise-mobile-action-danger"><Trash2 className="h-4 w-4" /> شيل</button>
+        </div>
+      ) : null}
+
       {editing ? (
-        <div className="mt-3 grid grid-cols-3 gap-2 border-t border-white/[0.06] pt-3">
+        <div className="mt-3 grid grid-cols-1 gap-2 border-t border-white/[0.06] pt-3 min-[360px]:grid-cols-3">
           <label className="text-[10px] font-bold uppercase tracking-wide text-neutral-500">السِتات<input type="number" inputMode="numeric" min={1} max={20} value={sets} onChange={(event) => setSets(event.target.valueAsNumber)} className="gc-input mt-1 min-h-11 text-center text-lg font-bold" /></label>
           <label className="text-[10px] font-bold uppercase tracking-wide text-neutral-500">أقل عدات<input type="number" inputMode="numeric" min={1} max={100} value={min} onChange={(event) => setMin(event.target.valueAsNumber)} className="gc-input mt-1 min-h-11 text-center text-lg font-bold" /></label>
           <label className="text-[10px] font-bold uppercase tracking-wide text-neutral-500">أعلى عدات<input type="number" inputMode="numeric" min={1} max={100} value={max} onChange={(event) => setMax(event.target.valueAsNumber)} className="gc-input mt-1 min-h-11 text-center text-lg font-bold" /></label>
-          <button type="button" disabled={busy} onClick={() => void saveTargets()} className="gc-primary-button col-span-3 min-h-11"><Save className="h-4 w-4" /> احفظ الأهداف</button>
+          <button type="button" disabled={busy} onClick={() => void saveTargets()} className="gc-primary-button min-h-11 min-[360px]:col-span-3"><Save className="h-4 w-4" /> احفظ الأهداف</button>
         </div>
       ) : null}
     </li>

@@ -524,7 +524,7 @@ export function ActiveWorkoutClient() {
 
   return (
     <div className="gc-gym-mode mx-auto w-full min-w-0 space-y-4 pb-[calc(6.5rem+env(safe-area-inset-bottom,0px))] pt-1">
-      <header className="gc-gym-sticky sticky z-30 rounded-b-[22px] border-b border-white/[0.06] bg-[#0b0d13]/95 px-1 pb-3 pt-2 backdrop-blur-xl">
+      <header className="gc-workout-header gc-gym-sticky sticky z-30 rounded-b-[22px] px-1 pb-3 pt-2">
         <div className="flex min-w-0 items-center justify-between gap-2">
           <button
             type="button"
@@ -553,7 +553,7 @@ export function ActiveWorkoutClient() {
               type="button"
               disabled={busy}
               onClick={() => void leaveWorkout()}
-              className="grid h-10 w-10 place-items-center rounded-xl border border-white/[0.08] bg-white/[0.035] text-neutral-300 disabled:opacity-40"
+              className="gc-icon-button disabled:opacity-40"
               aria-label="احفظ واخرج من التمرينة"
             >
               <LogOut className="h-4 w-4" />
@@ -680,7 +680,7 @@ export function ActiveWorkoutClient() {
       ) : (
         <section className="space-y-4">
           <div className="gc-card overflow-hidden">
-            <div className="grid min-w-0 gap-4 bg-[linear-gradient(145deg,rgba(139,158,255,.13),rgba(18,21,29,.98)_62%)] p-4 min-[390px]:grid-cols-[1fr_8rem] min-[390px]:items-center min-[390px]:p-5">
+            <div className="gc-gym-focus-card grid min-w-0 gap-4 p-4 min-[390px]:grid-cols-[1fr_8rem] min-[390px]:items-center min-[390px]:p-5">
               <div className="min-w-0">
                 <div className="flex items-center justify-between gap-2">
                   <p className="gc-eyebrow">تمرين {currentIndex + 1} من {session.exercises.length}</p>

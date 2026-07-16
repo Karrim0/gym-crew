@@ -20,7 +20,7 @@ export default async function ProfilePage() {
     <>
       <DashboardHeader title="حسابي والإعدادات" actions={<LogoutButton />} showProfile={false} />
       <PageContainer className="space-y-4 pb-8 pt-5">
-        <section className="relative overflow-hidden rounded-[30px] border border-indigo-300/15 bg-[linear-gradient(135deg,rgba(139,158,255,.14),rgba(14,18,15,.98)_55%)] p-5 sm:p-6">
+        <section className="gc-hero-card relative overflow-hidden rounded-[30px] p-5 sm:p-6">
           <div className="flex items-center gap-4">
             {profile?.avatar_url ? (
               // eslint-disable-next-line @next/next/no-img-element

@@ -87,7 +87,7 @@ export function WorkoutDetailsClient({ sessionId }: { sessionId: UUID }) {
       <section className="gc-card p-5 sm:p-6">
         <p className="gc-eyebrow">تمرينة خلصت</p>
         <h2 className="mt-2 text-2xl font-bold tracking-[-0.03em]">ملخص التمرينة</h2>
-        <div className="mt-4 grid grid-cols-3 gap-2">
+        <div className="mt-4 grid grid-cols-1 gap-2 min-[360px]:grid-cols-3">
           <div className="gc-stat">
             <CalendarDays className="h-4 w-4 text-indigo-200" />
             <strong className="mt-2 block text-sm">

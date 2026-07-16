@@ -34,7 +34,7 @@ export function DeleteWorkoutSessionButton({ sessionId }: { sessionId: UUID }) {
 
       {open ? (
         <div className="fixed inset-0 z-[80] grid place-items-end bg-black/70 p-3 backdrop-blur-sm sm:place-items-center" role="presentation">
-          <section role="dialog" aria-modal="true" aria-labelledby="delete-workout-title" className="w-full max-w-md rounded-[22px] border border-white/10 bg-[#151821] p-5 shadow-2xl">
+          <section role="dialog" aria-modal="true" aria-labelledby="delete-workout-title" className="gc-modal-card w-full max-w-md rounded-[22px] p-5">
             <div className="flex items-start gap-3">
               <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-red-400/10 text-red-300"><AlertTriangle className="h-5 w-5" /></span>
               <div className="min-w-0 flex-1">

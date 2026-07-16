@@ -16,7 +16,7 @@ export function BackButton({ fallbackHref }: BackButtonProps) {
       type="button"
       aria-label="ارجع"
       onClick={() => (fallbackHref ? router.push(fallbackHref) : router.back())}
-      className="inline-flex items-center justify-center"
+      className="gc-icon-button"
     >
       <ChevronRight className="h-5 w-5" aria-hidden />
     </button>

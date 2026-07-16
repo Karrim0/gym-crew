@@ -39,7 +39,7 @@ export function BodyMapClient({ userId }: { userId: UUID }) {
 
   return (
     <div className="space-y-4 pb-24">
-      <section className="rounded-[28px] border border-indigo-300/15 bg-[linear-gradient(135deg,rgba(139,158,255,.14),rgba(14,18,15,.98)_55%)] p-5 text-white">
+      <section className="gc-hero-card rounded-[28px] p-5">
         <p className="text-xs font-bold uppercase tracking-[0.15em] opacity-60">سجل تمرينك</p>
         <h2 className="mt-2 text-2xl font-bold">شوف مجهودك راح لأنهي عضلات</h2>
         <p className="mt-2 text-sm opacity-70">الخريطة بتحسب السِتات اللي خلصتها فعلًا، مش التمارين المكتوبة بس.</p>

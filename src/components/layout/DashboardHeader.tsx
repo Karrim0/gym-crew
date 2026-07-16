@@ -3,6 +3,7 @@ import { BackButton } from "@/components/navigation/BackButton";
 import { SyncStatusIndicator } from "@/components/feedback/SyncStatusIndicator";
 import { ProfileAvatarLink } from "@/components/layout/ProfileAvatarLink";
 import { LanguageSwitcher } from "@/components/localization/LanguageSwitcher";
+import { ThemeSwitcher } from "@/components/theme/ThemeSwitcher";
 import { getCurrentUser } from "@/features/auth/services/auth.server";
 import { createClient } from "@/lib/supabase/server";
 
@@ -22,9 +23,7 @@ async function getHeaderProfile(): Promise<HeaderProfile> {
   const user = await getCurrentUser();
   const fallbackName = user?.email?.split("@")[0] ?? "لاعب";
 
-  if (!user) {
-    return { avatarUrl: null, displayName: fallbackName };
-  }
+  if (!user) return { avatarUrl: null, displayName: fallbackName };
 
   const supabase = await createClient();
   const { data } = await supabase
@@ -43,14 +42,15 @@ export async function DashboardHeader({ title, showBackButton, actions, showProf
   const profile = showProfile ? await getHeaderProfile() : null;
 
   return (
-    <header className="sticky top-0 z-30 border-b border-white/[0.055] bg-[#0b0d13]/90 px-4 py-3 backdrop-blur-2xl sm:px-6 lg:px-8">
-      <div className="mx-auto flex w-full max-w-5xl items-center justify-between gap-3">
-        <div className="flex min-w-0 items-center gap-2.5">
+    <header className="gc-topbar sticky top-0 z-30 px-3 py-3 sm:px-6 lg:px-8">
+      <div className="mx-auto flex w-full max-w-6xl min-w-0 items-center justify-between gap-2.5">
+        <div className="flex min-w-0 flex-1 items-center gap-2.5">
           {showBackButton ? <BackButton /> : null}
-          <h1 className="truncate text-lg font-bold tracking-[-0.015em] text-white sm:text-xl">{title}</h1>
+          <h1 className="min-w-0 truncate text-lg font-bold tracking-[-0.015em] sm:text-xl">{title}</h1>
         </div>
-        <div className="flex shrink-0 items-center gap-2">
+        <div className="gc-header-actions flex shrink-0 items-center gap-1.5 sm:gap-2">
           {actions}
+          <ThemeSwitcher />
           <LanguageSwitcher />
           <SyncStatusIndicator />
           {profile ? <ProfileAvatarLink avatarUrl={profile.avatarUrl} displayName={profile.displayName} /> : null}
