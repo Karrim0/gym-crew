@@ -1,6 +1,7 @@
 "use client";
 
 import { getArabicErrorMessage } from "@/lib/localization";
+import { LanguageSwitcher } from "@/components/localization/LanguageSwitcher";
 import { useEffect, useState } from "react";
 import { Camera, Save, UserRound } from "lucide-react";
 import type { UUID, UserProfile } from "@/types";
@@ -62,6 +63,7 @@ export function ProfileSettingsClient({ userId }: ProfileSettingsClientProps) {
 
   return (
     <div className="space-y-5">
+      <LanguageSwitcher variant="panel" />
       <div className="flex items-center gap-4">
         <div className="relative">
           {avatarUrl ? (

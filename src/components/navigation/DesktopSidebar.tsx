@@ -12,7 +12,7 @@ export function DesktopSidebar() {
   if (pathname.startsWith("/workout/active")) return null;
 
   return (
-    <aside className="fixed inset-y-0 right-0 z-40 hidden w-[16.5rem] flex-col border-l border-white/[0.06] bg-[#0d0f16]/92 p-4 backdrop-blur-2xl md:flex">
+    <aside className="gc-desktop-sidebar fixed inset-y-0 z-40 hidden w-[16.5rem] flex-col border-white/[0.06] bg-[#0d0f16]/92 p-4 backdrop-blur-2xl md:flex">
       <Link href="/dashboard" className="flex items-center gap-3 rounded-xl px-2 py-2">
         <span className="grid h-10 w-10 place-items-center rounded-xl bg-indigo-300 text-[#11131a]"><Dumbbell className="h-5 w-5" /></span>
         <span><span className="block text-lg font-bold tracking-[-0.02em]">{APP_CONFIG.name}</span><span className="text-[11px] font-semibold text-neutral-500">تمرينك الشخصي أولاً</span></span>

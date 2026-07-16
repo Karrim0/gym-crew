@@ -24,6 +24,21 @@ export const viewport: Viewport = {
   viewportFit: "cover",
 };
 
+const languageBootstrap = `
+(function () {
+  try {
+    var key = "gym-crew:language";
+    var language = localStorage.getItem(key);
+    if (language !== "ar" && language !== "en") language = "ar";
+    var root = document.documentElement;
+    root.lang = language === "ar" ? "ar-EG" : "en";
+    root.dir = language === "ar" ? "rtl" : "ltr";
+    root.dataset.gcLanguage = language;
+    if (language === "en") root.dataset.gcI18nPending = "true";
+    setTimeout(function () { root.removeAttribute("data-gc-i18n-pending"); }, 1800);
+  } catch (_) {}
+})();`;
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -31,11 +46,15 @@ export default function RootLayout({
 }>) {
   return (
     <html
-      lang="ar"
+      lang="ar-EG"
       dir="rtl"
+      suppressHydrationWarning
       className="dark h-full antialiased"
       data-scroll-behavior="smooth"
     >
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: languageBootstrap }} />
+      </head>
       <body suppressHydrationWarning className="min-h-full flex flex-col">
         <AppProviders>{children}</AppProviders>
       </body>

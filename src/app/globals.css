@@ -492,3 +492,74 @@ input[type="number"] {
     font-size: 16px !important;
   }
 }
+
+/* ================================================================
+   Bilingual layout bridge (ar-EG / en)
+================================================================ */
+
+html[data-gc-i18n-pending="true"] body {
+  opacity: 0;
+}
+
+html[data-gc-i18n-ready="true"] body {
+  opacity: 1;
+  transition: opacity 120ms ease-out;
+}
+
+[dir="ltr"] body {
+  direction: ltr;
+  text-align: left;
+}
+
+[dir="rtl"] .gc-auth-language-switcher {
+  left: max(1rem, env(safe-area-inset-left, 0px));
+}
+
+[dir="ltr"] .gc-auth-language-switcher {
+  right: max(1rem, env(safe-area-inset-right, 0px));
+}
+
+[dir="rtl"] .gc-auth-promo {
+  border-left-width: 1px;
+}
+
+[dir="ltr"] .gc-auth-promo {
+  border-right-width: 1px;
+}
+
+@media (min-width: 768px) {
+  [dir="rtl"] .gc-desktop-sidebar {
+    right: 0;
+    border-left-width: 1px;
+  }
+
+  [dir="ltr"] .gc-desktop-sidebar {
+    left: 0;
+    border-right-width: 1px;
+  }
+
+  [dir="rtl"] .gc-app-content:not(.gc-app-content-gym) {
+    margin-right: 16.5rem;
+  }
+
+  [dir="ltr"] .gc-app-content:not(.gc-app-content-gym) {
+    margin-left: 16.5rem;
+  }
+}
+
+/* v1.6 used RTL-facing navigation icons. Mirror them in English. */
+[dir="ltr"] .lucide-chevron-left,
+[dir="ltr"] .lucide-chevron-right,
+[dir="ltr"] .lucide-arrow-left,
+[dir="ltr"] .lucide-arrow-right {
+  transform: scaleX(-1);
+  transform-origin: center;
+}
+
+[dir="ltr"] .text-start {
+  text-align: left;
+}
+
+[dir="rtl"] .text-start {
+  text-align: right;
+}

@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import { BackButton } from "@/components/navigation/BackButton";
 import { SyncStatusIndicator } from "@/components/feedback/SyncStatusIndicator";
 import { ProfileAvatarLink } from "@/components/layout/ProfileAvatarLink";
+import { LanguageSwitcher } from "@/components/localization/LanguageSwitcher";
 import { getCurrentUser } from "@/features/auth/services/auth.server";
 import { createClient } from "@/lib/supabase/server";
 
@@ -50,6 +51,7 @@ export async function DashboardHeader({ title, showBackButton, actions, showProf
         </div>
         <div className="flex shrink-0 items-center gap-2">
           {actions}
+          <LanguageSwitcher />
           <SyncStatusIndicator />
           {profile ? <ProfileAvatarLink avatarUrl={profile.avatarUrl} displayName={profile.displayName} /> : null}
         </div>

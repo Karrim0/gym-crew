@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import { Dumbbell, ShieldCheck, WifiOff } from "lucide-react";
 import { APP_CONFIG } from "@/config/app";
+import { LanguageSwitcher } from "@/components/localization/LanguageSwitcher";
 
 export interface AuthShellProps {
   children: ReactNode;
@@ -9,9 +10,10 @@ export interface AuthShellProps {
 export function AuthShell({ children }: AuthShellProps) {
   return (
     <main className="relative flex min-h-dvh items-center justify-center overflow-hidden px-4 py-8 sm:px-6">
+      <LanguageSwitcher className="gc-auth-language-switcher absolute top-4 z-20 sm:top-6" />
       <div className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_15%_15%,rgba(139,158,255,.12),transparent_25rem),radial-gradient(circle_at_90%_80%,rgba(16,185,129,.08),transparent_28rem)]" />
       <div className="grid w-full max-w-5xl overflow-hidden rounded-[32px] border border-white/[0.08] bg-[#0d110e]/92 shadow-[0_35px_100px_rgba(0,0,0,.55)] backdrop-blur-2xl lg:grid-cols-[1.05fr_.95fr]">
-        <section className="hidden min-h-[640px] flex-col justify-between border-l border-white/[0.07] bg-[linear-gradient(145deg,rgba(139,158,255,.12),rgba(255,255,255,.025))] p-10 lg:flex">
+        <section className="gc-auth-promo hidden min-h-[640px] flex-col justify-between border-white/[0.07] bg-[linear-gradient(145deg,rgba(139,158,255,.12),rgba(255,255,255,.025))] p-10 lg:flex">
           <div>
             <div className="flex items-center gap-3">
               <span className="grid h-12 w-12 place-items-center rounded-2xl bg-indigo-300 text-neutral-950">
