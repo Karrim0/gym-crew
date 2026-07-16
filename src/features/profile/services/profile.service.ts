@@ -61,8 +61,8 @@ export async function updateProfile(userId: UUID, input: UpdateProfileInput): Pr
 }
 
 export async function uploadProfileAvatar(userId: UUID, file: File): Promise<string> {
-  if (!file.type.startsWith("image/")) throw new Error("Please choose an image file.");
-  if (file.size > 2 * 1024 * 1024) throw new Error("Avatar must be smaller than 2 MB.");
+  if (!file.type.startsWith("image/")) throw new Error("اختار ملف صورة.");
+  if (file.size > 2 * 1024 * 1024) throw new Error("الصورة لازم تبقى أقل من 2 ميجا.");
 
   const extension = file.name.split(".").pop()?.toLowerCase() || "jpg";
   const path = `${userId}/avatar-${Date.now()}.${extension}`;

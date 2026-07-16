@@ -1,5 +1,6 @@
 "use client";
 
+import { getArabicErrorMessage } from "@/lib/localization";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
@@ -35,13 +36,13 @@ export function LoginForm({ onSubmit }: LoginFormProps) {
 
       const { data: authData, error } = await signInWithPassword(data);
       if (error) throw error;
-      if (!authData.user) throw new Error("Login succeeded without a user session.");
+      if (!authData.user) throw new Error("تسجيل الدخول تم بس الجلسة مش موجودة. جرّب تاني.");
 
       const destination = await resolvePostAuthDestination(authData.user.id);
       router.replace(destination);
       router.refresh();
     } catch (error) {
-      setSubmitError(error instanceof Error ? error.message : "Unable to log in right now.");
+      setSubmitError(getArabicErrorMessage(error, "مش قادرين نسجّلك دخول دلوقتي. جرّب تاني."));
     }
   }
 
@@ -49,7 +50,7 @@ export function LoginForm({ onSubmit }: LoginFormProps) {
     <form onSubmit={handleSubmit(submit)} className="flex flex-col gap-4" noValidate>
       <div>
         <label htmlFor="email" className="mb-1.5 block text-sm font-bold text-neutral-300">
-          Email
+          الإيميل
         </label>
         <input
           id="email"
@@ -62,7 +63,7 @@ export function LoginForm({ onSubmit }: LoginFormProps) {
       </div>
       <div>
         <label htmlFor="password" className="mb-1.5 block text-sm font-bold text-neutral-300">
-          Password
+          الباسورد
         </label>
         <input
           id="password"
@@ -77,15 +78,15 @@ export function LoginForm({ onSubmit }: LoginFormProps) {
       <AuthSubmitMessage message={submitError} />
 
       <button type="submit" disabled={isSubmitting} className="gc-primary-button mt-1 w-full disabled:cursor-not-allowed disabled:opacity-50">
-        {isSubmitting ? "Logging in…" : "Log in"}
+        {isSubmitting ? "بنسجّل دخول…" : "سجّل دخول"}
       </button>
 
       <div className="flex justify-between gap-3 text-sm font-semibold text-neutral-400">
         <Link href="/forgot-password" className="transition hover:text-indigo-300">
-          Forgot password?
+          نسيت الباسورد؟
         </Link>
         <Link href="/register" className="transition hover:text-indigo-300">
-          Create account
+          اعمل حساب
         </Link>
       </div>
     </form>

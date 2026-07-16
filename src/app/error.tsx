@@ -14,5 +14,5 @@ export default function Error({
     console.error(error);
   }, [error]);
 
-  return <ErrorState title="Something went wrong" description={error.message} onRetry={reset} />;
+  return <ErrorState title="حصلت مشكلة" description={error.message} onRetry={reset} />;
 }

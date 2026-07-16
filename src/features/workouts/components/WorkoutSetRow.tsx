@@ -10,9 +10,9 @@ export interface WorkoutSetRowProps {
 export function WorkoutSetRow({ set }: WorkoutSetRowProps) {
   return (
     <div className="flex items-center justify-between text-sm">
-      <span>Set {set.setNumber}</span>
+      <span>السِت {set.setNumber}</span>
       <span>{set.weightKg !== null ? formatWeight(set.weightKg) : "—"}</span>
-      <span>{set.reps ?? "—"} reps</span>
+      <span>{set.reps ?? "—"} عدات</span>
       <span>{set.isCompleted ? "✓" : ""}</span>
     </div>
   );

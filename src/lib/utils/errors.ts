@@ -5,7 +5,7 @@
  */
 export class NotImplementedError extends Error {
   constructor(featureName: string) {
-    super(`Not implemented yet: ${featureName}`);
+    super(`الميزة دي لسه جاية: ${featureName}`);
     this.name = "NotImplementedError";
   }
 }

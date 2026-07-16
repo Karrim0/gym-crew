@@ -1,9 +1,10 @@
 /* eslint-disable react-hooks/set-state-in-effect */
 "use client";
 
+import { getArabicErrorMessage } from "@/lib/localization";
 import { useCallback, useEffect, useState } from "react";
 import { Award, Dumbbell, Flame, UserPlus, UserRound } from "lucide-react";
-import { formatDistanceToNow } from "date-fns";
+import { formatRelativeTimeArEg, translateExerciseName } from "@/lib/localization";
 import { formatDuration, formatWeight } from "@/lib/utils/format";
 import type { UUID } from "@/types";
 import type { GroupActivityFeedItem } from "../types";
@@ -18,22 +19,31 @@ function ActivityIcon({ type }: { type: GroupActivityFeedItem["type"] }) {
 }
 
 function activityDescription(activity: GroupActivityFeedItem): string {
-  if (activity.type === "joined_group") return "joined the crew";
-  if (activity.type === "streak_milestone") return "hit a new training streak";
+  if (activity.type === "joined_group") return "دخل الجروب";
+  if (activity.type === "streak_milestone") return "وصل لسلسلة التزام جديدة";
   if (activity.type === "workout_completed") {
     const duration = activity.metadata.duration_seconds;
     return typeof duration === "number" && duration > 0
-      ? `finished a workout in ${formatDuration(duration)}`
-      : "finished a workout";
+      ? `خلّص تمرينة في ${formatDuration(duration)}`
+      : "خلّص تمرينة";
   }
-  const recordType = typeof activity.metadata.record_type === "string"
-    ? activity.metadata.record_type.replaceAll("_", " ")
-    : "personal record";
+
+  const rawRecordType = typeof activity.metadata.record_type === "string"
+    ? activity.metadata.record_type
+    : "personal_record";
+  const recordType = rawRecordType === "max_weight"
+    ? "أعلى وزن"
+    : rawRecordType === "max_reps"
+      ? "أعلى عدات"
+      : rawRecordType === "max_volume"
+        ? "أعلى حجم تمرين"
+        : "رقم شخصي";
   const value = activity.metadata.value;
   const suffix = activity.showWeights && typeof value === "number"
-    ? ` · ${recordType === "max reps" ? `${value} reps` : formatWeight(value)}`
+    ? ` · ${rawRecordType === "max_reps" ? `${value} عدة` : formatWeight(value)}`
     : "";
-  return `set a new ${recordType}${activity.exerciseName ? ` on ${activity.exerciseName}` : ""}${suffix}`;
+  const exercise = activity.exerciseName ? ` في ${translateExerciseName(activity.exerciseName)}` : "";
+  return `عمل ${recordType} جديد${exercise}${suffix}`;
 }
 
 export function GroupActivityFeedClient({ groupId }: { groupId: UUID }) {
@@ -47,7 +57,7 @@ export function GroupActivityFeedClient({ groupId }: { groupId: UUID }) {
     try {
       setItems(await fetchGroupActivityFeed(groupId));
     } catch (caught) {
-      setError(caught instanceof Error ? caught.message : "Unable to load group activity.");
+      setError(getArabicErrorMessage(caught, "معرفناش نحمّل نشاط الجروب."));
     } finally {
       setLoading(false);
     }
@@ -57,7 +67,7 @@ export function GroupActivityFeedClient({ groupId }: { groupId: UUID }) {
 
   if (loading) return <div className="space-y-3">{Array.from({ length: 4 }, (_, index) => <div key={index} className="h-20 animate-pulse rounded-2xl bg-white/[0.035]" />)}</div>;
   if (error) return <p className="rounded-xl border border-red-400/20 bg-red-400/10 p-4 text-sm text-red-300">{error}</p>;
-  if (items.length === 0) return <p className="rounded-2xl border border-dashed p-6 text-center text-sm text-neutral-500">The feed wakes up when members finish workouts, hit records or join the crew.</p>;
+  if (items.length === 0) return <p className="rounded-2xl border border-dashed p-6 text-center text-sm text-neutral-500">النشاط هيظهر لما الأعضاء يخلّصوا تمرينات أو يكسروا أرقام أو يدخلوا الجروب.</p>;
 
   return (
     <div className="space-y-3">
@@ -74,7 +84,7 @@ export function GroupActivityFeedClient({ groupId }: { groupId: UUID }) {
               <span className="mt-0.5"><ActivityIcon type={activity.type} /></span>
               <p className="text-sm"><strong>{activity.actorName}</strong> {activityDescription(activity)}</p>
             </div>
-            <p className="mt-1 text-xs text-neutral-500">{formatDistanceToNow(new Date(activity.createdAt), { addSuffix: true })}</p>
+            <p className="mt-1 text-xs text-neutral-500">{formatRelativeTimeArEg(activity.createdAt)}</p>
           </div>
         </article>
       ))}

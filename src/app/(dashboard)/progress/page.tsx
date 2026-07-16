@@ -7,7 +7,7 @@ export default async function ProgressPage() {
   const user = await requireCurrentUser();
   return (
     <>
-      <DashboardHeader title="My progress" />
+      <DashboardHeader title="تقدمي" />
       <PageContainer className="pb-8"><ProgressDashboardClient userId={user.id} /></PageContainer>
     </>
   );

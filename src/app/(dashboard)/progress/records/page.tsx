@@ -7,7 +7,7 @@ export default async function PersonalRecordsPage() {
   const user = await requireCurrentUser();
   return (
     <>
-      <DashboardHeader title="Personal records" showBackButton />
+      <DashboardHeader title="أرقامك القياسية" showBackButton />
       <PageContainer className="pb-8"><PersonalRecordsClient userId={user.id} /></PageContainer>
     </>
   );

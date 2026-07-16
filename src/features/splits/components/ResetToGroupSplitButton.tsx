@@ -8,7 +8,7 @@ export interface ResetToGroupSplitButtonProps {
 export function ResetToGroupSplitButton({ onReset }: ResetToGroupSplitButtonProps) {
   return (
     <button type="button" onClick={onReset} className="text-sm underline">
-      Reset to group split
+      رجّع جدول الجروب
     </button>
   );
 }

@@ -36,22 +36,22 @@ export function PersonalDashboardSummary({ userId }: { userId: UUID }) {
   if (state.status === "error") {
     return (
       <section className="gc-card p-5">
-        <p className="font-semibold">Progress is temporarily unavailable.</p>
-        <p className="mt-1 text-sm text-neutral-500">Your workout data is still safe on this device.</p>
-        <Link href="/progress" className="gc-secondary-button mt-4">Open progress</Link>
+        <p className="font-semibold">التقدم مش متاح مؤقتًا.</p>
+        <p className="mt-1 text-sm text-neutral-500">بيانات تمرينك لسه محفوظة على الجهاز.</p>
+        <Link href="/progress" className="gc-secondary-button mt-4">افتح التقدم</Link>
       </section>
     );
   }
 
   const { summary } = state;
   const stats = [
-    { label: "Weekly plan", value: formatAdherencePercentage(summary.adherence.weekly), detail: `${summary.adherence.weeklyCompleted}/${summary.adherence.weeklyScheduled}`, icon: Target, tone: "text-indigo-300" },
-    { label: "Current streak", value: `${summary.currentStreak} days`, detail: `Best ${summary.longestStreak} days`, icon: Flame, tone: "text-orange-400" },
-    { label: "Recent PRs", value: String(summary.recentRecords.length), detail: "milestones", icon: Award, tone: "text-amber-300" },
+    { label: "خطة الأسبوع", value: formatAdherencePercentage(summary.adherence.weekly), detail: `${summary.adherence.weeklyCompleted}/${summary.adherence.weeklyScheduled}`, icon: Target, tone: "text-indigo-300" },
+    { label: "السلسلة الحالية", value: `${summary.currentStreak} يوم`, detail: `الأفضل ${summary.longestStreak} يوم`, icon: Flame, tone: "text-orange-400" },
+    { label: "آخر الأرقام", value: String(summary.recentRecords.length), detail: "إنجازات جديدة", icon: Award, tone: "text-amber-300" },
   ];
 
   return (
-    <Link href="/progress" className="gc-card-interactive block p-4 sm:p-5" aria-label="Open progress">
+    <Link href="/progress" className="gc-card-interactive block p-4 sm:p-5" aria-label="افتح التقدم">
       <div className="grid grid-cols-3 gap-2 sm:gap-3">
         {stats.map(({ label, value, detail, icon: Icon, tone }) => (
           <div key={label} className="gc-stat min-w-0">

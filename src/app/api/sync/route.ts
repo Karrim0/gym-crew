@@ -47,7 +47,7 @@ export async function POST(request: NextRequest) {
   const supabase = await createClient();
   const { data: userData, error: userError } = await supabase.auth.getUser();
   if (userError || !userData.user) {
-    return NextResponse.json({ error: "Authentication required." }, { status: 401 });
+    return NextResponse.json({ error: "لازم تسجّل دخول الأول." }, { status: 401 });
   }
 
   const body = (await request.json().catch(() => null)) as { mutations?: OfflineMutation[] } | null;

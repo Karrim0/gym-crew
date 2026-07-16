@@ -7,7 +7,7 @@ export default async function WorkoutHistoryPage() {
   const user = await requireCurrentUser();
   return (
     <>
-      <DashboardHeader title="Workout history" showBackButton />
+      <DashboardHeader title="سجل التمارين" showBackButton />
       <PageContainer className="pb-8"><WorkoutHistoryClient userId={user.id} /></PageContainer>
     </>
   );

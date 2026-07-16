@@ -21,13 +21,13 @@ export function ProfileForm({ defaultValues, onSubmit }: ProfileFormProps) {
     <form onSubmit={handleSubmit((data) => onSubmit?.(data))} className="flex flex-col gap-3">
       <div>
         <label htmlFor="displayName" className="text-sm font-medium">
-          Display name
+          الاسم اللي هيظهر
         </label>
         <input id="displayName" className="w-full rounded-md border p-2" {...register("displayName")} />
         {errors.displayName ? <p className="text-xs text-red-600">{errors.displayName.message}</p> : null}
       </div>
       <button type="submit" disabled={isSubmitting} className="rounded-md border p-2 font-medium">
-        Save
+        احفظ
       </button>
     </form>
   );

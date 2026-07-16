@@ -69,7 +69,7 @@ export async function createCustomExercise(
 ): Promise<Exercise> {
   const supabase = createClient();
   const { data: userData, error: userError } = await supabase.auth.getUser();
-  if (userError || !userData.user) throw new Error("You must be signed in.");
+  if (userError || !userData.user) throw new Error("لازم تسجّل دخول الأول.");
 
   const { data, error } = await supabase
     .from("exercises")

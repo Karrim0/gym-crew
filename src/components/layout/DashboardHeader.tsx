@@ -19,7 +19,7 @@ interface HeaderProfile {
 
 async function getHeaderProfile(): Promise<HeaderProfile> {
   const user = await getCurrentUser();
-  const fallbackName = user?.email?.split("@")[0] ?? "Athlete";
+  const fallbackName = user?.email?.split("@")[0] ?? "لاعب";
 
   if (!user) {
     return { avatarUrl: null, displayName: fallbackName };

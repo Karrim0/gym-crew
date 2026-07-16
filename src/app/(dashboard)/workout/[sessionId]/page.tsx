@@ -6,7 +6,7 @@ export default async function WorkoutSessionPage({ params }: { params: Promise<{
   const { sessionId } = await params;
   return (
     <>
-      <DashboardHeader title="Workout details" showBackButton />
+      <DashboardHeader title="تفاصيل التمرينة" showBackButton />
       <PageContainer className="pb-8"><WorkoutDetailsClient sessionId={sessionId} /></PageContainer>
     </>
   );

@@ -7,7 +7,7 @@ export default async function ProfileSettingsPage() {
   const user = await requireCurrentUser();
   return (
     <>
-      <DashboardHeader title="Profile settings" showBackButton />
+      <DashboardHeader title="إعدادات الحساب" showBackButton />
       <PageContainer className="pb-8"><ProfileSettingsClient userId={user.id} /></PageContainer>
     </>
   );

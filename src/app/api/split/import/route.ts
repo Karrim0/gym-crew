@@ -1,3 +1,4 @@
+import { getArabicErrorMessage } from "@/lib/localization";
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { importedPlanSchema } from "@/features/splits/schemas";
@@ -94,8 +95,8 @@ function validatedLocalPlan(plan: unknown) {
 
 async function tryFreeImport(file: File | null, pastedText: string) {
   if (pastedText.length >= 4) {
-    const plan = validatedLocalPlan(parseTextPlan(pastedText, file?.name || "Pasted workout plan"));
-    if (plan) return { plan, processing: "local" as const, message: "Read locally — no AI cost." };
+    const plan = validatedLocalPlan(parseTextPlan(pastedText, file?.name || "جدول تمرين منسوخ"));
+    if (plan) return { plan, processing: "local" as const, message: "اتقرا محليًا — من غير تكلفة AI." };
   }
 
   if (!file) return null;
@@ -110,15 +111,15 @@ async function tryFreeImport(file: File | null, pastedText: string) {
       rows: sheet.data as SpreadsheetCell[][],
     }));
     const plan = validatedLocalPlan(parseSpreadsheetPlan(sheets, file.name));
-    if (!plan) throw new Error("We could not find workout days and exercises in this spreadsheet. Add day, exercise, sets and reps columns, then try again.");
-    return { plan, processing: "local" as const, message: "Spreadsheet read locally — no AI cost." };
+    if (!plan) throw new Error("معرفناش نلاقي أيام وتمارين جوه الملف. ضيف أعمدة اليوم والتمرين والسِتات والعدات وجرّب تاني.");
+    return { plan, processing: "local" as const, message: "ملف الجدول اتقرا محليًا — من غير تكلفة AI." };
   }
 
   if (fileExtension === "csv" || fileExtension === "txt" || file.type === "text/csv" || file.type === "text/plain") {
     const text = bytes.toString("utf8");
     const plan = validatedLocalPlan(parseTextPlan(text, file.name, fileExtension === "csv" || file.type === "text/csv"));
-    if (!plan) throw new Error("We could not find a workout plan in this file. Include a day, exercise name, sets and reps, then try again.");
-    return { plan, processing: "local" as const, message: "Text file read locally — no AI cost." };
+    if (!plan) throw new Error("معرفناش نلاقي جدول تمرين في الملف. ضيف اليوم واسم التمرين والسِتات والعدات وجرّب تاني.");
+    return { plan, processing: "local" as const, message: "الملف النصي اتقرا محليًا — من غير تكلفة AI." };
   }
 
   return { bytes };
@@ -128,7 +129,7 @@ async function readWithOptionalAi(file: File, bytes: Buffer) {
   const apiKey = process.env.OPENAI_API_KEY;
   if (!apiKey) {
     return NextResponse.json({
-      error: "This photo or scanned PDF needs optional AI reading. For a free import, upload .xlsx or .csv, or paste the plan text.",
+      error: "الصورة أو الـPDF المصوّر محتاج قراءة ذكية اختيارية. للاستيراد المجاني ارفع .xlsx أو .csv، أو الصق نص الجدول.",
       code: "AI_OPTIONAL_NOT_CONFIGURED",
     }, { status: 422 });
   }
@@ -167,66 +168,66 @@ async function readWithOptionalAi(file: File, bytes: Buffer) {
     const quotaProblem = providerMessage?.code === "insufficient_quota" || /quota|billing/i.test(providerMessage?.message ?? "");
     return NextResponse.json({
       error: quotaProblem
-        ? "AI reading has no available credit. Upload .xlsx or .csv, or paste the plan to import free."
-        : "The photo reader could not process this plan. Try a clearer image or use the free spreadsheet/text import.",
+        ? "مفيش رصيد متاح للقراءة الذكية. ارفع .xlsx أو .csv، أو الصق الجدول عشان تستورده مجانًا."
+        : "معرفناش نقرا الجدول من الصورة. جرّب صورة أوضح أو استخدم استيراد الجداول والنص المجاني.",
       code: quotaProblem ? "AI_QUOTA_UNAVAILABLE" : "AI_IMPORT_FAILED",
     }, { status: 422 });
   }
 
   const text = outputText(rawResponse);
-  if (!text) return NextResponse.json({ error: "The photo reader returned no plan. Try a clearer file." }, { status: 422 });
+  if (!text) return NextResponse.json({ error: "الصورة مظهرتش فيها بيانات جدول واضحة. جرّب ملف أوضح." }, { status: 422 });
 
   let parsed: unknown;
   try {
     parsed = JSON.parse(text);
   } catch {
-    return NextResponse.json({ error: "The photo result needs another try. Use a clearer image or paste the plan text." }, { status: 422 });
+    return NextResponse.json({ error: "محتاجين صورة أوضح، أو الصق نص الجدول بدل الصورة." }, { status: 422 });
   }
 
   const result = importedPlanSchema.safeParse(parsed);
   if (!result.success) {
-    return NextResponse.json({ error: "The photo result was incomplete. Review the source or use the free spreadsheet/text import." }, { status: 422 });
+    return NextResponse.json({ error: "البيانات اللي اتقرت من الصورة ناقصة. راجع الملف أو استخدم استيراد الجداول والنص المجاني." }, { status: 422 });
   }
 
-  return NextResponse.json({ plan: result.data, processing: "ai", message: "Photo read with optional AI. Review every detail before saving." });
+  return NextResponse.json({ plan: result.data, processing: "ai", message: "الصورة اتقرت بالقراءة الذكية الاختيارية. راجع كل التفاصيل قبل الحفظ." });
 }
 
 export async function POST(request: NextRequest) {
   const supabase = await createClient();
   const { data: userData, error: authError } = await supabase.auth.getUser();
   if (authError || !userData.user) {
-    return NextResponse.json({ error: "Authentication required." }, { status: 401 });
+    return NextResponse.json({ error: "لازم تسجّل دخول الأول." }, { status: 401 });
   }
 
   const formData = await request.formData().catch(() => null);
-  if (!formData) return NextResponse.json({ error: "Invalid import request." }, { status: 400 });
+  if (!formData) return NextResponse.json({ error: "طلب الاستيراد مش صحيح." }, { status: 400 });
   const fileValue = formData.get("file");
   const pastedText = String(formData.get("text") ?? "").trim();
   const file = fileValue instanceof File && fileValue.size > 0 ? fileValue : null;
 
   if (!file && pastedText.length < 4) {
-    return NextResponse.json({ error: "Upload a plan or paste its text." }, { status: 400 });
+    return NextResponse.json({ error: "ارفع جدول أو الصق نصه." }, { status: 400 });
   }
   if (file && file.size > MAX_FILE_SIZE) {
-    return NextResponse.json({ error: "The file must be 10 MB or smaller." }, { status: 413 });
+    return NextResponse.json({ error: "حجم الملف لازم يبقى 10 ميجا أو أقل." }, { status: 413 });
   }
   if (file && !ACCEPTED_EXTENSIONS.has(extension(file.name))) {
-    return NextResponse.json({ error: "Use an image, PDF, CSV, .xlsx spreadsheet or text file." }, { status: 415 });
+    return NextResponse.json({ error: "استخدم صورة أو PDF أو CSV أو ملف .xlsx أو ملف نصي." }, { status: 415 });
   }
   if (file && extension(file.name) === "xls") {
-    return NextResponse.json({ error: "Old .xls files are not supported by the free reader. Open the file and save it as .xlsx or CSV, then upload it again." }, { status: 415 });
+    return NextResponse.json({ error: "ملفات .xls القديمة مش مدعومة في القارئ المجاني. افتح الملف واحفظه بصيغة .xlsx أو CSV وارفعه تاني." }, { status: 415 });
   }
 
   try {
     const freeResult = await tryFreeImport(file, pastedText);
     if (freeResult && "plan" in freeResult) return NextResponse.json(freeResult);
     if (!file || !freeResult || !("bytes" in freeResult)) {
-      return NextResponse.json({ error: "We could not understand this plan. Use a spreadsheet with day, exercise, sets and reps columns." }, { status: 422 });
+      return NextResponse.json({ error: "معرفناش نفهم الجدول. استخدم ملف فيه أعمدة اليوم والتمرين والسِتات والعدات." }, { status: 422 });
     }
     return readWithOptionalAi(file, freeResult.bytes);
   } catch (caught) {
     return NextResponse.json({
-      error: caught instanceof Error ? caught.message : "The plan could not be read.",
+      error: getArabicErrorMessage(caught, "معرفناش نقرا الجدول."),
     }, { status: 422 });
   }
 }

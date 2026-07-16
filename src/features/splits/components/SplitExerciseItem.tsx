@@ -8,11 +8,11 @@ export interface SplitExerciseItemProps {
 export function SplitExerciseItem({ splitExercise }: SplitExerciseItemProps) {
   return (
     <li className="flex items-center justify-between text-sm">
-      <span>Exercise {splitExercise.exerciseId.slice(0, 8)}</span>
+      <span>تمرين {splitExercise.exerciseId.slice(0, 8)}</span>
       <span className="opacity-70">
         {splitExercise.targetSets} × {splitExercise.targetRepsMin}-{splitExercise.targetRepsMax}
       </span>
-      {splitExercise.isPersonalAddition ? <span className="text-xs opacity-70">Personal</span> : null}
+      {splitExercise.isPersonalAddition ? <span className="text-xs opacity-70">شخصي</span> : null}
     </li>
   );
 }

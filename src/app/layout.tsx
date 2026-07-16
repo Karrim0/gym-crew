@@ -31,7 +31,8 @@ export default function RootLayout({
 }>) {
   return (
     <html
-      lang="en"
+      lang="ar"
+      dir="rtl"
       className="dark h-full antialiased"
       data-scroll-behavior="smooth"
     >

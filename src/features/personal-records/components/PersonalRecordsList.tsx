@@ -9,7 +9,7 @@ export interface PersonalRecordsListProps {
 /** Minimal placeholder list of personal records. */
 export function PersonalRecordsList({ records }: PersonalRecordsListProps) {
   if (records.length === 0) {
-    return <EmptyState title="No personal records yet" description="Complete a workout to set your first one." />;
+    return <EmptyState title="مفيش أرقام قياسية لسه" description="كمّل تمرينة عشان تسجّل أول رقم." />;
   }
 
   return (

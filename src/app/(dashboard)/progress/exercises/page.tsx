@@ -7,7 +7,7 @@ export default async function ExerciseProgressListPage() {
   const user = await requireCurrentUser();
   return (
     <>
-      <DashboardHeader title="Exercise progress" showBackButton />
+      <DashboardHeader title="تقدم التمارين" showBackButton />
       <PageContainer className="pb-8"><ExerciseProgressListClient userId={user.id} /></PageContainer>
     </>
   );

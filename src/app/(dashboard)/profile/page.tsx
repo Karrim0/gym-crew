@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowUpRight, Dumbbell, Settings, ShieldCheck, UserRound } from "lucide-react";
+import { ArrowUpLeft, Dumbbell, Settings, ShieldCheck, UserRound } from "lucide-react";
 import { DashboardHeader } from "@/components/layout/DashboardHeader";
 import { PageContainer } from "@/components/layout/PageContainer";
 import { LogoutButton } from "@/features/auth/components/LogoutButton";
@@ -14,11 +14,11 @@ export default async function ProfilePage() {
     .select("display_name, avatar_url")
     .eq("id", user.id)
     .maybeSingle();
-  const displayName = profile?.display_name ?? user.email?.split("@")[0] ?? "Athlete";
+  const displayName = profile?.display_name ?? user.email?.split("@")[0] ?? "لاعب";
 
   return (
     <>
-      <DashboardHeader title="Profile & settings" actions={<LogoutButton />} showProfile={false} />
+      <DashboardHeader title="حسابي والإعدادات" actions={<LogoutButton />} showProfile={false} />
       <PageContainer className="space-y-4 pb-8 pt-5">
         <section className="relative overflow-hidden rounded-[30px] border border-indigo-300/15 bg-[linear-gradient(135deg,rgba(139,158,255,.14),rgba(14,18,15,.98)_55%)] p-5 sm:p-6">
           <div className="flex items-center gap-4">
@@ -29,7 +29,7 @@ export default async function ProfilePage() {
               <span className="grid h-20 w-20 place-items-center rounded-[24px] bg-indigo-300 text-neutral-950"><UserRound className="h-8 w-8" /></span>
             )}
             <div className="min-w-0 flex-1">
-              <p className="gc-eyebrow">Athlete profile</p>
+              <p className="gc-eyebrow">حسابك الرياضي</p>
               <h2 className="mt-1 truncate text-2xl font-bold tracking-[-0.035em]">{displayName}</h2>
               <p className="mt-1 truncate text-sm text-neutral-400">{user.email}</p>
             </div>
@@ -39,19 +39,19 @@ export default async function ProfilePage() {
         <div className="grid gap-3 sm:grid-cols-2">
           <Link href="/profile/settings" className="gc-card-interactive flex items-center gap-3 p-4">
             <span className="grid h-11 w-11 place-items-center rounded-2xl bg-indigo-300/10 text-indigo-300"><Settings className="h-5 w-5" /></span>
-            <span className="min-w-0 flex-1"><span className="block font-bold">Edit profile</span><span className="block text-sm text-neutral-500">Name and avatar</span></span>
-            <ArrowUpRight className="h-4 w-4 text-neutral-600" />
+            <span className="min-w-0 flex-1"><span className="block font-bold">عدّل حسابك</span><span className="block text-sm text-neutral-500">الاسم والصورة</span></span>
+            <ArrowUpLeft className="h-4 w-4 text-neutral-600" />
           </Link>
           <Link href="/split/personal" className="gc-card-interactive flex items-center gap-3 p-4">
             <span className="grid h-11 w-11 place-items-center rounded-2xl bg-white/[0.05] text-neutral-300"><Dumbbell className="h-5 w-5" /></span>
-            <span className="min-w-0 flex-1"><span className="block font-bold">Training plan</span><span className="block text-sm text-neutral-500">Manage your personal split</span></span>
-            <ArrowUpRight className="h-4 w-4 text-neutral-600" />
+            <span className="min-w-0 flex-1"><span className="block font-bold">جدول التمرين</span><span className="block text-sm text-neutral-500">ظبّط جدولك الشخصي</span></span>
+            <ArrowUpLeft className="h-4 w-4 text-neutral-600" />
           </Link>
         </div>
 
         <section className="gc-card flex items-start gap-3 p-4">
           <ShieldCheck className="mt-0.5 h-5 w-5 shrink-0 text-indigo-300" />
-          <div><p className="font-bold">Private training data</p><p className="mt-1 text-sm leading-6 text-neutral-500">Your raw sets and workout history stay private. Group privacy settings only share small activity summaries.</p></div>
+          <div><p className="font-bold">بيانات تمرينك خاصة</p><p className="mt-1 text-sm leading-6 text-neutral-500">تفاصيل السِتات وسجل تمارينك بيفضلوا خاصين. الجروب بيشوف ملخصات بسيطة بس حسب إعداداتك.</p></div>
         </section>
       </PageContainer>
     </>

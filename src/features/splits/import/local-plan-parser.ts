@@ -120,7 +120,7 @@ function cleanTitle(value: string): string {
     title = title.replace(new RegExp(token, "giu"), " ");
   }
   title = title.replace(/^[\s\-–—:|/]+|[\s\-–—:|/]+$/g, "").replace(/\s+/g, " ").trim();
-  return title || "Training day";
+  return title || "يوم تمرين";
 }
 
 function detectWeekday(value: string): Weekday | undefined {
@@ -343,7 +343,7 @@ function parseRowsIntoDrafts(sheet: SpreadsheetSheet): ParsedDayDraft[] {
   let current: ParsedDayDraft | null = sheetDay;
   let map: HeaderMap | null = null;
 
-  function ensureCurrent(label = sheet.name || "Imported workout") {
+  function ensureCurrent(label = sheet.name || "تمرينة مدخلة") {
     if (!current) {
       current = { sourceLabel: label, weekday: detectWeekday(label), title: cleanTitle(label), explicitRest: isRestLabel(label), exercises: [] };
     }
@@ -412,8 +412,8 @@ function finalizeExercise(draft: ParsedExerciseDraft, dayTitle: string, warnings
   const repsMin = draft.repsMin && draft.repsMin > 0 ? Math.min(100, Math.round(draft.repsMin)) : 8;
   const repsMaxRaw = draft.repsMax && draft.repsMax > 0 ? Math.min(100, Math.round(draft.repsMax)) : (draft.repsMin ? repsMin : 12);
   const repsMax = Math.max(repsMin, repsMaxRaw);
-  if (!draft.sets || !draft.repsMin) warnings.push(`${draft.name}: sets or reps were missing, so 2 sets of 8–12 were added for review.`);
-  if ((draft.confidence ?? inferred.confidence) < 0.75) warnings.push(`${draft.name}: check the exercise name or target muscle.`);
+  if (!draft.sets || !draft.repsMin) warnings.push(`${draft.name}: عدد السِتات أو العدات مش واضح، فحطّينا سِتين من 8 لـ12 عدة مؤقتًا عشان تراجعهم.`);
+  if ((draft.confidence ?? inferred.confidence) < 0.75) warnings.push(`${draft.name}: راجع اسم التمرين أو العضلة المستهدفة عشان القراءة مش مؤكدة.`);
   return {
     name: draft.name.slice(0, 100),
     primaryMuscle: draft.primaryMuscle ?? inferred.muscle,
@@ -425,10 +425,6 @@ function finalizeExercise(draft: ParsedExerciseDraft, dayTitle: string, warnings
   };
 }
 
-function capitalize(value: string) {
-  return value.charAt(0).toUpperCase() + value.slice(1);
-}
-
 function ensureNoThreeConsecutiveRest(days: ImportedPlanDay[], warnings: string[]) {
   for (let pass = 0; pass < 3; pass += 1) {
     const tripleIndex = days.findIndex((day, index) => day.workoutType === "rest" && days[(index + 1) % 7].workoutType === "rest" && days[(index + 2) % 7].workoutType === "rest");
@@ -437,14 +433,14 @@ function ensureNoThreeConsecutiveRest(days: ImportedPlanDay[], warnings: string[
     days[flexIndex] = {
       ...days[flexIndex],
       workoutType: "custom",
-      title: "Flexible training",
-      focus: "Choose a session",
+      title: "تمرين مرن",
+      focus: "اختار تمرينة",
       iconKey: "activity",
       colorKey: "indigo",
-      notes: "Added to avoid more than two consecutive recovery days. Edit or move this day during review.",
+      notes: "اتضاف عشان ميبقاش فيه أكتر من يومين راحة ورا بعض. عدّله أو حرّكه وقت المراجعة.",
       exercises: [],
     };
-    warnings.push(`${capitalize(days[flexIndex].weekday)} was added as a flexible training day because Gym Crew allows at most two consecutive recovery days.`);
+    warnings.push(`اتضاف يوم تمرين مرن في الجدول عشان ميبقاش فيه أكتر من يومين راحة ورا بعض. راجعه قبل الحفظ.`);
   }
 }
 
@@ -458,7 +454,7 @@ function toPlan(draftsInput: ParsedDayDraft[], sourceTitle: string): ImportedPla
     const existing = byWeekday.get(draft.weekday);
     if (existing) {
       existing.exercises.push(...draft.exercises);
-      if (existing.title === "Training day" && draft.title !== "Training day") existing.title = draft.title;
+      if (existing.title === "يوم تمرين" && draft.title !== "يوم تمرين") existing.title = draft.title;
     } else {
       byWeekday.set(draft.weekday, { ...draft, exercises: [...draft.exercises] });
     }
@@ -467,9 +463,9 @@ function toPlan(draftsInput: ParsedDayDraft[], sourceTitle: string): ImportedPla
   const days: ImportedPlanDay[] = WEEKDAYS.map((weekday, index) => {
     const draft = byWeekday.get(weekday);
     if (!draft) {
-      return { weekday, workoutType: "rest", title: "Recovery", focus: "Recovery", iconKey: "moon", colorKey: "blue", notes: "", exercises: [] };
+      return { weekday, workoutType: "rest", title: "راحة", focus: "راحة", iconKey: "moon", colorKey: "blue", notes: "", exercises: [] };
     }
-    const title = draft.explicitRest ? "Recovery" : (draft.title || "Training day").slice(0, 40);
+    const title = draft.explicitRest ? "راحة" : (draft.title || "يوم تمرين").slice(0, 40);
     const workoutType = draft.explicitRest ? "rest" : inferWorkoutType(title);
     const visuals = dayVisuals(workoutType, index);
     const exercises = workoutType === "rest" ? [] : draft.exercises.map((exercise) => finalizeExercise(exercise, title, warnings));
@@ -477,7 +473,7 @@ function toPlan(draftsInput: ParsedDayDraft[], sourceTitle: string): ImportedPla
       weekday,
       workoutType,
       title,
-      focus: workoutType === "rest" ? "Recovery" : title.slice(0, 32),
+      focus: workoutType === "rest" ? "راحة" : title.slice(0, 32),
       ...visuals,
       notes: (draft.notes ?? "").slice(0, 240),
       exercises,
@@ -486,13 +482,13 @@ function toPlan(draftsInput: ParsedDayDraft[], sourceTitle: string): ImportedPla
 
   ensureNoThreeConsecutiveRest(days, warnings);
   return {
-    title: (sourceTitle.replace(/\.[^.]+$/u, "").trim() || "Imported training plan").slice(0, 80),
+    title: (sourceTitle.replace(/\.[^.]+$/u, "").trim() || "جدول تمرين مستورد").slice(0, 80),
     days,
     warnings: [...new Set(warnings)].slice(0, 12),
   };
 }
 
-export function parseSpreadsheetPlan(sheets: SpreadsheetSheet[], sourceTitle = "Imported spreadsheet"): ImportedPlan | null {
+export function parseSpreadsheetPlan(sheets: SpreadsheetSheet[], sourceTitle = "جدول مستورد"): ImportedPlan | null {
   const drafts = sheets.flatMap(parseRowsIntoDrafts);
   const exerciseCount = drafts.reduce((sum, draft) => sum + draft.exercises.length, 0);
   if (exerciseCount === 0 && !drafts.some((draft) => draft.explicitRest)) return null;
@@ -531,7 +527,7 @@ function parseCsvRows(text: string): string[][] {
   return rows;
 }
 
-export function parseTextPlan(text: string, sourceTitle = "Imported plan", csv = false): ImportedPlan | null {
+export function parseTextPlan(text: string, sourceTitle = "جدول مستورد", csv = false): ImportedPlan | null {
   const cleaned = text.replace(/\r\n/g, "\n").trim();
   if (cleaned.length < 4) return null;
   const rows = csv

@@ -17,7 +17,7 @@ export function AddSetButton({ workoutExerciseId, onAdd }: AddSetButtonProps) {
       className="flex items-center gap-1 text-sm"
     >
       <Plus className="h-4 w-4" aria-hidden />
-      Add set
+      ضيف سِت
     </button>
   );
 }

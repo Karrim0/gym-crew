@@ -36,6 +36,6 @@ export async function GET(request: Request) {
   }
 
   const loginUrl = new URL("/login", `${origin}/`);
-  loginUrl.searchParams.set("error", "Unable to confirm your authentication request. The link may have expired.");
+  loginUrl.searchParams.set("error", "معرفناش نأكد الطلب. ممكن يكون اللينك انتهت صلاحيته.");
   return NextResponse.redirect(loginUrl);
 }

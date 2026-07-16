@@ -130,7 +130,7 @@ export async function fetchActiveWorkoutSession(): Promise<WorkoutSessionWithDet
   const supabase = createClient();
   const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
   const currentUser = sessionData.session?.user;
-  if (sessionError || !currentUser) throw new Error("You must be signed in.");
+  if (sessionError || !currentUser) throw new Error("لازم تسجّل دخول الأول.");
 
   const local = await getLocalActiveWorkout(currentUser.id);
   if (local) return local;
@@ -250,17 +250,17 @@ export async function updateWorkoutSet(
   values: { weightKg: number | null; reps: number | null; isCompleted: boolean; isWarmup?: boolean },
 ): Promise<WorkoutSet> {
   if (values.weightKg !== null && (!Number.isFinite(values.weightKg) || values.weightKg < 0 || values.weightKg > 5000)) {
-    throw new Error("Enter a valid weight.");
+    throw new Error("اكتب وزن صحيح.");
   }
   if (values.reps !== null && (!Number.isInteger(values.reps) || values.reps < 0 || values.reps > 1000)) {
-    throw new Error("Enter a valid whole-number rep count.");
+    throw new Error("اكتب عدد عدات صحيح.");
   }
   if (values.isCompleted && (values.reps === null || values.reps <= 0)) {
-    throw new Error("Add at least one rep before completing the set.");
+    throw new Error("سجّل عدة واحدة على الأقل قبل ما تخلّص السِت.");
   }
   const db = getOfflineDatabase();
   const existing = await db.workoutSets.get(setId);
-  if (!existing) throw new Error("The set is not available on this device.");
+  if (!existing) throw new Error("السِت دي مش موجودة على الجهاز.");
   const updated: WorkoutSet = {
     ...existing,
     weightKg: values.weightKg,
@@ -312,7 +312,7 @@ export async function updateWorkoutExerciseNotes(
 ): Promise<void> {
   const db = getOfflineDatabase();
   const exercise = await db.workoutExercises.get(workoutExerciseId);
-  if (!exercise) throw new Error("Workout exercise not found locally.");
+  if (!exercise) throw new Error("التمرين مش موجود على الجهاز.");
   const updated = { ...exercise, notes };
   await db.workoutExercises.put(updated);
   await enqueueOfflineMutation(workoutExerciseMutation("update", { ...updated, sets: [] }));
@@ -321,7 +321,7 @@ export async function updateWorkoutExerciseNotes(
 
 export async function updateWorkoutSessionNotes(sessionId: UUID, notes: string): Promise<void> {
   const session = await getLocalWorkoutSession(sessionId);
-  if (!session) throw new Error("Workout session not found locally.");
+  if (!session) throw new Error("التمرينة مش موجودة على الجهاز.");
   const updated = { ...session, notes, updatedAt: new Date().toISOString() };
   await saveWorkoutLocally(updated);
   await enqueueOfflineMutation(workoutSessionMutation("update", updated));
@@ -335,9 +335,9 @@ export async function addExerciseToWorkout(
   sessionOnly = true,
 ): Promise<UUID> {
   const session = await getLocalWorkoutSession(sessionId);
-  if (!session) throw new Error("Active workout not found locally.");
+  if (!session) throw new Error("التمرينة الشغالة مش موجودة على الجهاز.");
   const exercise = await fetchExerciseById(exerciseId);
-  if (!exercise) throw new Error("Exercise not found.");
+  if (!exercise) throw new Error("التمرين مش موجود.");
 
   const now = new Date().toISOString();
   const workoutExerciseId = generateClientId();
@@ -382,20 +382,20 @@ export async function reorderWorkoutExercises(
   orderedExerciseIds: UUID[],
 ): Promise<void> {
   const session = await getLocalWorkoutSession(sessionId);
-  if (!session) throw new Error("Active workout not found locally.");
+  if (!session) throw new Error("التمرينة الشغالة مش موجودة على الجهاز.");
 
   const currentIds = new Set(session.exercises.map((exercise) => exercise.id));
   if (
     orderedExerciseIds.length !== session.exercises.length ||
     orderedExerciseIds.some((id) => !currentIds.has(id))
   ) {
-    throw new Error("Exercise order is out of date. Refresh and try again.");
+    throw new Error("ترتيب التمارين اتغيّر. حدّث الصفحة وجرّب تاني.");
   }
 
   const db = getOfflineDatabase();
   const updates = orderedExerciseIds.map((id, order) => {
     const exercise = session.exercises.find((item) => item.id === id);
-    if (!exercise) throw new Error("Workout exercise not found.");
+    if (!exercise) throw new Error("التمرين مش موجود.");
     return { ...exercise, order };
   });
 
@@ -486,7 +486,7 @@ export async function fetchPreviousPerformance(
 
 export async function cancelWorkoutSession(sessionId: UUID): Promise<void> {
   const session = await getLocalWorkoutSession(sessionId);
-  if (!session) throw new Error("The workout session is not available locally.");
+  if (!session) throw new Error("التمرينة مش متاحة على الجهاز.");
   const now = new Date().toISOString();
   const cancelled: WorkoutSessionWithDetails = {
     ...session,
@@ -505,7 +505,7 @@ export async function finishWorkoutSession(
   notes?: string,
 ): Promise<WorkoutSessionWithDetails> {
   const session = await getLocalWorkoutSession(sessionId);
-  if (!session) throw new Error("The workout session is not available locally.");
+  if (!session) throw new Error("التمرينة مش متاحة على الجهاز.");
   const now = new Date().toISOString();
   const completed: WorkoutSessionWithDetails = {
     ...session,
@@ -524,7 +524,7 @@ export async function finishWorkoutSession(
 
 export async function deleteCompletedWorkoutSession(sessionId: UUID): Promise<void> {
   if (typeof navigator !== "undefined" && !navigator.onLine) {
-    throw new Error("Connect to the internet before deleting a completed workout.");
+    throw new Error("وصّل النت قبل ما تمسح تمرينة مكتملة.");
   }
 
   const supabase = createClient();

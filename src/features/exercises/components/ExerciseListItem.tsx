@@ -1,4 +1,5 @@
 import type { Exercise } from "@/types";
+import { muscleLabelAr, translateExerciseName } from "@/lib/localization";
 
 export interface ExerciseListItemProps {
   exercise: Exercise;
@@ -12,10 +13,10 @@ export function ExerciseListItem({ exercise, onSelect }: ExerciseListItemProps) 
       <button
         type="button"
         onClick={() => onSelect?.(exercise)}
-        className="flex w-full items-center justify-between p-2 text-left"
+        className="flex w-full items-center justify-between p-2 text-start"
       >
-        <span>{exercise.name}</span>
-        <span className="text-xs capitalize opacity-70">{exercise.primaryMuscle}</span>
+        <span>{translateExerciseName(exercise.name)}</span>
+        <span className="text-xs capitalize opacity-70">{muscleLabelAr(exercise.primaryMuscle)}</span>
       </button>
     </li>
   );

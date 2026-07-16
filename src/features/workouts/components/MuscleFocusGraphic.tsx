@@ -1,4 +1,5 @@
 import type { MuscleGroup } from "@/types";
+import { MUSCLE_LABELS_AR } from "@/lib/localization";
 
 interface MuscleFocusGraphicProps {
   primary: MuscleGroup;
@@ -6,18 +7,7 @@ interface MuscleFocusGraphicProps {
   compact?: boolean;
 }
 
-const MUSCLE_LABELS: Record<MuscleGroup, string> = {
-  chest: "Chest",
-  back: "Back",
-  shoulders: "Shoulders",
-  biceps: "Biceps",
-  triceps: "Triceps",
-  quads: "Quads",
-  hamstrings: "Hamstrings",
-  glutes: "Glutes",
-  calves: "Calves",
-  core: "Core",
-};
+const MUSCLE_LABELS = MUSCLE_LABELS_AR;
 
 function regionClass(
   muscle: MuscleGroup,
@@ -39,7 +29,7 @@ export function MuscleFocusGraphic({
       className={`relative overflow-hidden rounded-2xl border border-white/[0.07] bg-black/15 ${
         compact ? "h-28 w-28" : "h-36 w-full"
       }`}
-      aria-label={`${MUSCLE_LABELS[primary]} muscle focus`}
+      aria-label={`تركيز عضلة ${MUSCLE_LABELS[primary]}`}
     >
       <svg
         viewBox="0 0 220 150"

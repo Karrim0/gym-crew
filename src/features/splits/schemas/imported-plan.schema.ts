@@ -24,7 +24,7 @@ export const importedPlanExerciseSchema = z.object({
   notes: z.string().trim().max(160).optional().default(""),
   confidence: z.number().min(0).max(1).optional().default(1),
 }).refine((exercise) => exercise.repsMax >= exercise.repsMin, {
-  message: "Maximum reps must be at least minimum reps.",
+  message: "أعلى عدد عدات لازم يبقى أكبر من أو يساوي أقل عدد.",
   path: ["repsMax"],
 });
 
@@ -46,14 +46,14 @@ export const importedPlanSchema = z.object({
 }).superRefine((plan, context) => {
   const weekdays = new Set(plan.days.map((day) => day.weekday));
   if (weekdays.size !== 7) {
-    context.addIssue({ code: "custom", message: "The plan must contain every weekday exactly once.", path: ["days"] });
+    context.addIssue({ code: "custom", message: "الجدول لازم يحتوي على أيام الأسبوع السبعة مرة واحدة.", path: ["days"] });
   }
 
   const ordered = ["saturday", "sunday", "monday", "tuesday", "wednesday", "thursday", "friday"] as const;
   const types = ordered.map((weekday) => plan.days.find((day) => day.weekday === weekday)?.workoutType ?? "rest");
   for (let index = 0; index < types.length; index += 1) {
     if (types[index] === "rest" && types[(index + 1) % 7] === "rest" && types[(index + 2) % 7] === "rest") {
-      context.addIssue({ code: "custom", message: "A plan cannot contain more than two consecutive rest days.", path: ["days"] });
+      context.addIssue({ code: "custom", message: "مينفعش الجدول يبقى فيه أكتر من يومين راحة ورا بعض.", path: ["days"] });
       break;
     }
   }

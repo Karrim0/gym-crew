@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { ChevronLeft } from "lucide-react";
+import { ChevronRight } from "lucide-react";
 
 export interface BackButtonProps {
   fallbackHref?: string;
@@ -14,11 +14,11 @@ export function BackButton({ fallbackHref }: BackButtonProps) {
   return (
     <button
       type="button"
-      aria-label="Go back"
+      aria-label="ارجع"
       onClick={() => (fallbackHref ? router.push(fallbackHref) : router.back())}
       className="inline-flex items-center justify-center"
     >
-      <ChevronLeft className="h-5 w-5" aria-hidden />
+      <ChevronRight className="h-5 w-5" aria-hidden />
     </button>
   );
 }

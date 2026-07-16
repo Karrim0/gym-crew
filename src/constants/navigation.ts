@@ -10,9 +10,9 @@ export interface NavigationItem {
 }
 
 export const MAIN_NAVIGATION_ITEMS: readonly NavigationItem[] = [
-  { id: "home", label: "Home", href: "/dashboard", icon: House, activePrefixes: ["/dashboard"] },
-  { id: "split", label: "My split", href: "/split/personal", icon: Rows3, activePrefixes: ["/split"] },
-  { id: "workout", label: "Workout", href: "/workout/today", icon: Dumbbell, activePrefixes: ["/workout"] },
-  { id: "crew", label: "Crew", href: "/group", icon: Users, activePrefixes: ["/group"] },
-  { id: "progress", label: "Progress", href: "/progress", icon: ChartNoAxesCombined, activePrefixes: ["/progress", "/workout/history"] },
+  { id: "home", label: "الرئيسية", href: "/dashboard", icon: House, activePrefixes: ["/dashboard"] },
+  { id: "split", label: "جدولي", href: "/split/personal", icon: Rows3, activePrefixes: ["/split"] },
+  { id: "workout", label: "التمرين", href: "/workout/today", icon: Dumbbell, activePrefixes: ["/workout"] },
+  { id: "crew", label: "الجروب", href: "/group", icon: Users, activePrefixes: ["/group"] },
+  { id: "progress", label: "تقدمي", href: "/progress", icon: ChartNoAxesCombined, activePrefixes: ["/progress", "/workout/history"] },
 ];

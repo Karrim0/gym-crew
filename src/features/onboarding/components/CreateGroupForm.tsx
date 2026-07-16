@@ -1,5 +1,6 @@
 "use client";
 
+import { getArabicErrorMessage } from "@/lib/localization";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
@@ -33,7 +34,7 @@ export function CreateGroupForm({ onSubmit }: CreateGroupFormProps) {
       router.replace("/split/personal");
       router.refresh();
     } catch (error) {
-      setSubmitError(error instanceof Error ? error.message : "Unable to create the group.");
+      setSubmitError(getArabicErrorMessage(error, "معرفناش نعمل الجروب."));
     }
   }
 
@@ -41,14 +42,14 @@ export function CreateGroupForm({ onSubmit }: CreateGroupFormProps) {
     <form onSubmit={handleSubmit(submit)} className="flex flex-col gap-4" noValidate>
       <div>
         <label htmlFor="name" className="mb-1.5 block text-sm font-bold text-neutral-300">
-          Group name
+          اسم الجروب
         </label>
         <input id="name" className="gc-input" {...register("name")} />
         {errors.name ? <p className="mt-1.5 text-xs font-semibold text-red-400">{errors.name.message}</p> : null}
       </div>
       {submitError ? <p role="alert" className="rounded-xl bg-red-400/10 px-3 py-2 text-sm font-semibold text-red-300">{submitError}</p> : null}
       <button type="submit" disabled={isSubmitting} className="gc-primary-button w-full disabled:opacity-50">
-        {isSubmitting ? "Creating group…" : "Create group"}
+        {isSubmitting ? "بنعمل الجروب…" : "اعمل الجروب"}
       </button>
     </form>
   );

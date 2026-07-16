@@ -1,7 +1,7 @@
-/** Formats a weight in kilograms for display, e.g. `82.5` -> "82.5 kg". */
+/** Formats a weight in kilograms for display, e.g. `82.5` -> "82.5 كجم". */
 export function formatWeight(weightKg: number): string {
   const trimmed = Number.isInteger(weightKg) ? weightKg.toString() : weightKg.toFixed(1);
-  return `${trimmed} kg`;
+  return `${trimmed} كجم`;
 }
 
 /** Formats a duration in seconds as `mm:ss`, or `h:mm:ss` past one hour. */

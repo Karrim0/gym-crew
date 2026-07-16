@@ -12,7 +12,7 @@ export default async function PersonalSplitPage() {
   if (!membership) redirect("/onboarding");
   return (
     <>
-      <DashboardHeader title="My split" />
+      <DashboardHeader title="جدولي" />
       <PageContainer className="pb-8">
         <Suspense fallback={<div className="mt-4 h-72 animate-pulse rounded-[24px] border border-white/[0.06] bg-white/[0.035]" />}>
           <SplitManager mode="personal" groupId={membership.groupId} userId={user.id} role={membership.role} />

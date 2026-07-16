@@ -1,5 +1,6 @@
 "use client";
 
+import { getArabicErrorMessage } from "@/lib/localization";
 import { useEffect, useState } from "react";
 import { Camera, Save, UserRound } from "lucide-react";
 import type { UUID, UserProfile } from "@/types";
@@ -20,7 +21,7 @@ export function ProfileSettingsClient({ userId }: ProfileSettingsClientProps) {
       setProfile(value);
       setDisplayName(value?.displayName ?? "");
       setAvatarUrl(value?.avatarUrl ?? null);
-    }).catch((caught) => setError(caught instanceof Error ? caught.message : "Unable to load profile."));
+    }).catch((caught) => setError(getArabicErrorMessage(caught, "معرفناش نحمّل الحساب.")));
   }, [userId]);
 
   async function upload(file: File | undefined) {
@@ -30,9 +31,9 @@ export function ProfileSettingsClient({ userId }: ProfileSettingsClientProps) {
     try {
       const url = await uploadProfileAvatar(userId, file);
       setAvatarUrl(url);
-      setMessage("Image uploaded. Save to update your profile.");
+      setMessage("الصورة اترفعت. اضغط حفظ عشان تحدّث حسابك.");
     } catch (caught) {
-      setError(caught instanceof Error ? caught.message : "Unable to upload image.");
+      setError(getArabicErrorMessage(caught, "معرفناش نرفع الصورة."));
     } finally {
       setIsSaving(false);
     }
@@ -40,7 +41,7 @@ export function ProfileSettingsClient({ userId }: ProfileSettingsClientProps) {
 
   async function save() {
     if (displayName.trim().length < 2) {
-      setError("Display name must be at least 2 characters.");
+      setError("الاسم لازم يبقى حرفين على الأقل.");
       return;
     }
     setIsSaving(true);
@@ -49,15 +50,15 @@ export function ProfileSettingsClient({ userId }: ProfileSettingsClientProps) {
     try {
       const updated = await updateProfile(userId, { displayName, avatarUrl });
       setProfile(updated);
-      setMessage("Profile saved.");
+      setMessage("الحساب اتحفظ.");
     } catch (caught) {
-      setError(caught instanceof Error ? caught.message : "Unable to save profile.");
+      setError(getArabicErrorMessage(caught, "معرفناش نحفظ الحساب."));
     } finally {
       setIsSaving(false);
     }
   }
 
-  if (!profile && !error) return <p className="py-8 text-center text-sm text-neutral-500">Loading profile…</p>;
+  if (!profile && !error) return <p className="py-8 text-center text-sm text-neutral-500">بنحمّل الحساب…</p>;
 
   return (
     <div className="space-y-5">
@@ -65,7 +66,7 @@ export function ProfileSettingsClient({ userId }: ProfileSettingsClientProps) {
         <div className="relative">
           {avatarUrl ? (
             // eslint-disable-next-line @next/next/no-img-element
-            <img src={avatarUrl} alt="Profile avatar" className="h-24 w-24 rounded-full border object-cover" />
+            <img src={avatarUrl} alt="صورة الحساب" className="h-24 w-24 rounded-full border object-cover" />
           ) : (
             <span className="grid h-24 w-24 place-items-center rounded-full border bg-neutral-100 dark:bg-neutral-900"><UserRound className="h-10 w-10" /></span>
           )}
@@ -75,20 +76,20 @@ export function ProfileSettingsClient({ userId }: ProfileSettingsClientProps) {
           </label>
         </div>
         <div>
-          <h2 className="font-semibold">Profile photo</h2>
-          <p className="text-sm text-neutral-500">JPG, PNG or WebP. Max 2 MB.</p>
+          <h2 className="font-semibold">صورة الحساب</h2>
+          <p className="text-sm text-neutral-500">JPG أو PNG أو WebP، بحد أقصى 2 ميجا.</p>
         </div>
       </div>
 
       <label className="block">
-        <span className="mb-1 block text-sm font-medium">Display name</span>
+        <span className="mb-1 block text-sm font-medium">الاسم الظاهر</span>
         <input value={displayName} onChange={(event) => setDisplayName(event.target.value)} maxLength={60} className="w-full rounded-xl border bg-transparent px-3 py-2.5" />
       </label>
 
       {error ? <p className="text-sm text-red-600">{error}</p> : null}
       {message ? <p className="text-sm text-emerald-600">{message}</p> : null}
       <button type="button" disabled={isSaving} onClick={() => void save()} className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-indigo-300 px-4 py-3 font-bold text-neutral-950 disabled:opacity-50">
-        <Save className="h-4 w-4" /> {isSaving ? "Saving…" : "Save profile"}
+        <Save className="h-4 w-4" /> {isSaving ? "بنحفظ…" : "احفظ الحساب"}
       </button>
     </div>
   );

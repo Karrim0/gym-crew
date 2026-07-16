@@ -14,7 +14,7 @@ export function FinishWorkoutButton({ onFinish, disabled }: FinishWorkoutButtonP
       disabled={disabled}
       className="w-full rounded-md border p-3 text-center font-medium"
     >
-      Finish workout
+      خلّص التمرينة
     </button>
   );
 }

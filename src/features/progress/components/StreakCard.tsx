@@ -7,10 +7,10 @@ export interface StreakCardProps {
 export function StreakCard({ currentStreak, longestStreak }: StreakCardProps) {
   return (
     <div className="rounded-lg border p-3">
-      <p className="text-sm font-medium">Streak</p>
+      <p className="text-sm font-medium">السلسلة</p>
       <div className="mt-1 flex gap-4 text-sm opacity-70">
-        <span>Current: {currentStreak}</span>
-        <span>Longest: {longestStreak}</span>
+        <span>الحالية: {currentStreak}</span>
+        <span>الأطول: {longestStreak}</span>
       </div>
     </div>
   );

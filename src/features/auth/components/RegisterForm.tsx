@@ -1,5 +1,6 @@
 "use client";
 
+import { getArabicErrorMessage } from "@/lib/localization";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -41,11 +42,11 @@ export function RegisterForm({ onSubmit }: RegisterFormProps) {
       if (error) throw error;
 
       if (!authData.user) {
-        throw new Error("Supabase did not return a user. Please try again.");
+        throw new Error("الحساب متعملش بشكل صحيح. جرّب تاني.");
       }
 
       if (authData.user.identities?.length === 0) {
-        throw new Error("This email is already registered. Log in or reset its password instead.");
+        throw new Error("الإيميل ده مسجل قبل كده. اعمل تسجيل دخول أو غيّر الباسورد.");
       }
 
       if (authData.session) {
@@ -58,7 +59,7 @@ export function RegisterForm({ onSubmit }: RegisterFormProps) {
       setCreatedEmail(normalizedEmail);
       reset();
     } catch (error) {
-      setSubmitError(error instanceof Error ? error.message : "Unable to create your account.");
+      setSubmitError(getArabicErrorMessage(error, "معرفناش نعمل الحساب."));
     }
   }
 
@@ -71,9 +72,9 @@ export function RegisterForm({ onSubmit }: RegisterFormProps) {
     try {
       const { error } = await resendSignUpEmail(createdEmail);
       if (error) throw error;
-      setResendMessage("A new confirmation email was sent. Check spam if it does not arrive soon.");
+      setResendMessage("بعتنالك إيميل تأكيد جديد. شوف السبام لو موصلش.");
     } catch (error) {
-      setSubmitError(error instanceof Error ? error.message : "Unable to resend the email.");
+      setSubmitError(getArabicErrorMessage(error, "معرفناش نعيد إرسال الإيميل."));
     } finally {
       setIsResending(false);
     }
@@ -87,15 +88,15 @@ export function RegisterForm({ onSubmit }: RegisterFormProps) {
             <MailCheck className="h-5 w-5" />
           </span>
           <div>
-            <h2 className="text-lg font-bold">Confirm your email</h2>
+            <h2 className="text-lg font-bold">أكد إيميلك</h2>
             <p className="mt-1 text-sm leading-6 text-neutral-400">
-              We created the account for <strong className="text-white">{createdEmail}</strong>. Open the email from Gym Crew, then come back and log in.
+              عملنالك حساب على <strong className="text-white">{createdEmail}</strong>. افتح الإيميل اللي جالك من Gym Crew، وبعدها ارجع وسجّل دخول.
             </p>
           </div>
         </div>
 
         <div className="rounded-xl border border-indigo-300/15 bg-indigo-300/[0.06] p-3 text-sm text-neutral-300">
-          <p className="flex items-center gap-2 font-semibold"><CheckCircle2 className="h-4 w-4 text-indigo-200" /> The confirmation link should return to Gym Crew, not localhost.</p>
+          <p className="flex items-center gap-2 font-semibold"><CheckCircle2 className="h-4 w-4 text-indigo-200" /> لينك التأكيد لازم يرجّعك لـGym Crew، مش localhost.</p>
         </div>
 
         <AuthSubmitMessage message={submitError} />
@@ -103,9 +104,9 @@ export function RegisterForm({ onSubmit }: RegisterFormProps) {
 
         <button type="button" onClick={() => void resend()} disabled={isResending} className="gc-secondary-button w-full disabled:opacity-50">
           <RotateCw className={`h-4 w-4 ${isResending ? "animate-spin" : ""}`} />
-          {isResending ? "Sending…" : "Resend confirmation email"}
+          {isResending ? "بنبعت…" : "ابعت إيميل التأكيد تاني"}
         </button>
-        <Link href="/login" className="gc-primary-button w-full">Continue to login</Link>
+        <Link href="/login" className="gc-primary-button w-full">روح لتسجيل الدخول</Link>
       </section>
     );
   }
@@ -113,22 +114,22 @@ export function RegisterForm({ onSubmit }: RegisterFormProps) {
   return (
     <form onSubmit={handleSubmit(submit)} className="flex flex-col gap-4" noValidate>
       <div>
-        <label htmlFor="displayName" className="mb-1.5 block text-sm font-semibold text-neutral-300">Name</label>
+        <label htmlFor="displayName" className="mb-1.5 block text-sm font-semibold text-neutral-300">الاسم</label>
         <input id="displayName" autoComplete="name" className="gc-input" {...register("displayName")} />
         {errors.displayName ? <p className="mt-1.5 text-xs font-semibold text-red-400">{errors.displayName.message}</p> : null}
       </div>
       <div>
-        <label htmlFor="email" className="mb-1.5 block text-sm font-semibold text-neutral-300">Email</label>
+        <label htmlFor="email" className="mb-1.5 block text-sm font-semibold text-neutral-300">الإيميل</label>
         <input id="email" type="email" autoComplete="email" className="gc-input" {...register("email")} />
         {errors.email ? <p className="mt-1.5 text-xs font-semibold text-red-400">{errors.email.message}</p> : null}
       </div>
       <div>
-        <label htmlFor="password" className="mb-1.5 block text-sm font-semibold text-neutral-300">Password</label>
+        <label htmlFor="password" className="mb-1.5 block text-sm font-semibold text-neutral-300">الباسورد</label>
         <input id="password" type="password" autoComplete="new-password" className="gc-input" {...register("password")} />
         {errors.password ? <p className="mt-1.5 text-xs font-semibold text-red-400">{errors.password.message}</p> : null}
       </div>
       <div>
-        <label htmlFor="confirmPassword" className="mb-1.5 block text-sm font-semibold text-neutral-300">Confirm password</label>
+        <label htmlFor="confirmPassword" className="mb-1.5 block text-sm font-semibold text-neutral-300">أكد الباسورد</label>
         <input id="confirmPassword" type="password" autoComplete="new-password" className="gc-input" {...register("confirmPassword")} />
         {errors.confirmPassword ? <p className="mt-1.5 text-xs font-semibold text-red-400">{errors.confirmPassword.message}</p> : null}
       </div>
@@ -136,12 +137,12 @@ export function RegisterForm({ onSubmit }: RegisterFormProps) {
       <AuthSubmitMessage message={submitError} />
 
       <button type="submit" disabled={isSubmitting} className="gc-primary-button mt-1 w-full disabled:cursor-not-allowed disabled:opacity-50">
-        {isSubmitting ? "Creating account…" : "Create account"}
+        {isSubmitting ? "بنعمل الحساب…" : "اعمل حساب"}
       </button>
 
       <p className="text-sm text-neutral-400">
-        Already have an account?{" "}
-        <Link href="/login" className="font-semibold text-white transition hover:text-indigo-200">Log in</Link>
+        عندك حساب بالفعل؟{" "}
+        <Link href="/login" className="font-semibold text-white transition hover:text-indigo-200">سجّل دخول</Link>
       </p>
     </form>
   );

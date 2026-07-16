@@ -1,9 +1,11 @@
 /* eslint-disable react-hooks/set-state-in-effect */
 "use client";
 
+import { getArabicErrorMessage } from "@/lib/localization";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Shield, Trash2, UserRound } from "lucide-react";
 import type { GroupRole, UUID } from "@/types";
+import { groupRoleLabelAr } from "@/lib/localization";
 import type { GroupMemberWeeklyStats, GroupMemberWithProfile } from "../types";
 import {
   fetchGroupMembers,
@@ -36,7 +38,7 @@ export function GroupMembersClient({ groupId, currentUserId, currentRole }: Grou
       setMembers(nextMembers);
       setStats(nextStats);
     } catch (caught) {
-      setError(caught instanceof Error ? caught.message : "Unable to load members.");
+      setError(getArabicErrorMessage(caught, "معرفناش نحمّل الأعضاء."));
     } finally {
       setIsLoading(false);
     }
@@ -49,15 +51,15 @@ export function GroupMembersClient({ groupId, currentUserId, currentRole }: Grou
     setBusyId(member.id);
     setError(null);
     try { await updateGroupMemberRole(member.id, role); await load(); }
-    catch (caught) { setError(caught instanceof Error ? caught.message : "Unable to update the role."); }
+    catch (caught) { setError(getArabicErrorMessage(caught, "معرفناش نغيّر الصلاحية.")); }
     finally { setBusyId(null); }
   }
 
   async function remove(member: GroupMemberWithProfile) {
-    if (!window.confirm(`Remove ${member.profile.displayName} from the group?`)) return;
+    if (!window.confirm(`تشيل ${member.profile.displayName} من الجروب؟`)) return;
     setBusyId(member.id);
     try { await removeGroupMember(member.id); await load(); }
-    catch (caught) { setError(caught instanceof Error ? caught.message : "Unable to remove the member."); }
+    catch (caught) { setError(getArabicErrorMessage(caught, "معرفناش نشيل العضو.")); }
     finally { setBusyId(null); }
   }
 
@@ -77,13 +79,13 @@ export function GroupMembersClient({ groupId, currentUserId, currentRole }: Grou
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={member.profile.avatarUrl} alt="" className="h-12 w-12 rounded-full object-cover" />
               ) : <span className="grid h-12 w-12 place-items-center rounded-full bg-neutral-100 dark:bg-neutral-800"><UserRound className="h-5 w-5" /></span>}
-              <div className="min-w-0 flex-1"><p className="truncate font-bold">{member.profile.displayName}{isSelf ? " (you)" : ""}</p><p className="inline-flex items-center gap-1 text-xs capitalize text-neutral-500"><Shield className="h-3 w-3" /> {member.role}</p></div>
-              {canManage ? <div className="flex items-center gap-2"><select value={member.role} disabled={busyId === member.id} onChange={(event) => void changeRole(member, event.target.value as "admin" | "member")} className="rounded-lg border bg-transparent px-2 py-1.5 text-sm"><option value="member">Member</option><option value="admin">Admin</option></select><button type="button" disabled={busyId === member.id} onClick={() => void remove(member)} className="rounded-lg border p-2 text-red-600" aria-label="Remove member"><Trash2 className="h-4 w-4" /></button></div> : null}
+              <div className="min-w-0 flex-1"><p className="truncate font-bold">{member.profile.displayName}{isSelf ? " (إنت)" : ""}</p><p className="inline-flex items-center gap-1 text-xs capitalize text-neutral-500"><Shield className="h-3 w-3" /> {groupRoleLabelAr(member.role)}</p></div>
+              {canManage ? <div className="flex items-center gap-2"><select value={member.role} disabled={busyId === member.id} onChange={(event) => void changeRole(member, event.target.value as "admin" | "member")} className="rounded-lg border bg-transparent px-2 py-1.5 text-sm"><option value="member">عضو</option><option value="admin">أدمن</option></select><button type="button" disabled={busyId === member.id} onClick={() => void remove(member)} className="rounded-lg border p-2 text-red-600" aria-label="شيل العضو"><Trash2 className="h-4 w-4" /></button></div> : null}
             </div>
             <div className="mt-3 grid grid-cols-3 gap-2 text-center">
-              <div className="rounded-xl bg-neutral-50 p-2 dark:bg-neutral-900"><strong className="block">{memberStats?.adherencePercent === null || memberStats?.adherencePercent === undefined ? "—" : `${Math.round(memberStats.adherencePercent)}%`}</strong><span className="text-[11px] text-neutral-500">adherence</span></div>
-              <div className="rounded-xl bg-neutral-50 p-2 dark:bg-neutral-900"><strong className="block">{memberStats?.sessionsThisWeek ?? "—"}</strong><span className="text-[11px] text-neutral-500">sessions</span></div>
-              <div className="rounded-xl bg-neutral-50 p-2 dark:bg-neutral-900"><strong className="block">{memberStats?.personalRecordsCount ?? "—"}</strong><span className="text-[11px] text-neutral-500">PRs</span></div>
+              <div className="rounded-xl bg-neutral-50 p-2 dark:bg-neutral-900"><strong className="block">{memberStats?.adherencePercent === null || memberStats?.adherencePercent === undefined ? "—" : `${Math.round(memberStats.adherencePercent)}%`}</strong><span className="text-[11px] text-neutral-500">الالتزام</span></div>
+              <div className="rounded-xl bg-neutral-50 p-2 dark:bg-neutral-900"><strong className="block">{memberStats?.sessionsThisWeek ?? "—"}</strong><span className="text-[11px] text-neutral-500">التمرينات</span></div>
+              <div className="rounded-xl bg-neutral-50 p-2 dark:bg-neutral-900"><strong className="block">{memberStats?.personalRecordsCount ?? "—"}</strong><span className="text-[11px] text-neutral-500">أرقام</span></div>
             </div>
           </article>
         );

@@ -10,9 +10,9 @@ import { TrendLineChart } from "./TrendLineChart";
 type Metric = "volume" | "sets" | "sessions";
 
 const METRICS: Array<{ key: Metric; label: string; icon: React.ReactNode }> = [
-  { key: "volume", label: "Volume", icon: <Dumbbell className="h-4 w-4" /> },
-  { key: "sets", label: "Sets", icon: <Layers3 className="h-4 w-4" /> },
-  { key: "sessions", label: "Sessions", icon: <Activity className="h-4 w-4" /> },
+  { key: "volume", label: "حجم التمرين", icon: <Dumbbell className="h-4 w-4" /> },
+  { key: "sets", label: "السِتات", icon: <Layers3 className="h-4 w-4" /> },
+  { key: "sessions", label: "التمرينات", icon: <Activity className="h-4 w-4" /> },
 ];
 
 export function TrainingTrendChart({ userId }: { userId: UUID }) {
@@ -40,9 +40,9 @@ export function TrainingTrendChart({ userId }: { userId: UUID }) {
   return (
     <section className="gc-card p-4 sm:p-5">
       <div>
-        <p className="gc-eyebrow">Training load</p>
-        <h3 className="mt-1 text-lg font-bold">8-week trend</h3>
-        <p className="mt-1 text-sm text-neutral-500">Completed work including sessions logged offline.</p>
+        <p className="gc-eyebrow">حِمل التمرين</p>
+        <h3 className="mt-1 text-lg font-bold">تقدم 8 أسابيع</h3>
+        <p className="mt-1 text-sm text-neutral-500">الشغل المكتمل شامل التمرينات اللي اتسجلت من غير نت.</p>
       </div>
       <div className="mt-4 flex gap-2 overflow-x-auto pb-1">
         {METRICS.map((item) => (
@@ -52,7 +52,7 @@ export function TrainingTrendChart({ userId }: { userId: UUID }) {
         ))}
       </div>
       <div className="mt-4">
-        {loading ? <div className="h-56 animate-pulse rounded-2xl bg-white/[0.035]" /> : error ? <div className="grid h-48 place-items-center rounded-2xl border border-dashed border-red-400/20 text-sm text-red-300">Unable to load trend data.</div> : <TrendLineChart points={chartPoints} valueLabel={metric} formatValue={format} />}
+        {loading ? <div className="h-56 animate-pulse rounded-2xl bg-white/[0.035]" /> : error ? <div className="grid h-48 place-items-center rounded-2xl border border-dashed border-red-400/20 text-sm text-red-300">معرفناش نحمّل بيانات التقدم.</div> : <TrendLineChart points={chartPoints} valueLabel={metric} formatValue={format} />}
       </div>
     </section>
   );

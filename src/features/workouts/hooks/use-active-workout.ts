@@ -26,7 +26,7 @@ export function useActiveWorkout(sessionId?: string | null): UseActiveWorkoutRes
         : await fetchActiveWorkoutSession();
       setSession(nextSession);
     } catch (caught) {
-      setError(caught instanceof Error ? caught : new Error("Unable to load the workout."));
+      setError(caught instanceof Error ? caught : new Error("معرفناش نحمّل التمرينة."));
     } finally {
       setIsLoading(false);
     }

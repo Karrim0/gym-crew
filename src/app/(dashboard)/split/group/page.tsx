@@ -10,7 +10,7 @@ export default async function GroupSplitPage() {
   if (!membership) return null;
   return (
     <>
-      <DashboardHeader title="Group split" showBackButton />
+      <DashboardHeader title="جدول الجروب" showBackButton />
       <PageContainer className="pb-8"><SplitManager mode="group" groupId={membership.groupId} userId={user.id} role={membership.role} /></PageContainer>
     </>
   );

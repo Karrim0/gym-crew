@@ -27,7 +27,7 @@ export function compareExercisePerformance(
   const previous = completedSets(previousSets);
 
   if (current.length === 0 || previous.length === 0) {
-    return { trend: "first", label: "First logged baseline", percentChange: null };
+    return { trend: "first", label: "أول نقطة بداية", percentChange: null };
   }
 
   const sameSets =
@@ -38,20 +38,20 @@ export function compareExercisePerformance(
     });
 
   if (sameSets) {
-    return { trend: "matched", label: "Matched last workout", percentChange: 0 };
+    return { trend: "matched", label: "نفس آخر تمرينة", percentChange: 0 };
   }
 
   const previousScore = performanceScore(previous);
   const currentScore = performanceScore(current);
   if (previousScore <= 0) {
-    return { trend: "adjusted", label: "Performance adjusted", percentChange: null };
+    return { trend: "adjusted", label: "الأداء اتغيّر", percentChange: null };
   }
 
   const percentChange = ((currentScore - previousScore) / previousScore) * 100;
   if (percentChange > 0.5) {
     return {
       trend: "improved",
-      label: `${percentChange >= 10 ? percentChange.toFixed(0) : percentChange.toFixed(1)}% more work`,
+      label: `شغل أكتر بنسبة ${percentChange >= 10 ? percentChange.toFixed(0) : percentChange.toFixed(1)}%`,
       percentChange,
     };
   }
@@ -60,8 +60,8 @@ export function compareExercisePerformance(
     trend: "adjusted",
     label:
       percentChange < -0.5
-        ? `${Math.abs(percentChange) >= 10 ? Math.abs(percentChange).toFixed(0) : Math.abs(percentChange).toFixed(1)}% lighter today`
-        : "Performance adjusted",
+        ? `أخف النهارده بنسبة ${Math.abs(percentChange) >= 10 ? Math.abs(percentChange).toFixed(0) : Math.abs(percentChange).toFixed(1)}%`
+        : "الأداء اتغيّر",
     percentChange,
   };
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import type { SplitDay } from "@/types";
+import { WEEKDAY_LABELS_AR } from "@/lib/localization";
 
 export interface EditSplitDayDialogProps {
   splitDay: SplitDay;
@@ -18,9 +19,9 @@ export function EditSplitDayDialog({ splitDay, isOpen, onClose }: EditSplitDayDi
   return (
     <div role="dialog" aria-modal className="fixed inset-0 flex items-center justify-center">
       <div className="rounded-lg border bg-white p-4 dark:bg-neutral-900">
-        <h2 className="font-medium capitalize">Edit {splitDay.weekday}</h2>
+        <h2 className="font-medium">عدّل يوم {WEEKDAY_LABELS_AR[splitDay.weekday]}</h2>
         <button type="button" onClick={onClose} className="mt-4 text-sm">
-          Close
+          اقفل
         </button>
       </div>
     </div>

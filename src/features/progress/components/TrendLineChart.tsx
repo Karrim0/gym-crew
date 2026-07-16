@@ -9,7 +9,7 @@ export function TrendLineChart({
   points,
   valueLabel,
   formatValue = (value) => Math.round(value).toString(),
-  emptyMessage = "No trend data yet.",
+  emptyMessage = "مفيش بيانات تقدم لسه.",
 }: {
   points: TrendPoint[];
   valueLabel: string;
@@ -41,8 +41,8 @@ export function TrendLineChart({
 
   return (
     <div className="overflow-hidden rounded-2xl border border-white/[0.06] bg-black/20 p-2">
-      <svg viewBox={`0 0 ${width} ${height}`} className="h-56 w-full" role="img" aria-label={`${valueLabel} trend chart`}>
-        <title>{valueLabel} trend</title>
+      <svg viewBox={`0 0 ${width} ${height}`} className="h-56 w-full" role="img" aria-label={`رسم تطور ${valueLabel}`}>
+        <title>{valueLabel} التطور</title>
         {[0, 0.5, 1].map((ratio) => {
           const y = paddingTop + chartHeight * ratio;
           const value = maxValue - span * ratio;

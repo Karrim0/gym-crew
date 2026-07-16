@@ -24,7 +24,7 @@ export function LogoutButton() {
   }
 
   return (
-    <button type="button" onClick={handleLogout} disabled={isPending} className="grid h-9 w-9 place-items-center rounded-full border border-white/[0.07] bg-white/[0.035] text-neutral-400 transition hover:text-white disabled:opacity-50" aria-label="Log out">
+    <button type="button" onClick={handleLogout} disabled={isPending} className="grid h-9 w-9 place-items-center rounded-full border border-white/[0.07] bg-white/[0.035] text-neutral-400 transition hover:text-white disabled:opacity-50" aria-label="تسجيل خروج">
       <LogOut className="h-4 w-4" />
     </button>
   );

@@ -12,7 +12,7 @@ export default async function ExerciseProgressPage({
   const { exerciseId } = await params;
   return (
     <>
-      <DashboardHeader title="Exercise details" showBackButton />
+      <DashboardHeader title="تفاصيل التمرين" showBackButton />
       <PageContainer className="pb-8"><ExerciseProgressDetailsClient userId={user.id} exerciseId={exerciseId} /></PageContainer>
     </>
   );

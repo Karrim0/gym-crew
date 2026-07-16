@@ -7,7 +7,7 @@ export default async function BodyMapPage() {
   const user = await requireCurrentUser();
   return (
     <>
-      <DashboardHeader title="Body map" showBackButton />
+      <DashboardHeader title="خريطة العضلات" showBackButton />
       <PageContainer><BodyMapClient userId={user.id} /></PageContainer>
     </>
   );

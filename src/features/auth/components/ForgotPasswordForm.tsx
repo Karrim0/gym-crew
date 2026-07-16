@@ -1,5 +1,6 @@
 "use client";
 
+import { getArabicErrorMessage } from "@/lib/localization";
 import Link from "next/link";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
@@ -34,9 +35,9 @@ export function ForgotPasswordForm({ onSubmit }: ForgotPasswordFormProps) {
       const { error } = await sendPasswordResetEmail(data);
       if (error) throw error;
 
-      setSuccessMessage("If an account exists for this email, a reset link has been sent.");
+      setSuccessMessage("لو الإيميل ده عليه حساب، بعتنالك لينك تغيير الباسورد.");
     } catch (error) {
-      setSubmitError(error instanceof Error ? error.message : "Unable to send a reset link.");
+      setSubmitError(getArabicErrorMessage(error, "معرفناش نبعت لينك تغيير الباسورد."));
     }
   }
 
@@ -44,7 +45,7 @@ export function ForgotPasswordForm({ onSubmit }: ForgotPasswordFormProps) {
     <form onSubmit={handleSubmit(submit)} className="flex flex-col gap-4" noValidate>
       <div>
         <label htmlFor="email" className="mb-1.5 block text-sm font-bold text-neutral-300">
-          Email
+          الإيميل
         </label>
         <input
           id="email"
@@ -60,11 +61,11 @@ export function ForgotPasswordForm({ onSubmit }: ForgotPasswordFormProps) {
       <AuthSubmitMessage message={successMessage} tone="success" />
 
       <button type="submit" disabled={isSubmitting} className="gc-primary-button mt-1 w-full disabled:cursor-not-allowed disabled:opacity-50">
-        {isSubmitting ? "Sending…" : "Send reset link"}
+        {isSubmitting ? "بنبعت…" : "ابعت لينك التغيير"}
       </button>
 
       <Link href="/login" className="text-sm font-bold text-neutral-400 transition hover:text-indigo-300">
-        Back to login
+        ارجع لتسجيل الدخول
       </Link>
     </form>
   );

@@ -244,7 +244,7 @@ export async function addSplitExercise({
     .single();
 
   if (error) {
-    if (error.code === "23505") throw new Error("This exercise is already in that day.");
+    if (error.code === "23505") throw new Error("التمرين ده موجود في اليوم بالفعل.");
     throw new Error(error.message);
   }
 
@@ -264,9 +264,9 @@ export async function updateSplitExerciseTargets(
   splitExerciseId: UUID,
   values: { targetSets: number; targetRepsMin: number; targetRepsMax: number },
 ): Promise<void> {
-  if (values.targetSets < 1 || values.targetSets > 20) throw new Error("Sets must be between 1 and 20.");
+  if (values.targetSets < 1 || values.targetSets > 20) throw new Error("عدد السِتات لازم يبقى من 1 لـ20.");
   if (values.targetRepsMin < 1 || values.targetRepsMax < values.targetRepsMin) {
-    throw new Error("Check the target rep range.");
+    throw new Error("راجع نطاق العدات المستهدف.");
   }
 
   const supabase = createClient();

@@ -10,7 +10,7 @@ export default async function GroupMembersPage() {
   if (!membership) return null;
   return (
     <>
-      <DashboardHeader title="Members" showBackButton />
+      <DashboardHeader title="الأعضاء" showBackButton />
       <PageContainer className="pb-8 pt-5"><GroupMembersClient groupId={membership.groupId} currentUserId={user.id} currentRole={membership.role} /></PageContainer>
     </>
   );

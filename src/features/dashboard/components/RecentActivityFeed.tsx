@@ -8,7 +8,7 @@ export interface RecentActivityFeedProps {
 /** Minimal placeholder feed of recent group activity, shown on the dashboard. */
 export function RecentActivityFeed({ activity }: RecentActivityFeedProps) {
   if (activity.length === 0) {
-    return <EmptyState title="No activity yet" description="Your group's workouts will show up here." />;
+    return <EmptyState title="مفيش نشاط لسه" description="تمارين الجروب هتظهر هنا." />;
   }
 
   return (

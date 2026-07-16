@@ -12,7 +12,7 @@ export interface AddExerciseButtonProps {
 
 /** Minimal placeholder button for adding an extra exercise, scoped to the session or the permanent split. */
 export function AddExerciseButton({ scope, onAdd }: AddExerciseButtonProps) {
-  const label = scope === "session-only" ? "Add exercise (this workout)" : "Add exercise (permanent)";
+  const label = scope === "session-only" ? "ضيف تمرين للتمرينة دي" : "ضيف تمرين للجدول";
 
   return (
     <button type="button" onClick={() => onAdd?.(scope)} className="flex items-center gap-1 text-sm">

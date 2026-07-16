@@ -7,18 +7,18 @@ import { z } from "zod";
  * counts as a valid password) only needs to change in one place.
  */
 
-export const emailSchema = z.email("Enter a valid email address.").trim();
+export const emailSchema = z.email("اكتب إيميل صحيح.").trim();
 
 export const passwordSchema = z
   .string()
-  .min(8, "Password must be at least 8 characters.")
-  .max(72, "Password must be at most 72 characters.");
+  .min(8, "الباسورد لازم يبقى 8 حروف على الأقل.")
+  .max(72, "الباسورد مينفعش يزيد عن 72 حرف.");
 
 export const displayNameSchema = z
   .string()
   .trim()
-  .min(2, "Name must be at least 2 characters.")
-  .max(40, "Name must be at most 40 characters.");
+  .min(2, "الاسم لازم يبقى حرفين على الأقل.")
+  .max(40, "الاسم مينفعش يزيد عن 40 حرف.");
 
 export const uuidSchema = z.uuid();
 
@@ -36,4 +36,4 @@ export const inviteCodeSchema = z
   .string()
   .trim()
   .toUpperCase()
-  .length(8, "Invite codes are 8 characters.");
+  .length(8, "كود الدعوة لازم يبقى 8 حروف.");

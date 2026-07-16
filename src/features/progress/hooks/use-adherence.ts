@@ -1,5 +1,6 @@
 "use client";
 
+import { getArabicErrorMessage } from "@/lib/localization";
 import { useEffect, useState } from "react";
 import type { UUID } from "@/types";
 import { fetchAdherenceSummary } from "../services/progress.service";
@@ -26,7 +27,7 @@ export function useAdherence(userId: UUID): UseAdherenceResult {
         weekly: null,
         monthly: null,
         isLoading: false,
-        error: caught instanceof Error ? caught.message : "Unable to load adherence.",
+        error: getArabicErrorMessage(caught, "معرفناش نحمّل الالتزام."),
       }));
   }, [userId]);
 

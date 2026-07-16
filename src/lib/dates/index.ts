@@ -1,5 +1,6 @@
 import { format, parseISO } from "date-fns";
 import { WEEKDAYS_STARTING_SATURDAY } from "@/constants/schedule";
+import { formatDateArEg } from "@/lib/localization";
 import type { ISODateOnlyString, ISODateString, Weekday } from "@/types";
 
 const WEEKDAY_BY_JS_DAY_INDEX: Weekday[] = [
@@ -22,7 +23,7 @@ export function sortWeekdaysStartingSaturday(weekdays: Weekday[]): Weekday[] {
 }
 
 export function formatWorkoutDate(isoDate: ISODateString): string {
-  return format(parseISO(isoDate), "MMM d, yyyy");
+  return formatDateArEg(parseISO(isoDate));
 }
 
 export function getTodayISODate(): ISODateOnlyString {

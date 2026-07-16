@@ -1,4 +1,5 @@
 import type { MuscleGroup } from "@/types";
+import { muscleLabelAr } from "@/lib/localization";
 import type { MuscleActivityLevel } from "../types";
 
 export interface BodyMapProps {
@@ -21,7 +22,7 @@ function MuscleShape({
   const intensity = getIntensity(activity, muscle);
   return (
     <g
-      aria-label={`${muscle}: ${Math.round(intensity * 100)}% relative activity`}
+      aria-label={`${muscleLabelAr(muscle)}: نشاط نسبي ${Math.round(intensity * 100)}%`}
       className="text-emerald-500 transition-opacity"
       style={{ opacity: 0.14 + intensity * 0.86 }}
     >
@@ -32,8 +33,8 @@ function MuscleShape({
 
 function FrontBody({ activity }: { activity: MuscleActivityLevel[] }) {
   return (
-    <svg viewBox="0 0 180 390" role="img" aria-label="Front muscle activity" className="h-[310px] w-full max-w-[180px]">
-      <title>Front body muscle activity</title>
+    <svg viewBox="0 0 180 390" role="img" aria-label="نشاط العضلات من قدام" className="h-[310px] w-full max-w-[180px]">
+      <title>نشاط عضلات الجسم من قدام</title>
       <g fill="none" stroke="currentColor" strokeWidth="3" className="text-neutral-300 dark:text-neutral-700">
         <circle cx="90" cy="30" r="20" />
         <path d="M70 52 C55 64 45 88 45 116 L35 190 M110 52 C125 64 135 88 135 116 L145 190" />
@@ -76,8 +77,8 @@ function FrontBody({ activity }: { activity: MuscleActivityLevel[] }) {
 
 function BackBody({ activity }: { activity: MuscleActivityLevel[] }) {
   return (
-    <svg viewBox="0 0 180 390" role="img" aria-label="Back muscle activity" className="h-[310px] w-full max-w-[180px]">
-      <title>Back body muscle activity</title>
+    <svg viewBox="0 0 180 390" role="img" aria-label="نشاط العضلات من ورا" className="h-[310px] w-full max-w-[180px]">
+      <title>نشاط عضلات الجسم من ورا</title>
       <g fill="none" stroke="currentColor" strokeWidth="3" className="text-neutral-300 dark:text-neutral-700">
         <circle cx="90" cy="30" r="20" />
         <path d="M70 52 C55 64 45 88 45 116 L35 190 M110 52 C125 64 135 88 135 116 L145 190" />
@@ -119,11 +120,11 @@ export function BodyMap({ muscleActivity }: BodyMapProps) {
   return (
     <div className="grid grid-cols-2 gap-2 rounded-[28px] border bg-white p-3 shadow-sm dark:bg-neutral-950">
       <div className="text-center">
-        <p className="mb-1 text-xs font-bold uppercase tracking-[0.14em] text-neutral-500">Front</p>
+        <p className="mb-1 text-xs font-bold uppercase tracking-[0.14em] text-neutral-500">قدّام</p>
         <FrontBody activity={muscleActivity} />
       </div>
       <div className="text-center">
-        <p className="mb-1 text-xs font-bold uppercase tracking-[0.14em] text-neutral-500">Back</p>
+        <p className="mb-1 text-xs font-bold uppercase tracking-[0.14em] text-neutral-500">ورا</p>
         <BackBody activity={muscleActivity} />
       </div>
     </div>

@@ -11,7 +11,7 @@ export function WorkoutNotes({ value, onChange }: WorkoutNotesProps) {
     <textarea
       value={value}
       onChange={(event) => onChange?.(event.target.value)}
-      placeholder="Notes"
+      placeholder="ملاحظات"
       className="w-full rounded-md border p-2 text-sm"
       rows={3}
     />

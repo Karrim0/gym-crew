@@ -1,3 +1,4 @@
+import { getArabicErrorMessage } from "@/lib/localization";
 import { createClient } from "@/lib/supabase/client";
 import type { OfflineMutation, SyncStatus, WorkoutExercise, WorkoutSession, WorkoutSet } from "@/types";
 import { getCurrentNetworkStatus } from "./network-status";
@@ -137,7 +138,7 @@ export async function processSyncQueue(): Promise<SyncResult> {
         await removeSyncQueueItem(item.id);
         syncedCount += 1;
       } catch (caught) {
-        errorMessage = caught instanceof Error ? caught.message : "Unable to sync workout data.";
+        errorMessage = getArabicErrorMessage(caught, "معرفناش نزامن بيانات التمرين.");
         await updateSyncQueueItem({
           ...item,
           status: "failed",

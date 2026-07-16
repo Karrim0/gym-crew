@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { Medal, Shield, UserRound } from "lucide-react";
 import type { UUID } from "@/types";
+import { groupRoleLabelAr } from "@/lib/localization";
 import type { GroupMemberWeeklyStats } from "../types";
 import { fetchGroupMemberWeeklyStats } from "../services/group.service";
 
@@ -20,7 +21,7 @@ export function WeeklyLeaderboard({ groupId, compact = false }: { groupId: UUID;
   return (
     <section className="gc-card p-4 sm:p-5">
       <div className="flex items-start justify-between gap-3">
-        <div><h3 className="font-bold">Weekly consistency</h3><p className="text-sm text-neutral-500">Ranked by adherence, never by who lifts the most.</p></div>
+        <div><h3 className="font-bold">التزام الأسبوع</h3><p className="text-sm text-neutral-500">الترتيب بالالتزام، مش بمين بيشيل أكتر.</p></div>
         <Medal className="h-5 w-5 text-amber-500" />
       </div>
       <div className="mt-4 space-y-2">
@@ -31,11 +32,11 @@ export function WeeklyLeaderboard({ groupId, compact = false }: { groupId: UUID;
               // eslint-disable-next-line @next/next/no-img-element
               <img src={member.avatarUrl} alt="" className="h-10 w-10 rounded-full object-cover" />
             ) : <span className="grid h-10 w-10 place-items-center rounded-full bg-white/[0.06]"><UserRound className="h-4 w-4" /></span>}
-            <div className="min-w-0 flex-1"><p className="truncate font-bold">{member.displayName}</p><p className="inline-flex items-center gap-1 text-xs capitalize text-neutral-500"><Shield className="h-3 w-3" />{member.role}</p></div>
+            <div className="min-w-0 flex-1"><p className="truncate font-bold">{member.displayName}</p><p className="inline-flex items-center gap-1 text-xs capitalize text-neutral-500"><Shield className="h-3 w-3" />{groupRoleLabelAr(member.role)}</p></div>
             {member.adherencePercent === null ? (
-              <span className="text-xs font-semibold text-neutral-400">Private</span>
+              <span className="text-xs font-semibold text-neutral-400">خاص</span>
             ) : (
-              <div className="text-right"><strong className="block text-lg">{Math.round(member.adherencePercent)}%</strong><span className="text-xs text-neutral-500">{member.sessionsThisWeek}/{member.scheduledThisWeek} sessions</span></div>
+              <div className="text-end"><strong className="block text-lg">{Math.round(member.adherencePercent)}%</strong><span className="text-xs text-neutral-500">{member.sessionsThisWeek}/{member.scheduledThisWeek} تمرينات</span></div>
             )}
           </article>
         ))}

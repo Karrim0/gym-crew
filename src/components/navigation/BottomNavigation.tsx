@@ -12,7 +12,7 @@ export function BottomNavigation() {
   if (pathname.startsWith("/workout/active") || keyboardOpen) return null;
 
   return (
-    <nav className="gc-bottom-nav fixed z-50 mx-auto max-w-lg rounded-[20px] border border-white/10 bg-[#131620]/96 p-1.5 shadow-[0_20px_60px_rgba(0,0,0,.5)] backdrop-blur-2xl md:hidden" aria-label="Primary navigation">
+    <nav className="gc-bottom-nav fixed z-50 mx-auto max-w-lg rounded-[20px] border border-white/10 bg-[#131620]/96 p-1.5 shadow-[0_20px_60px_rgba(0,0,0,.5)] backdrop-blur-2xl md:hidden" aria-label="التنقل الرئيسي">
       <div className="grid grid-cols-5 gap-1">
         {MAIN_NAVIGATION_ITEMS.map((item) => {
           const Icon = item.icon;

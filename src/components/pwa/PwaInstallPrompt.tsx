@@ -51,15 +51,15 @@ export function PwaInstallPrompt() {
           <Download className="h-5 w-5" />
         </span>
         <div className="min-w-0 flex-1">
-          <p className="font-bold">Install Gym Crew</p>
-          <p className="text-xs text-neutral-400">Open faster and keep workout tools close.</p>
+          <p className="font-bold">نزّل Gym Crew</p>
+          <p className="text-xs text-neutral-400">افتحه أسرع وخلي أدوات التمرين دايمًا معاك.</p>
         </div>
-        <button type="button" onClick={dismiss} className="grid h-9 w-9 place-items-center rounded-full text-neutral-400" aria-label="Dismiss install prompt">
+        <button type="button" onClick={dismiss} className="grid h-9 w-9 place-items-center rounded-full text-neutral-400" aria-label="اقفل اقتراح التثبيت">
           <X className="h-4 w-4" />
         </button>
       </div>
       <button type="button" onClick={() => void install()} className="gc-primary-button mt-3 w-full min-h-11 py-2.5 text-sm">
-        Install app
+        نزّل التطبيق
       </button>
     </aside>
   );

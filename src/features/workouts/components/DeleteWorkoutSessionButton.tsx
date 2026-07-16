@@ -1,5 +1,6 @@
 "use client";
 
+import { getArabicErrorMessage } from "@/lib/localization";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { AlertTriangle, Trash2, X } from "lucide-react";
@@ -20,7 +21,7 @@ export function DeleteWorkoutSessionButton({ sessionId }: { sessionId: UUID }) {
       router.replace("/workout/history?deleted=1");
       router.refresh();
     } catch (caught) {
-      setError(caught instanceof Error ? caught.message : "Unable to delete this workout.");
+      setError(getArabicErrorMessage(caught, "معرفناش نمسح التمرينة."));
       setIsDeleting(false);
     }
   }
@@ -28,7 +29,7 @@ export function DeleteWorkoutSessionButton({ sessionId }: { sessionId: UUID }) {
   return (
     <>
       <button type="button" onClick={() => setOpen(true)} className="gc-danger-button w-full sm:w-auto">
-        <Trash2 className="h-4 w-4" /> Delete workout
+        <Trash2 className="h-4 w-4" /> امسح التمرينة
       </button>
 
       {open ? (
@@ -37,18 +38,18 @@ export function DeleteWorkoutSessionButton({ sessionId }: { sessionId: UUID }) {
             <div className="flex items-start gap-3">
               <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-red-400/10 text-red-300"><AlertTriangle className="h-5 w-5" /></span>
               <div className="min-w-0 flex-1">
-                <h2 id="delete-workout-title" className="text-lg font-bold">Delete this workout?</h2>
-                <p className="mt-1 text-sm leading-6 text-neutral-400">This removes the session, its sets and its contribution to charts, records and adherence. This cannot be undone.</p>
+                <h2 id="delete-workout-title" className="text-lg font-bold">تمسح التمرينة دي؟</h2>
+                <p className="mt-1 text-sm leading-6 text-neutral-400">ده هيمسح التمرينة وسِتاتها وتأثيرها على الإحصائيات والأرقام والالتزام. مينفعش ترجعها.</p>
               </div>
-              <button type="button" onClick={() => setOpen(false)} disabled={isDeleting} className="grid h-9 w-9 place-items-center rounded-full text-neutral-400 hover:bg-white/5" aria-label="Close"><X className="h-4 w-4" /></button>
+              <button type="button" onClick={() => setOpen(false)} disabled={isDeleting} className="grid h-9 w-9 place-items-center rounded-full text-neutral-400 hover:bg-white/5" aria-label="قفل"><X className="h-4 w-4" /></button>
             </div>
 
             {error ? <p className="mt-4 rounded-xl border border-red-400/20 bg-red-400/10 p-3 text-sm text-red-300">{error}</p> : null}
 
             <div className="mt-5 grid grid-cols-2 gap-3">
-              <button type="button" onClick={() => setOpen(false)} disabled={isDeleting} className="gc-secondary-button">Keep workout</button>
+              <button type="button" onClick={() => setOpen(false)} disabled={isDeleting} className="gc-secondary-button">سيب التمرينة</button>
               <button type="button" onClick={() => void confirmDelete()} disabled={isDeleting} className="gc-danger-button">
-                <Trash2 className="h-4 w-4" /> {isDeleting ? "Deleting…" : "Delete"}
+                <Trash2 className="h-4 w-4" /> {isDeleting ? "بنمسح…" : "امسح"}
               </button>
             </div>
           </section>

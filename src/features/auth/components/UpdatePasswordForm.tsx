@@ -1,5 +1,6 @@
 "use client";
 
+import { getArabicErrorMessage } from "@/lib/localization";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
@@ -27,7 +28,7 @@ export function UpdatePasswordForm() {
       router.replace("/onboarding");
       router.refresh();
     } catch (error) {
-      setSubmitError(error instanceof Error ? error.message : "Unable to update your password.");
+      setSubmitError(getArabicErrorMessage(error, "معرفناش نغيّر الباسورد."));
     }
   }
 
@@ -35,7 +36,7 @@ export function UpdatePasswordForm() {
     <form onSubmit={handleSubmit(submit)} className="flex flex-col gap-4" noValidate>
       <div>
         <label htmlFor="password" className="mb-1.5 block text-sm font-bold text-neutral-300">
-          New password
+          الباسورد الجديد
         </label>
         <input
           id="password"
@@ -48,7 +49,7 @@ export function UpdatePasswordForm() {
       </div>
       <div>
         <label htmlFor="confirmPassword" className="mb-1.5 block text-sm font-bold text-neutral-300">
-          Confirm new password
+          أكد الباسورد الجديد
         </label>
         <input
           id="confirmPassword"
@@ -65,7 +66,7 @@ export function UpdatePasswordForm() {
       <AuthSubmitMessage message={submitError} />
 
       <button type="submit" disabled={isSubmitting} className="gc-primary-button mt-1 w-full disabled:cursor-not-allowed disabled:opacity-50">
-        {isSubmitting ? "Updating password…" : "Update password"}
+        {isSubmitting ? "بنغيّر الباسورد…" : "غيّر الباسورد"}
       </button>
     </form>
   );

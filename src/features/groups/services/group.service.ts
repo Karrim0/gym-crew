@@ -178,7 +178,7 @@ export async function createGroup(name: string): Promise<WorkoutGroup> {
   }
 
   if (!data) {
-    throw new Error("The group was not returned after creation.");
+    throw new Error("الجروب اتعمل بس بياناته مرجعتش. جرّب تاني.");
   }
 
   return mapGroup(data);
@@ -198,7 +198,7 @@ export async function joinGroupByInviteCode(
   }
 
   if (!data) {
-    throw new Error("The group was not returned after joining.");
+    throw new Error("دخلت الجروب بس بياناته مرجعتش. جرّب تاني.");
   }
 
   return mapGroup(data);
@@ -244,7 +244,7 @@ export async function createSoloWorkspace(): Promise<WorkoutGroup> {
   const { data, error } = await supabase.rpc("create_solo_workspace");
 
   if (error) throw new Error(error.message);
-  if (!data) throw new Error("The solo workspace was not returned after creation.");
+  if (!data) throw new Error("المساحة الشخصية اتعملت بس بياناتها مرجعتش. جرّب تاني.");
   return mapGroup(data);
 }
 

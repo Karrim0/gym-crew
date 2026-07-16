@@ -7,7 +7,7 @@ export default async function TodaysWorkoutPage() {
   const user = await requireCurrentUser();
   return (
     <>
-      <DashboardHeader title="Today's workout" />
+      <DashboardHeader title="تمرينة النهارده" />
       <PageContainer className="pb-8"><TodaysWorkoutClient userId={user.id} /></PageContainer>
     </>
   );

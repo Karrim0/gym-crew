@@ -9,10 +9,10 @@ export interface AdherenceCardProps {
 export function AdherenceCard({ weekly, monthly }: AdherenceCardProps) {
   return (
     <div className="rounded-lg border p-3">
-      <p className="text-sm font-medium">Adherence</p>
+      <p className="text-sm font-medium">الالتزام</p>
       <div className="mt-1 flex gap-4 text-sm opacity-70">
-        <span>Week: {formatAdherencePercentage(weekly)}</span>
-        <span>Month: {formatAdherencePercentage(monthly)}</span>
+        <span>الأسبوع: {formatAdherencePercentage(weekly)}</span>
+        <span>الشهر: {formatAdherencePercentage(monthly)}</span>
       </div>
     </div>
   );

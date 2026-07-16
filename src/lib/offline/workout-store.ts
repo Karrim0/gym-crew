@@ -28,7 +28,7 @@ export interface HydratedCachedSplitDay extends Omit<SplitDay, "exercises"> {
 
 const FALLBACK_EXERCISE: Exercise = {
   id: "unknown",
-  name: "Exercise",
+  name: "التمرين",
   primaryMuscle: "core",
   secondaryMuscles: [],
   workoutType: "custom",
@@ -227,7 +227,7 @@ export async function getCachedPersonalSplit(
     weekday: row.weekday,
     workoutType: row.workoutType,
     displayName: row.displayName ?? null,
-    focusLabel: row.focusLabel ?? (row.workoutType === "rest" ? "Recovery" : "Custom"),
+    focusLabel: row.focusLabel ?? (row.workoutType === "rest" ? "راحة" : "مخصص"),
     iconKey: row.iconKey ?? (row.workoutType === "rest" ? "moon" : "dumbbell"),
     colorKey: row.colorKey ?? (row.workoutType === "rest" ? "blue" : "indigo"),
     dayNotes: row.dayNotes ?? "",

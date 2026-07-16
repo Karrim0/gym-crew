@@ -5,5 +5,5 @@
  */
 export const APP_CONFIG = {
   name: "Gym Crew",
-  description: "Group workout tracking for you and your friends.",
+  description: "سجّل تمرينك وتابع تقدمك واتمرّن مع صحابك من مكان واحد.",
 } as const;

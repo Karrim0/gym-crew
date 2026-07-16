@@ -18,7 +18,7 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, Roboto, Helvetica, Arial, sans-serif;
+  --font-sans: "Segoe UI", Tahoma, Arial, sans-serif;
   --font-mono: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
 }
 
@@ -51,9 +51,31 @@ body {
     radial-gradient(circle at 88% -12%, rgba(122, 143, 245, 0.12), transparent 28rem),
     linear-gradient(180deg, #0c0f16 0%, #090b10 100%);
   color: var(--foreground);
-  font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, Roboto, Helvetica, Arial, sans-serif;
+  font-family: "Segoe UI", Tahoma, Arial, sans-serif;
   -webkit-tap-highlight-color: transparent;
   text-rendering: optimizeLegibility;
+}
+
+[dir="rtl"] body {
+  direction: rtl;
+  text-align: right;
+}
+
+.gc-ltr,
+input[type="number"],
+input[type="email"],
+input[type="password"],
+[dir="ltr"] {
+  direction: ltr;
+  text-align: left;
+}
+
+.gc-number-strip,
+.gc-rep-grid,
+.gc-timer-digits,
+.tabular-nums {
+  direction: ltr;
+  font-variant-numeric: tabular-nums;
 }
 
 button,

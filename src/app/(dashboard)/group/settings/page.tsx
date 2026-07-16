@@ -10,7 +10,7 @@ export default async function GroupSettingsPage() {
   if (!membership || membership.group.isPersonal) return null;
   return (
     <>
-      <DashboardHeader title="Group settings" showBackButton />
+      <DashboardHeader title="إعدادات الجروب" showBackButton />
       <PageContainer className="pb-24 pt-5"><GroupPrivacySettingsClient userId={user.id} /></PageContainer>
     </>
   );

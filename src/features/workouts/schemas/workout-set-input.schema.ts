@@ -3,14 +3,14 @@ import { z } from "zod";
 export const workoutSetInputSchema = z.object({
   weightKg: z
     .number()
-    .min(0, "Weight cannot be negative.")
-    .max(500, "Weight seems too high — double check it.")
+    .min(0, "الوزن مينفعش يبقى بالسالب.")
+    .max(500, "الوزن شكله كبير جدًا، راجعه تاني.")
     .nullable(),
   reps: z
     .number()
-    .int("Reps must be a whole number.")
-    .min(0, "Reps cannot be negative.")
-    .max(100, "Reps seems too high — double check it.")
+    .int("العدات لازم تبقى رقم صحيح.")
+    .min(0, "العدات مينفعش تبقى بالسالب.")
+    .max(100, "عدد العدات شكله كبير جدًا، راجعه تاني.")
     .nullable(),
   isCompleted: z.boolean(),
 });

@@ -1,5 +1,6 @@
 "use client";
 
+import { getArabicErrorMessage } from "@/lib/localization";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
@@ -33,7 +34,7 @@ export function JoinGroupForm({ onSubmit }: JoinGroupFormProps) {
       router.replace("/split/personal");
       router.refresh();
     } catch (error) {
-      setSubmitError(error instanceof Error ? error.message : "Unable to join the group.");
+      setSubmitError(getArabicErrorMessage(error, "معرفناش ندخّلك الجروب."));
     }
   }
 
@@ -41,7 +42,7 @@ export function JoinGroupForm({ onSubmit }: JoinGroupFormProps) {
     <form onSubmit={handleSubmit(submit)} className="flex flex-col gap-4" noValidate>
       <div>
         <label htmlFor="inviteCode" className="mb-1.5 block text-sm font-bold text-neutral-300">
-          Invite code
+          كود الدعوة
         </label>
         <input
           id="inviteCode"
@@ -55,7 +56,7 @@ export function JoinGroupForm({ onSubmit }: JoinGroupFormProps) {
       </div>
       {submitError ? <p role="alert" className="rounded-xl bg-red-400/10 px-3 py-2 text-sm font-semibold text-red-300">{submitError}</p> : null}
       <button type="submit" disabled={isSubmitting} className="gc-primary-button w-full disabled:opacity-50">
-        {isSubmitting ? "Joining group…" : "Join group"}
+        {isSubmitting ? "بندخّلك الجروب…" : "ادخل الجروب"}
       </button>
     </form>
   );

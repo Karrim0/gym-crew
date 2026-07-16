@@ -9,10 +9,10 @@ export function SyncStatusIndicator() {
 
   const label = !isOnline
     ? pendingSyncCount > 0
-      ? `${pendingSyncCount} pending`
-      : "Offline"
+      ? `${pendingSyncCount} مستنيين المزامنة`
+      : "من غير نت"
     : pendingSyncCount > 0 && syncStatus === "idle"
-      ? `${pendingSyncCount} pending`
+      ? `${pendingSyncCount} مستنيين المزامنة`
       : SYNC_STATE_LABELS[syncStatus];
 
   const Icon = !isOnline ? CloudOff : syncStatus === "syncing" ? LoaderCircle : Cloud;
@@ -28,7 +28,7 @@ export function SyncStatusIndicator() {
       <span className="hidden sm:inline">{label}</span>
       {syncStatus === "error" ? (
         <button type="button" onClick={() => void retrySync()} className="inline-flex items-center gap-1 text-red-400">
-          <RefreshCw className="h-3.5 w-3.5" /> Retry
+          <RefreshCw className="h-3.5 w-3.5" /> جرّب تاني
         </button>
       ) : null}
     </div>
