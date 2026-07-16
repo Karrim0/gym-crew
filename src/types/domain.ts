@@ -25,6 +25,8 @@ export interface UserProfile {
   sharePersonalRecords: boolean;
   shareWeights: boolean;
   createdAt: ISODateString;
+  splitSetupMethod: SplitSetupMethod | null;
+  splitSetupCompletedAt: ISODateString | null;
   updatedAt: ISODateString;
 }
 
@@ -66,6 +68,9 @@ export type Weekday =
   | "friday";
 
 export type WorkoutType = "push" | "pull" | "legs" | "rest" | "custom";
+export type SplitSetupMethod = "manual" | "starter" | "imported";
+export type SplitDayIconKey = "dumbbell" | "zap" | "target" | "flame" | "shield" | "heart" | "moon" | "activity";
+export type SplitDayColorKey = "indigo" | "blue" | "emerald" | "amber" | "rose" | "violet";
 
 export interface SplitExercise {
   id: UUID;
@@ -86,6 +91,10 @@ export interface SplitDay {
   weekday: Weekday;
   workoutType: WorkoutType;
   displayName: string | null;
+  focusLabel: string | null;
+  iconKey: SplitDayIconKey;
+  colorKey: SplitDayColorKey;
+  dayNotes: string;
   exercises: SplitExercise[];
 }
 

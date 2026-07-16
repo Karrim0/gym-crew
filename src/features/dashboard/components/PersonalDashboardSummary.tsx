@@ -46,7 +46,7 @@ export function PersonalDashboardSummary({ userId }: { userId: UUID }) {
   const { summary } = state;
   const stats = [
     { label: "Weekly plan", value: formatAdherencePercentage(summary.adherence.weekly), detail: `${summary.adherence.weeklyCompleted}/${summary.adherence.weeklyScheduled}`, icon: Target, tone: "text-indigo-300" },
-    { label: "Current streak", value: `${summary.currentStreak} wk`, detail: `Best ${summary.longestStreak}`, icon: Flame, tone: "text-orange-400" },
+    { label: "Current streak", value: `${summary.currentStreak} days`, detail: `Best ${summary.longestStreak} days`, icon: Flame, tone: "text-orange-400" },
     { label: "Recent PRs", value: String(summary.recentRecords.length), detail: "milestones", icon: Award, tone: "text-amber-300" },
   ];
 

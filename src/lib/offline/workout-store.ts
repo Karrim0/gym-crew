@@ -227,6 +227,10 @@ export async function getCachedPersonalSplit(
     weekday: row.weekday,
     workoutType: row.workoutType,
     displayName: row.displayName ?? null,
+    focusLabel: row.focusLabel ?? (row.workoutType === "rest" ? "Recovery" : "Custom"),
+    iconKey: row.iconKey ?? (row.workoutType === "rest" ? "moon" : "dumbbell"),
+    colorKey: row.colorKey ?? (row.workoutType === "rest" ? "blue" : "indigo"),
+    dayNotes: row.dayNotes ?? "",
     exercises: row.exercises.map((item) => ({
       ...item,
       exercise: exerciseMap.get(item.exerciseId) ?? { ...FALLBACK_EXERCISE, id: item.exerciseId },

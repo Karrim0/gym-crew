@@ -1,34 +1,57 @@
 "use client";
 
+/* eslint-disable react-hooks/set-state-in-effect */
+
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import {
+  Activity,
   ArrowDown,
   ArrowUp,
   Check,
   Dumbbell,
+  Flame,
+  Heart,
+  Moon,
   MoreVertical,
   Plus,
   RotateCcw,
   Save,
+  Shield,
+  Target,
   Trash2,
+  Zap,
 } from "lucide-react";
 import { WEEKDAYS_STARTING_SATURDAY } from "@/constants/schedule";
 import { fetchExerciseLibrary } from "@/features/exercises/services/exercise.service";
 import { CustomExerciseForm } from "@/features/exercises/components/CustomExerciseForm";
-import type { Exercise, GroupRole, UUID, Weekday, WorkoutType } from "@/types";
-import type { SplitDayWithDetails, SplitExerciseWithDetails } from "../types";
+import { getTodayISODate, getWeekdayFromDate, parseISODateOnly } from "@/lib/dates";
+import type {
+  Exercise,
+  GroupRole,
+  ISODateOnlyString,
+  SplitDayColorKey,
+  SplitDayIconKey,
+  UUID,
+  Weekday,
+  WorkoutType,
+} from "@/types";
+import type { SplitDayWithDetails, SplitExerciseWithDetails, WeeklyScheduleDayWithDetails } from "../types";
 import {
   addSplitExercise,
   clearSplitDay,
+  fetchEffectiveWeekSchedule,
   fetchGroupSplit,
   fetchPersonalSplit,
   moveSplitExercise,
   removeSplitExercise,
   resetPersonalSplitToGroup,
+  resetWeekSchedule,
   updateSplitDaySettings,
   updateSplitExerciseTargets,
+  updateWeeklyScheduleDay,
 } from "../services/split.service";
+import { SplitSetupChooser } from "./SplitSetupChooser";
 
 interface SplitManagerProps {
   mode: "group" | "personal";
@@ -47,28 +70,69 @@ const SHORT_DAY: Record<Weekday, string> = {
   friday: "Fri",
 };
 
-const DAY_BY_JS_INDEX: Record<number, Weekday> = {
-  0: "sunday",
-  1: "monday",
-  2: "tuesday",
-  3: "wednesday",
-  4: "thursday",
-  5: "friday",
-  6: "saturday",
+const LONG_DAY: Record<Weekday, string> = {
+  saturday: "Saturday",
+  sunday: "Sunday",
+  monday: "Monday",
+  tuesday: "Tuesday",
+  wednesday: "Wednesday",
+  thursday: "Thursday",
+  friday: "Friday",
 };
 
-const WORKOUT_TYPE_OPTIONS: Array<{ value: WorkoutType; label: string }> = [
-  { value: "push", label: "Push" },
-  { value: "pull", label: "Pull" },
-  { value: "legs", label: "Legs" },
-  { value: "custom", label: "Custom" },
-  { value: "rest", label: "Rest" },
+const ICONS: Record<SplitDayIconKey, typeof Dumbbell> = {
+  dumbbell: Dumbbell,
+  zap: Zap,
+  target: Target,
+  flame: Flame,
+  shield: Shield,
+  heart: Heart,
+  moon: Moon,
+  activity: Activity,
+};
+
+const ICON_OPTIONS: Array<{ key: SplitDayIconKey; label: string }> = [
+  { key: "dumbbell", label: "Strength" },
+  { key: "zap", label: "Power" },
+  { key: "target", label: "Focus" },
+  { key: "activity", label: "Full body" },
+  { key: "flame", label: "Intensity" },
+  { key: "shield", label: "Control" },
+  { key: "heart", label: "Conditioning" },
+  { key: "moon", label: "Recovery" },
 ];
 
-function defaultDayName(day: SplitDayWithDetails) {
-  if (day.workoutType === "rest") return "Rest day";
-  if (day.displayName) return day.displayName;
-  return `${day.workoutType.charAt(0).toUpperCase()}${day.workoutType.slice(1)} day`;
+const COLOR_OPTIONS: Array<{ key: SplitDayColorKey; className: string }> = [
+  { key: "indigo", className: "bg-indigo-300" },
+  { key: "blue", className: "bg-sky-300" },
+  { key: "emerald", className: "bg-emerald-300" },
+  { key: "amber", className: "bg-amber-300" },
+  { key: "rose", className: "bg-rose-300" },
+  { key: "violet", className: "bg-violet-300" },
+];
+
+const COLOR_TONES: Record<SplitDayColorKey, string> = {
+  indigo: "border-indigo-300/35 bg-indigo-300/[0.09] text-indigo-200",
+  blue: "border-sky-300/35 bg-sky-300/[0.09] text-sky-200",
+  emerald: "border-emerald-300/35 bg-emerald-300/[0.09] text-emerald-200",
+  amber: "border-amber-300/35 bg-amber-300/[0.09] text-amber-200",
+  rose: "border-rose-300/35 bg-rose-300/[0.09] text-rose-200",
+  violet: "border-violet-300/35 bg-violet-300/[0.09] text-violet-200",
+};
+
+const WORKOUT_FILTERS: Array<{ value: Exclude<WorkoutType, "rest">; label: string }> = [
+  { value: "custom", label: "Custom" },
+  { value: "push", label: "Push library" },
+  { value: "pull", label: "Pull library" },
+  { value: "legs", label: "Legs library" },
+];
+
+function titleFor(day: Pick<SplitDayWithDetails, "displayName" | "workoutType">) {
+  return day.displayName?.trim() || (day.workoutType === "rest" ? "Recovery" : "Training day");
+}
+
+function dateCaption(value: ISODateOnlyString) {
+  return new Intl.DateTimeFormat("en", { day: "numeric", month: "short" }).format(parseISODateOnly(value));
 }
 
 interface ExerciseEditorProps {
@@ -104,11 +168,7 @@ function ExerciseEditor({ item, index, count, canEdit, onReload, onError }: Exer
       onError("Enter valid set and rep targets.");
       return;
     }
-    await run(() => updateSplitExerciseTargets(item.id, {
-      targetSets: sets,
-      targetRepsMin: min,
-      targetRepsMax: max,
-    }));
+    await run(() => updateSplitExerciseTargets(item.id, { targetSets: sets, targetRepsMin: min, targetRepsMax: max }));
     setEditing(false);
   }
 
@@ -149,9 +209,12 @@ function ExerciseEditor({ item, index, count, canEdit, onReload, onError }: Exer
 export function SplitManager({ mode, groupId, userId, role }: SplitManagerProps) {
   const searchParams = useSearchParams();
   const requestedWeekday = searchParams.get("day") as Weekday | null;
+  const [view, setView] = useState<"week" | "base">(mode === "personal" ? "week" : "base");
   const [days, setDays] = useState<SplitDayWithDetails[]>([]);
+  const [weekDays, setWeekDays] = useState<WeeklyScheduleDayWithDetails[]>([]);
   const [library, setLibrary] = useState<Exercise[]>([]);
-  const [selectedDayId, setSelectedDayId] = useState<string | null>(null);
+  const [selectedBaseId, setSelectedBaseId] = useState<string | null>(null);
+  const [selectedWeekDate, setSelectedWeekDate] = useState<ISODateOnlyString | null>(null);
   const [selectedExercise, setSelectedExercise] = useState("");
   const [showCustomExercise, setShowCustomExercise] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -160,80 +223,165 @@ export function SplitManager({ mode, groupId, userId, role }: SplitManagerProps)
   const [message, setMessage] = useState<string | null>(null);
 
   const canEdit = mode === "personal" || role === "owner" || role === "admin";
+  const anchorDate = getTodayISODate();
 
   const fetchDays = useCallback(
     () => mode === "group" ? fetchGroupSplit(groupId) : fetchPersonalSplit(userId),
     [groupId, mode, userId],
   );
 
-  const reloadDays = useCallback(async () => {
-    const nextDays = await fetchDays();
+  const loadAll = useCallback(async () => {
+    const [nextDays, nextWeek] = await Promise.all([
+      fetchDays(),
+      mode === "personal" ? fetchEffectiveWeekSchedule(userId, anchorDate) : Promise.resolve([]),
+    ]);
     setDays(nextDays);
-    setSelectedDayId((current) => current && nextDays.some((day) => day.id === current) ? current : nextDays[0]?.id ?? null);
-  }, [fetchDays]);
+    setWeekDays(nextWeek);
+    setSelectedBaseId((current) => current && nextDays.some((day) => day.id === current) ? current : nextDays[0]?.id ?? null);
+    setSelectedWeekDate((current) => current && nextWeek.some((day) => day.scheduleDate === current) ? current : nextWeek.find((day) => day.scheduleDate === anchorDate)?.scheduleDate ?? nextWeek[0]?.scheduleDate ?? null);
+  }, [anchorDate, fetchDays, mode, userId]);
 
   useEffect(() => {
     let active = true;
-    void Promise.all([fetchDays(), fetchExerciseLibrary()])
-      .then(([nextDays, nextLibrary]) => {
+    void Promise.all([fetchDays(), fetchExerciseLibrary(), mode === "personal" ? fetchEffectiveWeekSchedule(userId, anchorDate) : Promise.resolve([])])
+      .then(([nextDays, nextLibrary, nextWeek]) => {
         if (!active) return;
         setDays(nextDays);
         setLibrary(nextLibrary);
-        const preferredWeekday = requestedWeekday && WEEKDAYS_STARTING_SATURDAY.includes(requestedWeekday)
+        setWeekDays(nextWeek);
+        const preferred = requestedWeekday && WEEKDAYS_STARTING_SATURDAY.includes(requestedWeekday)
           ? requestedWeekday
-          : DAY_BY_JS_INDEX[new Date().getDay()];
-        setSelectedDayId(nextDays.find((day) => day.weekday === preferredWeekday)?.id ?? nextDays[0]?.id ?? null);
+          : getWeekdayFromDate(new Date());
+        setSelectedBaseId(nextDays.find((day) => day.weekday === preferred)?.id ?? nextDays[0]?.id ?? null);
+        setSelectedWeekDate(nextWeek.find((day) => getWeekdayFromDate(parseISODateOnly(day.scheduleDate)) === preferred)?.scheduleDate ?? nextWeek[0]?.scheduleDate ?? null);
       })
-      .catch((caught) => {
-        if (active) setError(caught instanceof Error ? caught.message : "Unable to load the split.");
-      })
-      .finally(() => {
-        if (active) setIsLoading(false);
-      });
-    return () => {
-      active = false;
-    };
-  }, [fetchDays, requestedWeekday]);
+      .catch((caught) => { if (active) setError(caught instanceof Error ? caught.message : "Unable to load the split."); })
+      .finally(() => { if (active) setIsLoading(false); });
+    return () => { active = false; };
+  }, [anchorDate, fetchDays, mode, requestedWeekday, userId]);
 
-  const orderedDays = useMemo(
-    () => [...days].sort((a, b) => WEEKDAYS_STARTING_SATURDAY.indexOf(a.weekday) - WEEKDAYS_STARTING_SATURDAY.indexOf(b.weekday)),
-    [days],
-  );
-  const selectedDay = orderedDays.find((day) => day.id === selectedDayId) ?? orderedDays[0] ?? null;
+  const orderedDays = useMemo(() => [...days].sort((a, b) => WEEKDAYS_STARTING_SATURDAY.indexOf(a.weekday) - WEEKDAYS_STARTING_SATURDAY.indexOf(b.weekday)), [days]);
+  const orderedWeek = useMemo(() => [...weekDays].sort((a, b) => a.scheduleDate.localeCompare(b.scheduleDate)), [weekDays]);
+  const selectedBase = orderedDays.find((day) => day.id === selectedBaseId) ?? orderedDays[0] ?? null;
+  const selectedWeek = orderedWeek.find((day) => day.scheduleDate === selectedWeekDate) ?? orderedWeek[0] ?? null;
+
+  const [formName, setFormName] = useState("");
+  const [formFocus, setFormFocus] = useState("");
+  const [formType, setFormType] = useState<WorkoutType>("custom");
+  const [formIcon, setFormIcon] = useState<SplitDayIconKey>("dumbbell");
+  const [formColor, setFormColor] = useState<SplitDayColorKey>("indigo");
+  const [formNotes, setFormNotes] = useState("");
+  const [weekSourceId, setWeekSourceId] = useState("");
+
+  useEffect(() => {
+    const current = view === "base" ? selectedBase : selectedWeek;
+    if (!current) return;
+    setFormName(current.displayName ?? "Training day");
+    setFormFocus(current.focusLabel ?? (current.workoutType === "rest" ? "Recovery" : "Custom"));
+    setFormType(current.workoutType);
+    setFormIcon(current.iconKey);
+    setFormColor(current.colorKey);
+    setFormNotes(current.dayNotes);
+    if (view === "week" && selectedWeek) setWeekSourceId(selectedWeek.sourceSplitDayId ?? orderedDays.find((day) => day.workoutType !== "rest")?.id ?? "");
+  }, [orderedDays, selectedBase, selectedWeek, view]);
 
   const availableExercises = useMemo(() => {
-    if (!selectedDay) return [];
+    if (!selectedBase) return [];
     return library.filter((exercise) => {
-      const typeMatches = selectedDay.workoutType === "custom" || selectedDay.workoutType === "rest" || exercise.workoutType === selectedDay.workoutType || exercise.workoutType === "custom";
-      return typeMatches && !selectedDay.exercises.some((item) => item.exerciseId === exercise.id);
+      const typeMatches = selectedBase.workoutType === "custom" || selectedBase.workoutType === "rest" || exercise.workoutType === selectedBase.workoutType || exercise.workoutType === "custom";
+      return typeMatches && !selectedBase.exercises.some((item) => item.exerciseId === exercise.id);
     });
-  }, [library, selectedDay]);
+  }, [library, selectedBase]);
 
-  async function saveDaySettings(workoutType: WorkoutType, displayName = selectedDay?.displayName ?? "") {
-    if (!selectedDay) return;
+  function selectBase(day: SplitDayWithDetails) {
+    setSelectedBaseId(day.id);
+    setSelectedExercise("");
+    setShowCustomExercise(false);
+    setMessage(null);
+  }
+
+  function chooseWeekSource(sourceId: string) {
+    setWeekSourceId(sourceId);
+    const source = orderedDays.find((day) => day.id === sourceId);
+    if (!source) return;
+    setFormType(source.workoutType === "rest" ? "custom" : source.workoutType);
+    setFormName(titleFor(source));
+    setFormFocus(source.focusLabel ?? "Custom");
+    setFormIcon(source.iconKey);
+    setFormColor(source.colorKey);
+    setFormNotes(source.dayNotes);
+  }
+
+  function setAsTrainingDay() {
+    if (view === "week") {
+      const currentSource = orderedDays.find((day) => day.id === weekSourceId && day.workoutType !== "rest");
+      const source = currentSource ?? orderedDays.find((day) => day.workoutType !== "rest");
+      if (source) {
+        chooseWeekSource(source.id);
+        return;
+      }
+    }
+
+    setFormType("custom");
+    if (formIcon === "moon") setFormIcon("dumbbell");
+    if (formName.toLowerCase().includes("recovery") || formName.toLowerCase().includes("rest")) setFormName("Training day");
+    if (formFocus.toLowerCase().includes("recovery")) setFormFocus("Custom");
+  }
+
+  async function saveIdentity() {
     setBusy(true);
     setError(null);
     setMessage(null);
     try {
-      await updateSplitDaySettings(selectedDay.id, workoutType, displayName);
-      await reloadDays();
-      setMessage(workoutType === "rest" ? `${SHORT_DAY[selectedDay.weekday]} is now a rest day. Its exercises are kept.` : `${SHORT_DAY[selectedDay.weekday]} updated.`);
+      if (view === "base") {
+        if (!selectedBase) return;
+        await updateSplitDaySettings({
+          splitDayId: selectedBase.id,
+          workoutType: formType,
+          displayName: formName,
+          focusLabel: formFocus,
+          iconKey: formIcon,
+          colorKey: formColor,
+          dayNotes: formNotes,
+        });
+        setMessage(`${LONG_DAY[selectedBase.weekday]} saved for every week.`);
+      } else {
+        if (!selectedWeek || !weekSourceId) throw new Error("Choose which workout this day should use.");
+        if (formType !== "rest" && (!selectedWeekSource || selectedWeekSource.workoutType === "rest")) {
+          throw new Error("Choose a training day from your repeating plan.");
+        }
+        await updateWeeklyScheduleDay({
+          scheduleDate: selectedWeek.scheduleDate,
+          sourceSplitDayId: weekSourceId,
+          workoutType: formType,
+          displayName: formName,
+          focusLabel: formFocus,
+          iconKey: formIcon,
+          colorKey: formColor,
+          dayNotes: formNotes,
+        });
+        setMessage(`${dateCaption(selectedWeek.scheduleDate)} changed for this week only.`);
+      }
+      await loadAll();
     } catch (caught) {
-      setError(caught instanceof Error ? caught.message : "Unable to update the day.");
+      setError(caught instanceof Error ? caught.message : "Unable to save this day.");
     } finally {
       setBusy(false);
     }
   }
 
-  async function addExercise(exercise = library.find((item) => item.id === selectedExercise)) {
-    if (!selectedDay || !exercise || selectedDay.workoutType === "rest") return;
+  async function addExercise(exerciseOverride?: Exercise) {
+    if (!selectedBase) return;
+    const exercise = exerciseOverride ?? library.find((item) => item.id === selectedExercise);
+    if (!exercise) return;
     setBusy(true);
     setError(null);
     try {
-      await addSplitExercise({ splitDayId: selectedDay.id, exercise, targetSets: 2, isPersonalAddition: mode === "personal" });
+      await addSplitExercise({ splitDayId: selectedBase.id, exercise, isPersonalAddition: mode === "personal" });
       setSelectedExercise("");
       setShowCustomExercise(false);
-      await reloadDays();
+      await loadAll();
+      setMessage(`${exercise.name} added to ${titleFor(selectedBase)}.`);
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "Unable to add the exercise.");
     } finally {
@@ -241,14 +389,14 @@ export function SplitManager({ mode, groupId, userId, role }: SplitManagerProps)
     }
   }
 
-  async function reset() {
-    if (!window.confirm("Reset your personal split to the current crew starting plan?")) return;
+  async function resetBase() {
+    if (!window.confirm("Reset your repeating plan to the crew starting split?")) return;
     setBusy(true);
     setError(null);
     try {
       await resetPersonalSplitToGroup(userId);
-      await reloadDays();
-      setMessage("Your split was reset to the crew plan.");
+      await loadAll();
+      setMessage("Your repeating plan was reset to the crew split.");
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "Unable to reset the split.");
     } finally {
@@ -256,13 +404,28 @@ export function SplitManager({ mode, groupId, userId, role }: SplitManagerProps)
     }
   }
 
+  async function resetCurrentWeek() {
+    if (!window.confirm("Remove this week's changes and use your repeating plan again?")) return;
+    setBusy(true);
+    setError(null);
+    try {
+      await resetWeekSchedule(anchorDate);
+      await loadAll();
+      setMessage("This week now matches your repeating plan.");
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : "Unable to reset this week.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
   async function clearDay() {
-    if (!selectedDay || !window.confirm(`Remove every exercise from ${defaultDayName(selectedDay)}?`)) return;
+    if (!selectedBase || !window.confirm(`Remove every exercise from ${titleFor(selectedBase)}?`)) return;
     setBusy(true);
     try {
-      await clearSplitDay(selectedDay.id);
-      await reloadDays();
-      setMessage("The day is empty. You can add only the exercises you need.");
+      await clearSplitDay(selectedBase.id);
+      await loadAll();
+      setMessage("The day is empty. Add only the exercises you need.");
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "Unable to clear the day.");
     } finally {
@@ -271,131 +434,151 @@ export function SplitManager({ mode, groupId, userId, role }: SplitManagerProps)
   }
 
   if (isLoading) return <div className="h-72 animate-pulse rounded-[24px] border border-white/[0.06] bg-white/[0.035]" />;
-  if (!selectedDay) return <p className="gc-card p-5 text-sm text-neutral-400">No split days are available yet.</p>;
+  if (!selectedBase) return <p className="gc-card p-5 text-sm text-neutral-400">No split days are available yet.</p>;
+
+  const selected = view === "base" ? selectedBase : selectedWeek;
+  const SelectedIcon = ICONS[formIcon];
+  const selectedWeekday = selectedWeek ? getWeekdayFromDate(parseISODateOnly(selectedWeek.scheduleDate)) : null;
+  const selectedWeekSource = orderedDays.find((day) => day.id === weekSourceId) ?? null;
+  const hasValidWeekSource = view !== "week" || formType === "rest" || Boolean(selectedWeekSource && selectedWeekSource.workoutType !== "rest");
 
   return (
     <div className="space-y-4 pb-20 pt-4">
+      {mode === "personal" ? <SplitSetupChooser onChanged={loadAll} /> : null}
+
+      {mode === "personal" ? (
+        <section className="gc-card p-2">
+          <div className="grid grid-cols-2 gap-1 rounded-2xl bg-black/20 p-1">
+            <button type="button" onClick={() => setView("week")} className={`min-h-11 rounded-xl text-sm font-bold transition ${view === "week" ? "bg-indigo-300 text-[#11131a]" : "text-neutral-400"}`}>This week</button>
+            <button type="button" onClick={() => setView("base")} className={`min-h-11 rounded-xl text-sm font-bold transition ${view === "base" ? "bg-indigo-300 text-[#11131a]" : "text-neutral-400"}`}>Repeating plan</button>
+          </div>
+        </section>
+      ) : null}
+
       <section className="gc-card p-4 sm:p-5">
-        <p className="gc-eyebrow">Your schedule</p>
-        <h2 className="mt-1 text-xl font-bold">Build the week around you</h2>
-        <p className="mt-1 text-sm leading-5 text-neutral-500">Every day is flexible. Choose training or recovery, then edit only the day you are working on.</p>
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <p className="gc-eyebrow">{view === "week" ? "This training week" : mode === "group" ? "Crew starting plan" : "Your repeating plan"}</p>
+            <h2 className="mt-1 text-xl font-bold">{view === "week" ? "Move training and recovery around" : "Make every day completely yours"}</h2>
+            <p className="mt-1 text-sm leading-5 text-neutral-500">{view === "week" ? "These changes affect this week only. Your normal plan stays untouched." : "The name is primary. Push, Pull and Legs are only optional library filters."}</p>
+          </div>
+          {view === "week" ? <button type="button" disabled={busy} onClick={() => void resetCurrentWeek()} className="grid h-10 w-10 shrink-0 place-items-center rounded-full border border-white/[0.08]" aria-label="Reset this week"><RotateCcw className="h-4 w-4" /></button> : mode === "personal" ? <button type="button" disabled={busy} onClick={() => void resetBase()} className="grid h-10 w-10 shrink-0 place-items-center rounded-full border border-white/[0.08]" aria-label="Reset to crew split"><RotateCcw className="h-4 w-4" /></button> : null}
+        </div>
 
         <div className="mt-4 grid grid-cols-7 gap-1.5" role="tablist" aria-label="Choose split day">
-          {orderedDays.map((day) => {
-            const active = day.id === selectedDay.id;
-            const rest = day.workoutType === "rest";
+          {(view === "week" ? orderedWeek : orderedDays).map((day) => {
+            const isWeekDay = "scheduleDate" in day;
+            const weekday = isWeekDay ? getWeekdayFromDate(parseISODateOnly(day.scheduleDate)) : day.weekday;
+            const active = isWeekDay ? day.scheduleDate === selectedWeek?.scheduleDate : day.id === selectedBase.id;
+            const Icon = ICONS[day.iconKey];
             return (
-              <button key={day.id} type="button" role="tab" aria-selected={active} onClick={() => {
-                setSelectedDayId(day.id);
-                setSelectedExercise("");
-                setShowCustomExercise(false);
+              <button key={isWeekDay ? day.scheduleDate : day.id} type="button" role="tab" aria-selected={active} onClick={() => {
+                if (isWeekDay) setSelectedWeekDate(day.scheduleDate); else selectBase(day);
                 setMessage(null);
-              }} className={`min-w-0 rounded-xl border px-1 py-2.5 text-center transition ${active ? "border-indigo-300/55 bg-indigo-300 text-[#11131a]" : "border-white/[0.07] bg-white/[0.025]"}`}>
-                <span className={`block text-[10px] font-bold uppercase ${active ? "text-[#11131a]/65" : "text-neutral-500"}`}>{SHORT_DAY[day.weekday]}</span>
-                <span className={`mt-1 block truncate text-[10px] font-semibold sm:text-xs ${active ? "text-[#11131a]" : rest ? "text-neutral-500" : "text-neutral-200"}`}>{rest ? "Rest" : day.workoutType}</span>
+              }} className={`min-w-0 rounded-xl border px-1 py-2 text-center transition ${active ? "border-indigo-300/55 bg-indigo-300 text-[#11131a]" : "border-white/[0.07] bg-white/[0.025]"}`}>
+                <span className={`block text-[9px] font-bold uppercase ${active ? "text-[#11131a]/65" : "text-neutral-500"}`}>{SHORT_DAY[weekday]}</span>
+                <Icon className={`mx-auto mt-1 h-3.5 w-3.5 ${active ? "text-[#11131a]" : day.workoutType === "rest" ? "text-neutral-600" : "text-neutral-300"}`} />
+                <span className={`mt-1 block truncate text-[9px] font-semibold sm:text-[10px] ${active ? "text-[#11131a]" : day.workoutType === "rest" ? "text-neutral-500" : "text-neutral-200"}`}>{day.displayName ?? "Training"}</span>
+                {isWeekDay ? <span className={`mt-0.5 block text-[8px] ${active ? "text-[#11131a]/55" : "text-neutral-600"}`}>{dateCaption(day.scheduleDate)}</span> : null}
               </button>
             );
           })}
         </div>
-
-        {mode === "personal" ? <button type="button" disabled={busy} onClick={() => void reset()} className="gc-secondary-button mt-4"><RotateCcw className="h-4 w-4" /> Reset to crew split</button> : null}
+        <p className="mt-3 text-xs leading-5 text-neutral-500"><strong className="text-neutral-300">Recovery rule:</strong> use as many rest days as your plan needs, but no more than two in a row.</p>
       </section>
 
       {error ? <p className="rounded-xl border border-red-400/20 bg-red-400/10 p-3 text-sm font-semibold text-red-300">{error}</p> : null}
       {message ? <p className="rounded-xl border border-emerald-400/20 bg-emerald-400/10 p-3 text-sm font-semibold text-emerald-300">{message}</p> : null}
 
-      <section className="gc-card overflow-visible">
-        <div className="p-4 sm:p-5">
-          <div className="flex items-start justify-between gap-3">
-            <div>
-              <p className="gc-eyebrow">{selectedDay.weekday}</p>
-              <h2 className="mt-1 text-2xl font-bold">{defaultDayName(selectedDay)}</h2>
-              <p className="mt-1 text-sm text-neutral-500">{selectedDay.workoutType === "rest" ? `${selectedDay.exercises.length} saved exercises will return when you make this a training day.` : `${selectedDay.exercises.length} exercises · targets can be changed anytime.`}</p>
-            </div>
-            <span className={`grid h-11 w-11 place-items-center rounded-2xl ${selectedDay.workoutType === "rest" ? "bg-white/[0.05] text-neutral-400" : "bg-indigo-300/12 text-indigo-200"}`}><Dumbbell className="h-5 w-5" /></span>
-          </div>
-
-          {canEdit ? (
-            <fieldset className="mt-4">
-              <legend className="text-[10px] font-bold uppercase tracking-[0.09em] text-neutral-500">Day type</legend>
-              <div className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-5">
-                {WORKOUT_TYPE_OPTIONS.map((option) => {
-                  const active = selectedDay.workoutType === option.value;
-                  return (
-                    <button
-                      key={option.value}
-                      type="button"
-                      aria-pressed={active}
-                      disabled={busy || active}
-                      onClick={() => void saveDaySettings(option.value, selectedDay.displayName ?? "")}
-                      className={`flex min-h-11 items-center justify-center gap-1.5 rounded-xl border px-3 text-sm font-bold transition disabled:cursor-default ${
-                        active
-                          ? "border-indigo-300/55 bg-indigo-300 text-[#11131a] shadow-[0_8px_22px_rgba(85,101,205,.16)]"
-                          : "border-white/[0.08] bg-white/[0.025] text-neutral-300 hover:border-indigo-300/25 hover:bg-indigo-300/[0.07]"
-                      }`}
-                    >
-                      {active ? <Check className="h-4 w-4" aria-hidden /> : null}
-                      {option.label}
-                    </button>
-                  );
-                })}
+      {selected ? (
+        <section className="gc-card overflow-visible">
+          <div className="p-4 sm:p-5">
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <p className="gc-eyebrow">{view === "week" && selectedWeekday ? `${LONG_DAY[selectedWeekday]} · ${dateCaption(selectedWeek!.scheduleDate)}` : LONG_DAY[selectedBase.weekday]}</p>
+                <h2 className="mt-1 text-2xl font-bold">{formName || "Training day"}</h2>
+                <p className="mt-1 text-sm text-neutral-500">{formType === "rest" ? "Planned recovery keeps your daily consistency streak alive." : `${view === "week" ? selectedWeek?.exercises.length ?? 0 : selectedBase.exercises.length} exercises · ${formFocus || "Custom focus"}`}</p>
               </div>
-              <p className="mt-2 text-xs leading-5 text-neutral-500">Choose the exact kind of session for this day. Rest keeps the exercises saved.</p>
-            </fieldset>
-          ) : null}
-
-          {canEdit && selectedDay.workoutType !== "rest" ? (
-            <label className="mt-3 block text-xs font-bold uppercase tracking-wide text-neutral-500">Day name
-              <div className="mt-1 flex gap-2">
-                <input key={`${selectedDay.id}:${selectedDay.displayName}`} defaultValue={selectedDay.displayName ?? ""} maxLength={40} placeholder="e.g. Back & biceps" className="gc-input min-w-0 flex-1" id={`day-name-${selectedDay.id}`} />
-                <button type="button" disabled={busy} onClick={() => {
-                  const input = document.getElementById(`day-name-${selectedDay.id}`) as HTMLInputElement | null;
-                  void saveDaySettings(selectedDay.workoutType, input?.value ?? "");
-                }} className="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-indigo-300 text-[#11131a]" aria-label="Save day name"><Save className="h-4 w-4" /></button>
-              </div>
-            </label>
-          ) : null}
-        </div>
-
-        {selectedDay.workoutType === "rest" ? (
-          <div className="border-t border-white/[0.06] p-4 sm:p-5">
-            <div className="rounded-2xl border border-dashed border-white/[0.1] p-5 text-center">
-              <p className="font-bold">Recovery day</p>
-              <p className="mt-1 text-sm text-neutral-500">Nothing is deleted. Pick a workout type above whenever you want to train on this day again.</p>
+              <span className={`grid h-12 w-12 shrink-0 place-items-center rounded-2xl border ${COLOR_TONES[formColor]}`}><SelectedIcon className="h-5 w-5" /></span>
             </div>
-          </div>
-        ) : (
-          <div className="border-t border-white/[0.06] p-4 sm:p-5">
-            <div className="mb-3 flex items-center justify-between gap-3">
-              <div><h3 className="font-bold">Exercises</h3><p className="text-xs text-neutral-500">Tap an exercise to edit sets and reps.</p></div>
-              <span className="gc-chip">{selectedDay.exercises.length}</span>
-            </div>
-
-            <ul className="space-y-2">
-              {selectedDay.exercises.map((item, index) => <ExerciseEditor key={`${item.id}:${item.targetSets}:${item.targetRepsMin}:${item.targetRepsMax}`} item={item} index={index} count={selectedDay.exercises.length} canEdit={canEdit} onReload={reloadDays} onError={setError} />)}
-            </ul>
-
-            {selectedDay.exercises.length === 0 ? <p className="rounded-2xl border border-dashed border-white/[0.1] p-5 text-center text-sm text-neutral-500">This day is empty. Add the movements you actually use in the gym.</p> : null}
 
             {canEdit ? (
-              <div className="mt-4 space-y-3">
-                <div className="flex gap-2">
-                  <select value={selectedExercise} onChange={(event) => setSelectedExercise(event.target.value)} className="gc-input min-w-0 flex-1 text-sm">
-                    <option value="">Choose an exercise…</option>
-                    {availableExercises.map((exercise) => <option key={exercise.id} value={exercise.id}>{exercise.name}</option>)}
-                  </select>
-                  <button type="button" disabled={!selectedExercise || busy} onClick={() => void addExercise()} className="gc-primary-button min-h-12 px-4 disabled:opacity-40"><Plus className="h-4 w-4" /> Add</button>
+              <div className="mt-5 space-y-4">
+                {view === "week" ? (
+                  <fieldset>
+                    <legend className="text-[10px] font-bold uppercase tracking-[0.09em] text-neutral-500">Use workout from your plan</legend>
+                    <div className="mt-2 grid gap-2 sm:grid-cols-2">
+                      {orderedDays.filter((day) => day.workoutType !== "rest").map((day) => {
+                        const active = weekSourceId === day.id && formType !== "rest";
+                        const Icon = ICONS[day.iconKey];
+                        return <button key={day.id} type="button" onClick={() => chooseWeekSource(day.id)} className={`flex min-h-12 items-center gap-3 rounded-xl border px-3 text-left ${active ? "border-indigo-300/45 bg-indigo-300/[0.1]" : "border-white/[0.08] bg-white/[0.025]"}`}><Icon className="h-4 w-4 text-indigo-200" /><span className="min-w-0"><strong className="block truncate text-sm">{titleFor(day)}</strong><span className="block truncate text-[11px] text-neutral-500">{day.focusLabel ?? "Custom"}</span></span>{active ? <Check className="ml-auto h-4 w-4 text-indigo-200" /> : null}</button>;
+                      })}
+                    </div>
+                  </fieldset>
+                ) : null}
+
+                <fieldset>
+                  <legend className="text-[10px] font-bold uppercase tracking-[0.09em] text-neutral-500">Plan for this day</legend>
+                  <div className="mt-2 grid grid-cols-2 gap-2">
+                    <button type="button" onClick={setAsTrainingDay} className={`min-h-11 rounded-xl border text-sm font-bold ${formType !== "rest" ? "border-indigo-300/50 bg-indigo-300 text-[#11131a]" : "border-white/[0.08] text-neutral-400"}`}>Training</button>
+                    <button type="button" onClick={() => { setFormType("rest"); setFormName("Recovery"); setFormFocus("Recovery"); setFormIcon("moon"); setFormColor("blue"); }} className={`min-h-11 rounded-xl border text-sm font-bold ${formType === "rest" ? "border-indigo-300/50 bg-indigo-300 text-[#11131a]" : "border-white/[0.08] text-neutral-400"}`}>Recovery</button>
+                  </div>
+                </fieldset>
+
+                {view === "base" && formType !== "rest" ? (
+                  <fieldset>
+                    <legend className="text-[10px] font-bold uppercase tracking-[0.09em] text-neutral-500">Exercise library filter</legend>
+                    <div className="mt-2 flex flex-wrap gap-2">
+                      {WORKOUT_FILTERS.map((filter) => <button key={filter.value} type="button" onClick={() => setFormType(filter.value)} className={`rounded-full border px-3 py-2 text-xs font-bold ${formType === filter.value ? "border-indigo-300/45 bg-indigo-300/[0.12] text-indigo-100" : "border-white/[0.08] text-neutral-500"}`}>{filter.label}</button>)}
+                    </div>
+                    <p className="mt-2 text-xs text-neutral-600">This helps search the exercise library. It never replaces your custom day name.</p>
+                  </fieldset>
+                ) : null}
+
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <label className="text-xs font-bold uppercase tracking-wide text-neutral-500">Day name<input value={formName} onChange={(event) => setFormName(event.target.value)} maxLength={40} placeholder="e.g. Upper A" className="gc-input mt-1 normal-case" /></label>
+                  <label className="text-xs font-bold uppercase tracking-wide text-neutral-500">Focus label<input value={formFocus} onChange={(event) => setFormFocus(event.target.value)} maxLength={32} placeholder="e.g. Chest & back" className="gc-input mt-1 normal-case" /></label>
                 </div>
-                <div className="grid grid-cols-2 gap-2">
-                  <button type="button" onClick={() => setShowCustomExercise((value) => !value)} className="gc-secondary-button"><Plus className="h-4 w-4" /> Custom exercise</button>
-                  <button type="button" disabled={selectedDay.exercises.length === 0 || busy} onClick={() => void clearDay()} className="gc-secondary-button text-red-300 disabled:opacity-40"><Trash2 className="h-4 w-4" /> Clear day</button>
-                </div>
-                {showCustomExercise ? <CustomExerciseForm defaultWorkoutType={selectedDay.workoutType} onCreated={addExercise} onCancel={() => setShowCustomExercise(false)} /> : null}
+
+                <fieldset>
+                  <legend className="text-[10px] font-bold uppercase tracking-[0.09em] text-neutral-500">Icon</legend>
+                  <div className="mt-2 flex flex-wrap gap-2">{ICON_OPTIONS.map(({ key, label }) => { const Icon = ICONS[key]; return <button key={key} type="button" title={label} aria-label={label} onClick={() => setFormIcon(key)} className={`grid h-11 w-11 place-items-center rounded-xl border ${formIcon === key ? "border-indigo-300/50 bg-indigo-300 text-[#11131a]" : "border-white/[0.08] bg-white/[0.025] text-neutral-400"}`}><Icon className="h-4 w-4" /></button>; })}</div>
+                </fieldset>
+
+                <fieldset>
+                  <legend className="text-[10px] font-bold uppercase tracking-[0.09em] text-neutral-500">Color</legend>
+                  <div className="mt-2 flex gap-2">{COLOR_OPTIONS.map(({ key, className }) => <button key={key} type="button" aria-label={`${key} color`} onClick={() => setFormColor(key)} className={`relative grid h-10 w-10 place-items-center rounded-full border ${formColor === key ? "border-white/70" : "border-white/[0.08]"}`}><span className={`h-5 w-5 rounded-full ${className}`} />{formColor === key ? <Check className="absolute h-3 w-3 text-[#11131a]" /> : null}</button>)}</div>
+                </fieldset>
+
+                <label className="block text-xs font-bold uppercase tracking-wide text-neutral-500">Notes for this day<textarea value={formNotes} onChange={(event) => setFormNotes(event.target.value)} maxLength={240} rows={3} placeholder="Grip, tempo, effort target…" className="gc-input mt-1 resize-none text-sm normal-case" /></label>
+                <button type="button" disabled={busy || formName.trim().length < 2 || formFocus.trim().length < 2 || (view === "week" && (!weekSourceId || !hasValidWeekSource))} onClick={() => void saveIdentity()} className="gc-primary-button w-full min-h-12 disabled:opacity-40"><Save className="h-4 w-4" /> Save {view === "week" ? "this week" : "repeating day"}</button>
               </div>
             ) : null}
           </div>
-        )}
-      </section>
+
+          {view === "week" ? (
+            <div className="border-t border-white/[0.06] p-4 sm:p-5">
+              <p className="text-sm leading-6 text-neutral-500">Exercises come from <strong className="text-neutral-300">{selectedWeek?.sourceDay ? titleFor(selectedWeek.sourceDay) : "your repeating plan"}</strong>. To change its exercise list, open the Repeating plan tab.</p>
+              <button type="button" onClick={() => { setView("base"); if (selectedWeek?.sourceSplitDayId) setSelectedBaseId(selectedWeek.sourceSplitDayId); }} className="gc-secondary-button mt-3">Edit its exercises</button>
+            </div>
+          ) : selectedBase.workoutType === "rest" ? (
+            <div className="border-t border-white/[0.06] p-4 sm:p-5"><div className="rounded-2xl border border-dashed border-white/[0.1] p-5 text-center"><Moon className="mx-auto h-5 w-5 text-sky-200" /><p className="mt-2 font-bold">Recovery day</p><p className="mt-1 text-sm text-neutral-500">Saved exercises are kept and return if this day becomes training again.</p></div></div>
+          ) : (
+            <div className="border-t border-white/[0.06] p-4 sm:p-5">
+              <div className="mb-3 flex items-center justify-between gap-3"><div><h3 className="font-bold">Exercises</h3><p className="text-xs text-neutral-500">Tap an exercise to edit its target sets and reps.</p></div><span className="gc-chip">{selectedBase.exercises.length}</span></div>
+              <ul className="space-y-2">{selectedBase.exercises.map((item, index) => <ExerciseEditor key={`${item.id}:${item.targetSets}:${item.targetRepsMin}:${item.targetRepsMax}`} item={item} index={index} count={selectedBase.exercises.length} canEdit={canEdit} onReload={loadAll} onError={setError} />)}</ul>
+              {selectedBase.exercises.length === 0 ? <p className="rounded-2xl border border-dashed border-white/[0.1] p-5 text-center text-sm text-neutral-500">This day is empty. Add the movements you actually use in the gym.</p> : null}
+              {canEdit ? (
+                <div className="mt-4 space-y-3">
+                  <div className="flex gap-2"><select value={selectedExercise} onChange={(event) => setSelectedExercise(event.target.value)} className="gc-input min-w-0 flex-1 text-sm"><option value="">Choose an exercise…</option>{availableExercises.map((exercise) => <option key={exercise.id} value={exercise.id}>{exercise.name}</option>)}</select><button type="button" disabled={!selectedExercise || busy} onClick={() => void addExercise()} className="gc-primary-button min-h-12 px-4 disabled:opacity-40"><Plus className="h-4 w-4" /> Add</button></div>
+                  <div className="grid grid-cols-2 gap-2"><button type="button" onClick={() => setShowCustomExercise((value) => !value)} className="gc-secondary-button"><Plus className="h-4 w-4" /> Custom exercise</button><button type="button" disabled={selectedBase.exercises.length === 0 || busy} onClick={() => void clearDay()} className="gc-secondary-button text-red-300 disabled:opacity-40"><Trash2 className="h-4 w-4" /> Clear day</button></div>
+                  {showCustomExercise ? <CustomExerciseForm defaultWorkoutType={selectedBase.workoutType} onCreated={addExercise} onCancel={() => setShowCustomExercise(false)} /> : null}
+                </div>
+              ) : null}
+            </div>
+          )}
+        </section>
+      ) : null}
     </div>
   );
 }

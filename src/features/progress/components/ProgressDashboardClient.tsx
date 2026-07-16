@@ -58,7 +58,7 @@ export function ProgressDashboardClient({ userId }: ProgressDashboardClientProps
 
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         <StatCard label="Weekly adherence" value={formatAdherencePercentage(summary.adherence.weekly)} detail={`${summary.adherence.weeklyCompleted}/${summary.adherence.weeklyScheduled} planned sessions`} icon={<Target className="h-4 w-4" />} />
-        <StatCard label="Current streak" value={`${summary.currentStreak} wk`} detail={`Longest: ${summary.longestStreak} weeks`} icon={<Flame className="h-4 w-4" />} />
+        <StatCard label="Current streak" value={`${summary.currentStreak} days`} detail={`Longest: ${summary.longestStreak} days`} icon={<Flame className="h-4 w-4" />} />
         <StatCard label="Monthly volume" value={formatWeight(summary.volumeThisMonthKg)} detail={`${summary.sessionsThisMonth} completed sessions`} icon={<Activity className="h-4 w-4" />} />
         <StatCard label="Average duration" value={formatDuration(summary.averageDurationSeconds)} detail={`${summary.totalSessions} sessions tracked`} icon={<Clock3 className="h-4 w-4" />} />
       </div>

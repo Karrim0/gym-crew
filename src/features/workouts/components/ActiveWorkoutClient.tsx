@@ -620,7 +620,7 @@ export function ActiveWorkoutClient() {
       </section>
 
       <button type="button" onClick={restTimer.open} className="gc-card-interactive flex w-full items-center gap-3 p-4 text-left">
-        <span className={`grid h-11 w-11 place-items-center rounded-xl ${restTimer.isRunning ? "bg-emerald-400 text-[#11131a]" : "bg-white/[0.06] text-indigo-200"}`}><TimerReset className="h-5 w-5" /></span>
+        <span className={`grid h-11 w-11 place-items-center rounded-xl ${restTimer.isRunning ? "bg-indigo-300 text-[#11131a]" : "bg-white/[0.06] text-indigo-200"}`}><TimerReset className="h-5 w-5" /></span>
         <span className="min-w-0 flex-1"><span className="block font-bold">{restTimer.isRunning ? `${formatDuration(restTimer.remainingSeconds)} rest remaining` : `Rest timer · ${formatDuration(restTimer.durationSeconds)}`}</span><span className="block text-xs text-neutral-500">Starts automatically after a completed set</span></span>
         <ChevronRight className="h-5 w-5 text-neutral-500" />
       </button>

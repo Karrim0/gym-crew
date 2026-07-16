@@ -15,7 +15,7 @@ export function SoloModeButton() {
     setError(null);
     try {
       await createSoloWorkspace();
-      router.replace("/dashboard");
+      router.replace("/split/personal");
       router.refresh();
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "Unable to start solo mode.");

@@ -1,16 +1,27 @@
 import { createClient } from "@/lib/supabase/client";
-import type { Tables } from "@/lib/supabase/types";
-import type { Exercise, SplitExercise, UUID } from "@/types";
+import type { Json, Tables } from "@/lib/supabase/types";
+import type { Exercise, ISODateOnlyString, SplitExercise, UUID } from "@/types";
 import { cachePersonalSplit, getCachedPersonalSplit } from "@/lib/offline";
+import { addDaysToDate, getTrainingWeekStart, parseISODateOnly, toISODateOnly } from "@/lib/dates";
 import { mapExercise } from "@/features/exercises/services/exercise.service";
-import type { SplitDayWithDetails, SplitExerciseWithDetails } from "../types";
+import type {
+  ImportedPlan,
+  SplitDaySettingsInput,
+  SplitDayWithDetails,
+  SplitExerciseWithDetails,
+  StarterPlanKey,
+  WeeklyScheduleDayInput,
+  WeeklyScheduleDayWithDetails,
+} from "../types";
 
 type SplitDayRow = Tables<"split_days">;
 type SplitExerciseRow = Tables<"split_exercises">;
 type ExerciseRow = Tables<"exercises">;
+type WeeklyScheduleRow = Tables<"weekly_schedule_days">;
 
 type SplitExerciseQueryRow = SplitExerciseRow & { exercises: ExerciseRow };
 type SplitDayQueryRow = SplitDayRow & { split_exercises: SplitExerciseQueryRow[] };
+type WeeklyScheduleQueryRow = WeeklyScheduleRow & { split_days: SplitDayQueryRow | null };
 
 function mapSplitExercise(row: SplitExerciseQueryRow): SplitExerciseWithDetails {
   return {
@@ -34,9 +45,33 @@ function mapSplitDay(row: SplitDayQueryRow): SplitDayWithDetails {
     weekday: row.weekday,
     workoutType: row.workout_type,
     displayName: row.display_name,
+    focusLabel: row.focus_label,
+    iconKey: row.icon_key as SplitDayWithDetails["iconKey"],
+    colorKey: row.color_key as SplitDayWithDetails["colorKey"],
+    dayNotes: row.day_notes,
     exercises: [...row.split_exercises]
       .sort((a, b) => a.position - b.position)
       .map(mapSplitExercise),
+  };
+}
+
+function mapWeeklyScheduleDay(row: WeeklyScheduleQueryRow): WeeklyScheduleDayWithDetails {
+  const sourceDay = row.split_days ? mapSplitDay(row.split_days) : null;
+  return {
+    id: row.id,
+    userId: row.user_id,
+    groupId: row.group_id,
+    scheduleDate: row.schedule_date,
+    sourceSplitDayId: row.source_split_day_id,
+    workoutType: row.workout_type,
+    displayName: row.display_name,
+    focusLabel: row.focus_label,
+    iconKey: row.icon_key as WeeklyScheduleDayWithDetails["iconKey"],
+    colorKey: row.color_key as WeeklyScheduleDayWithDetails["colorKey"],
+    dayNotes: row.day_notes,
+    isCustomized: row.is_customized,
+    sourceDay,
+    exercises: sourceDay?.exercises ?? [],
   };
 }
 
@@ -78,6 +113,30 @@ export async function fetchPersonalSplit(userId: UUID): Promise<SplitDayWithDeta
   }
 }
 
+export async function fetchEffectiveWeekSchedule(
+  userId: UUID,
+  anchorDate: ISODateOnlyString = toISODateOnly(new Date()),
+): Promise<WeeklyScheduleDayWithDetails[]> {
+  const supabase = createClient();
+  const { error: ensureError } = await supabase.rpc("ensure_week_schedule", {
+    target_anchor_date: anchorDate,
+  });
+  if (ensureError) throw new Error(ensureError.message);
+
+  const weekStart = getTrainingWeekStart(parseISODateOnly(anchorDate));
+  const weekEnd = addDaysToDate(weekStart, 6);
+  const { data, error } = await supabase
+    .from("weekly_schedule_days")
+    .select("*, split_days:source_split_day_id(*, split_exercises(*, exercises(*)))")
+    .eq("user_id", userId)
+    .gte("schedule_date", toISODateOnly(weekStart))
+    .lte("schedule_date", toISODateOnly(weekEnd))
+    .order("schedule_date", { ascending: true });
+
+  if (error) throw new Error(error.message);
+  return (data as unknown as WeeklyScheduleQueryRow[]).map(mapWeeklyScheduleDay);
+}
+
 export async function resetPersonalSplitToGroup(userId: UUID): Promise<SplitDayWithDetails[]> {
   const supabase = createClient();
   const { error } = await supabase.rpc("reset_personal_split_to_group");
@@ -87,16 +146,51 @@ export async function resetPersonalSplitToGroup(userId: UUID): Promise<SplitDayW
   return days;
 }
 
-export async function updateSplitDaySettings(
-  splitDayId: UUID,
-  workoutType: SplitDayWithDetails["workoutType"],
-  displayName: string,
-): Promise<void> {
+export async function updateSplitDaySettings(input: SplitDaySettingsInput): Promise<void> {
   const supabase = createClient();
   const { error } = await supabase.rpc("update_split_day_settings", {
-    target_split_day_id: splitDayId,
-    target_workout_type: workoutType,
-    target_display_name: displayName.trim() || undefined,
+    target_split_day_id: input.splitDayId,
+    target_workout_type: input.workoutType,
+    target_display_name: input.displayName.trim(),
+    target_focus_label: input.focusLabel.trim(),
+    target_icon_key: input.iconKey,
+    target_color_key: input.colorKey,
+    target_day_notes: input.dayNotes.trim(),
+  });
+  if (error) throw new Error(error.message);
+}
+
+export async function updateWeeklyScheduleDay(input: WeeklyScheduleDayInput): Promise<void> {
+  const supabase = createClient();
+  const { error } = await supabase.rpc("update_week_schedule_day", {
+    target_schedule_date: input.scheduleDate,
+    target_source_split_day_id: input.sourceSplitDayId,
+    target_workout_type: input.workoutType,
+    target_display_name: input.displayName.trim(),
+    target_focus_label: input.focusLabel.trim(),
+    target_icon_key: input.iconKey,
+    target_color_key: input.colorKey,
+    target_day_notes: input.dayNotes.trim(),
+  });
+  if (error) throw new Error(error.message);
+}
+
+export async function resetWeekSchedule(anchorDate: ISODateOnlyString): Promise<void> {
+  const supabase = createClient();
+  const { error } = await supabase.rpc("reset_week_schedule", { target_anchor_date: anchorDate });
+  if (error) throw new Error(error.message);
+}
+
+export async function applySplitTemplate(templateKey: StarterPlanKey): Promise<void> {
+  const supabase = createClient();
+  const { error } = await supabase.rpc("apply_split_template", { target_template_key: templateKey });
+  if (error) throw new Error(error.message);
+}
+
+export async function applyImportedSplit(plan: ImportedPlan): Promise<void> {
+  const supabase = createClient();
+  const { error } = await supabase.rpc("apply_imported_split", {
+    target_plan: plan as unknown as Json,
   });
   if (error) throw new Error(error.message);
 }

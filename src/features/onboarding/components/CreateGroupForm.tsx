@@ -30,7 +30,7 @@ export function CreateGroupForm({ onSubmit }: CreateGroupFormProps) {
         await createGroup(data.name);
       }
 
-      router.replace("/dashboard");
+      router.replace("/split/personal");
       router.refresh();
     } catch (error) {
       setSubmitError(error instanceof Error ? error.message : "Unable to create the group.");

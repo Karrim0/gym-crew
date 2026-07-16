@@ -257,6 +257,8 @@ export type Database = {
           share_personal_records: boolean
           share_weights: boolean
           share_workout_summary: boolean
+          split_setup_completed_at: string | null
+          split_setup_method: string | null
           updated_at: string
         }
         Insert: {
@@ -268,6 +270,8 @@ export type Database = {
           share_personal_records?: boolean
           share_weights?: boolean
           share_workout_summary?: boolean
+          split_setup_completed_at?: string | null
+          split_setup_method?: string | null
           updated_at?: string
         }
         Update: {
@@ -279,15 +283,21 @@ export type Database = {
           share_personal_records?: boolean
           share_weights?: boolean
           share_workout_summary?: boolean
+          split_setup_completed_at?: string | null
+          split_setup_method?: string | null
           updated_at?: string
         }
         Relationships: []
       }
       split_days: {
         Row: {
+          color_key: string
           created_at: string
+          day_notes: string
           display_name: string | null
+          focus_label: string | null
           group_id: string
+          icon_key: string
           id: string
           owner_user_id: string | null
           updated_at: string
@@ -295,9 +305,13 @@ export type Database = {
           workout_type: Database["public"]["Enums"]["workout_type"]
         }
         Insert: {
+          color_key?: string
           created_at?: string
+          day_notes?: string
           display_name?: string | null
+          focus_label?: string | null
           group_id: string
+          icon_key?: string
           id?: string
           owner_user_id?: string | null
           updated_at?: string
@@ -305,9 +319,13 @@ export type Database = {
           workout_type: Database["public"]["Enums"]["workout_type"]
         }
         Update: {
+          color_key?: string
           created_at?: string
+          day_notes?: string
           display_name?: string | null
+          focus_label?: string | null
           group_id?: string
+          icon_key?: string
           id?: string
           owner_user_id?: string | null
           updated_at?: string
@@ -381,6 +399,79 @@ export type Database = {
             columns: ["split_day_id"]
             isOneToOne: false
             referencedRelation: "split_days"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      weekly_schedule_days: {
+        Row: {
+          color_key: string
+          created_at: string
+          day_notes: string
+          display_name: string
+          focus_label: string
+          group_id: string
+          icon_key: string
+          id: string
+          is_customized: boolean
+          schedule_date: string
+          source_split_day_id: string | null
+          updated_at: string
+          user_id: string
+          workout_type: Database["public"]["Enums"]["workout_type"]
+        }
+        Insert: {
+          color_key?: string
+          created_at?: string
+          day_notes?: string
+          display_name: string
+          focus_label: string
+          group_id: string
+          icon_key?: string
+          id?: string
+          is_customized?: boolean
+          schedule_date: string
+          source_split_day_id?: string | null
+          updated_at?: string
+          user_id: string
+          workout_type: Database["public"]["Enums"]["workout_type"]
+        }
+        Update: {
+          color_key?: string
+          created_at?: string
+          day_notes?: string
+          display_name?: string
+          focus_label?: string
+          group_id?: string
+          icon_key?: string
+          id?: string
+          is_customized?: boolean
+          schedule_date?: string
+          source_split_day_id?: string | null
+          updated_at?: string
+          user_id?: string
+          workout_type?: Database["public"]["Enums"]["workout_type"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "weekly_schedule_days_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "groups"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "weekly_schedule_days_source_split_day_id_fkey"
+            columns: ["source_split_day_id"]
+            isOneToOne: false
+            referencedRelation: "split_days"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "weekly_schedule_days_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -620,6 +711,13 @@ export type Database = {
         Returns: undefined
       }
       ensure_personal_split: { Args: never; Returns: undefined }
+      ensure_week_schedule: { Args: { target_anchor_date?: string }; Returns: string }
+      apply_imported_split: { Args: { target_plan: Json }; Returns: undefined }
+      apply_split_template: { Args: { target_template_key: string }; Returns: undefined }
+      get_daily_consistency_streak: {
+        Args: never
+        Returns: { current_streak_days: number; longest_streak_days: number }[]
+      }
       generate_group_invite_code: { Args: never; Returns: string }
       get_group_member_weekly_stats: {
         Args: { target_group_id: string }
@@ -674,6 +772,7 @@ export type Database = {
         Returns: undefined
       }
       reset_personal_split_to_group: { Args: never; Returns: undefined }
+      reset_week_schedule: { Args: { target_anchor_date?: string }; Returns: undefined }
       seed_group_split: {
         Args: { target_group_id: string }
         Returns: undefined
@@ -685,8 +784,25 @@ export type Database = {
       }
       update_split_day_settings: {
         Args: {
-          target_display_name?: string
+          target_color_key: string
+          target_day_notes?: string
+          target_display_name: string
+          target_focus_label: string
+          target_icon_key: string
           target_split_day_id: string
+          target_workout_type: Database["public"]["Enums"]["workout_type"]
+        }
+        Returns: undefined
+      }
+      update_week_schedule_day: {
+        Args: {
+          target_color_key: string
+          target_day_notes?: string
+          target_display_name: string
+          target_focus_label: string
+          target_icon_key: string
+          target_schedule_date: string
+          target_source_split_day_id: string
           target_workout_type: Database["public"]["Enums"]["workout_type"]
         }
         Returns: undefined

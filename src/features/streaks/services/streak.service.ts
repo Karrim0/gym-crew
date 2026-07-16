@@ -1,21 +1,20 @@
-import { calculateWorkoutStreak, type StreakResult } from "@/lib/calculations/streaks";
-import { fetchProfile } from "@/features/profile/services/profile.service";
-import { fetchPersonalSplit } from "@/features/splits/services/split.service";
-import { fetchWorkoutHistory } from "@/features/workouts/services/workout-session.service";
-import type { UUID, Weekday } from "@/types";
+import { createClient } from "@/lib/supabase/client";
+import type { StreakResult } from "@/lib/calculations/streaks";
+import type { UUID } from "@/types";
 
-export async function fetchWorkoutStreak(userId: UUID): Promise<StreakResult> {
-  const [profile, split, history] = await Promise.all([
-    fetchProfile(userId),
-    fetchPersonalSplit(userId),
-    fetchWorkoutHistory(userId),
-  ]);
-
-  const personalRestDays = new Set(profile?.additionalRestDays ?? []);
-  const scheduledWeekdays = split
-    .filter((day) => day.workoutType !== "rest" && !personalRestDays.has(day.weekday))
-    .map((day) => day.weekday as Weekday);
-  const completedDates = [...new Set(history.map((session) => session.scheduledDate))];
-
-  return calculateWorkoutStreak(completedDates, scheduledWeekdays);
+/**
+ * Daily consistency counts both completed planned workouts and planned rest
+ * days. An unfinished workout for the current day does not break the streak
+ * until the day closes.
+ */
+export async function fetchWorkoutStreak(_userId: UUID): Promise<StreakResult> {
+  void _userId;
+  const supabase = createClient();
+  const { data, error } = await supabase.rpc("get_daily_consistency_streak");
+  if (error) throw new Error(error.message);
+  const row = data?.[0];
+  return {
+    currentStreak: row?.current_streak_days ?? 0,
+    longestStreak: row?.longest_streak_days ?? 0,
+  };
 }

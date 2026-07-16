@@ -30,7 +30,7 @@ export function JoinGroupForm({ onSubmit }: JoinGroupFormProps) {
         await joinGroupByInviteCode(data.inviteCode);
       }
 
-      router.replace("/dashboard");
+      router.replace("/split/personal");
       router.refresh();
     } catch (error) {
       setSubmitError(error instanceof Error ? error.message : "Unable to join the group.");

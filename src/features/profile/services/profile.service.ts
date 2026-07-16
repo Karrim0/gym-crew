@@ -15,6 +15,8 @@ export function mapProfile(row: ProfileRow): UserProfile {
     shareWorkoutSummary: row.share_workout_summary,
     sharePersonalRecords: row.share_personal_records,
     shareWeights: row.share_weights,
+    splitSetupMethod: row.split_setup_method as UserProfile["splitSetupMethod"],
+    splitSetupCompletedAt: row.split_setup_completed_at,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   };

@@ -1,16 +1,19 @@
 import { calculateWeeklyAdherence } from "@/lib/calculations/adherence";
+import { createClient } from "@/lib/supabase/client";
 import { calculateWorkoutVolume } from "@/lib/calculations/volume";
 import {
-  getScheduledDatesInRange,
+  enumerateDateRange,
   getTrainingWeekStart,
   getTodayISODate,
+  getWeekdayFromDate,
   parseISODateOnly,
+  toISODateOnly,
 } from "@/lib/dates";
 import { fetchPersonalRecords } from "@/features/personal-records/services/personal-record.service";
 import { fetchPersonalSplit } from "@/features/splits/services/split.service";
 import { fetchWorkoutStreak } from "@/features/streaks/services/streak.service";
 import { fetchWorkoutHistory } from "@/features/workouts/services/workout-session.service";
-import type { MuscleGroup, UUID, Weekday, WorkoutSet } from "@/types";
+import type { MuscleGroup, UUID, WorkoutSet, WorkoutType } from "@/types";
 import type { PersonalRecordWithExerciseName } from "@/features/personal-records/types";
 
 export interface AdherenceSummary {
@@ -70,13 +73,6 @@ function getEstimatedOneRepMax(set: WorkoutSet): number {
   return set.weightKg * (1 + set.reps / 30);
 }
 
-async function getSchedule(userId: UUID): Promise<Weekday[]> {
-  const split = await fetchPersonalSplit(userId);
-  return split
-    .filter((day) => day.workoutType !== "rest")
-    .map((day) => day.weekday);
-}
-
 function countCompletedScheduledDates(
   completedDates: Set<string>,
   scheduledDates: string[],
@@ -85,26 +81,50 @@ function countCompletedScheduledDates(
 }
 
 export async function fetchAdherenceSummary(userId: UUID): Promise<AdherenceSummary> {
-  const [scheduledWeekdays, history] = await Promise.all([
-    getSchedule(userId),
-    fetchWorkoutHistory(userId),
-  ]);
-  const today = parseISODateOnly(getTodayISODate());
+  const todayISO = getTodayISODate();
+  const today = parseISODateOnly(todayISO);
   const weekStart = getTrainingWeekStart(today);
   const monthStart = new Date(today.getFullYear(), today.getMonth(), 1, 12, 0, 0, 0);
+  const supabase = createClient();
+
+  const [split, history] = await Promise.all([
+    fetchPersonalSplit(userId),
+    fetchWorkoutHistory(userId),
+    supabase.rpc("ensure_week_schedule", { target_anchor_date: todayISO }).then(({ error }) => {
+      if (error) throw new Error(error.message);
+    }),
+  ]).then(([nextSplit, nextHistory]) => [nextSplit, nextHistory] as const);
+
+  const { data: overrides, error: overrideError } = await supabase
+    .from("weekly_schedule_days")
+    .select("schedule_date, workout_type")
+    .eq("user_id", userId)
+    .gte("schedule_date", toISODateOnly(monthStart))
+    .lte("schedule_date", todayISO);
+  if (overrideError) throw new Error(overrideError.message);
+
+  const baseTypes = new Map(split.map((day) => [day.weekday, day.workoutType]));
+  const overrideTypes = new Map(overrides.map((day) => [day.schedule_date, day.workout_type as WorkoutType]));
+  const scheduledDates = enumerateDateRange(monthStart, today)
+    .filter((date) => {
+      const isoDate = toISODateOnly(date);
+      const type = overrideTypes.get(isoDate) ?? baseTypes.get(getWeekdayFromDate(date)) ?? "rest";
+      return type !== "rest";
+    })
+    .map(toISODateOnly);
+
+  const weeklyDates = scheduledDates.filter((date) => date >= toISODateOnly(weekStart));
   const completedDates = new Set(history.map((session) => session.scheduledDate));
-  const weeklyDates = getScheduledDatesInRange(weekStart, today, scheduledWeekdays);
-  const monthlyDates = getScheduledDatesInRange(monthStart, today, scheduledWeekdays);
   const weeklyCompleted = countCompletedScheduledDates(completedDates, weeklyDates);
-  const monthlyCompleted = countCompletedScheduledDates(completedDates, monthlyDates);
+  const monthlyCompleted = countCompletedScheduledDates(completedDates, scheduledDates);
 
   return {
     weekly: calculateWeeklyAdherence(weeklyDates.length, weeklyCompleted),
-    monthly: calculateWeeklyAdherence(monthlyDates.length, monthlyCompleted),
+    monthly: calculateWeeklyAdherence(scheduledDates.length, monthlyCompleted),
     weeklyCompleted,
     weeklyScheduled: weeklyDates.length,
     monthlyCompleted,
-    monthlyScheduled: monthlyDates.length,
+    monthlyScheduled: scheduledDates.length,
   };
 }
 
