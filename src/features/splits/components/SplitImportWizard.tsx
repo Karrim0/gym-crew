@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useRef, useState } from "react";
-import { AlertTriangle, CheckCircle2, FileSpreadsheet, ImagePlus, Loader2, PencilLine, Sparkles, Trash2, X } from "lucide-react";
+import { AlertTriangle, CheckCircle2, FileCheck2, FileSpreadsheet, ImagePlus, Loader2, PencilLine, Sparkles, Trash2, X } from "lucide-react";
 import type { ImportedPlan } from "../types";
 import { applyImportedSplit } from "../services/split.service";
 
@@ -28,6 +28,7 @@ export function SplitImportWizard({ onClose, onImported }: SplitImportWizardProp
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
+  const [processingMessage, setProcessingMessage] = useState<string | null>(null);
 
   const lowConfidenceCount = useMemo(
     () => plan?.days.flatMap((day) => day.exercises).filter((exercise) => (exercise.confidence ?? 1) < 0.75).length ?? 0,
@@ -41,14 +42,16 @@ export function SplitImportWizard({ onClose, onImported }: SplitImportWizardProp
     }
     setBusy(true);
     setError(null);
+    setProcessingMessage(null);
     try {
       const body = new FormData();
       if (file) body.append("file", file);
       if (text.trim()) body.append("text", text.trim());
       const response = await fetch("/api/split/import", { method: "POST", body });
-      const payload = await response.json().catch(() => null) as { plan?: ImportedPlan; error?: string } | null;
+      const payload = await response.json().catch(() => null) as { plan?: ImportedPlan; error?: string; message?: string; processing?: "local" | "ai" } | null;
       if (!response.ok || !payload?.plan) throw new Error(payload?.error ?? "Unable to read this plan.");
       setPlan(payload.plan);
+      setProcessingMessage(payload.message ?? (payload.processing === "local" ? "Read locally — no AI cost." : null));
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "Unable to read this plan.");
     } finally {
@@ -135,7 +138,7 @@ export function SplitImportWizard({ onClose, onImported }: SplitImportWizardProp
                 <button type="button" onClick={() => inputRef.current?.click()} className="rounded-2xl border border-dashed border-indigo-300/30 bg-indigo-300/[0.06] p-5 text-left transition hover:bg-indigo-300/[0.1]">
                   <ImagePlus className="h-6 w-6 text-indigo-200" />
                   <strong className="mt-3 block">Photo, PDF or spreadsheet</strong>
-                  <span className="mt-1 block text-sm leading-5 text-neutral-500">Up to 10 MB. Arabic and English are supported.</span>
+                  <span className="mt-1 block text-sm leading-5 text-neutral-500">Excel, CSV and pasted text are read free. Photos and PDFs use optional AI.</span>
                 </button>
                 <label className="rounded-2xl border border-white/[0.08] bg-white/[0.025] p-5">
                   <FileSpreadsheet className="h-6 w-6 text-indigo-200" />
@@ -143,7 +146,7 @@ export function SplitImportWizard({ onClose, onImported }: SplitImportWizardProp
                   <textarea value={text} onChange={(event) => setText(event.target.value)} rows={5} placeholder="Saturday Upper: Bench Press 3×8–12…" className="gc-input mt-3 resize-none text-sm" />
                 </label>
               </div>
-              <input ref={inputRef} type="file" className="hidden" accept="image/jpeg,image/png,image/webp,application/pdf,text/plain,text/csv,.xls,.xlsx" onChange={(event) => setFile(event.target.files?.[0] ?? null)} />
+              <input ref={inputRef} type="file" className="hidden" accept="image/jpeg,image/png,image/webp,application/pdf,text/plain,text/csv,.xlsx" onChange={(event) => setFile(event.target.files?.[0] ?? null)} />
               {file ? (
                 <div className="flex items-center gap-3 rounded-2xl border border-emerald-300/20 bg-emerald-300/[0.06] p-3.5">
                   <CheckCircle2 className="h-5 w-5 shrink-0 text-emerald-300" />
@@ -151,11 +154,14 @@ export function SplitImportWizard({ onClose, onImported }: SplitImportWizardProp
                   <button type="button" onClick={() => setFile(null)} className="text-xs font-bold text-neutral-400">Remove</button>
                 </div>
               ) : null}
-              <div className="rounded-2xl border border-white/[0.07] bg-white/[0.025] p-4 text-sm leading-6 text-neutral-400">
-                <strong className="text-neutral-200">You stay in control.</strong> Gym Crew does not save the uploaded file. It is sent to the configured AI provider for processing, then every day, exercise, set and rep range is shown for review before your split changes.
+              <div className="rounded-2xl border border-emerald-300/15 bg-emerald-300/[0.045] p-4 text-sm leading-6 text-neutral-400">
+                <div className="flex items-start gap-3">
+                  <FileCheck2 className="mt-0.5 h-5 w-5 shrink-0 text-emerald-300" />
+                  <p><strong className="text-neutral-200">Free first.</strong> Excel, CSV and pasted text are read locally without using API credit. Photos and PDFs use the optional AI fallback. The uploaded file is not saved.</p>
+                </div>
               </div>
               <button type="button" disabled={busy || (!file && text.trim().length < 4)} onClick={() => void readPlan()} className="gc-primary-button w-full min-h-12 disabled:opacity-40">
-                {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />} Read my plan
+                {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : file && /\.(xlsx|csv|txt)$/i.test(file.name) ? <FileSpreadsheet className="h-4 w-4" /> : <Sparkles className="h-4 w-4" />} Read my plan
               </button>
             </>
           ) : null}
@@ -163,8 +169,8 @@ export function SplitImportWizard({ onClose, onImported }: SplitImportWizardProp
           {plan && !saved ? (
             <>
               <div className="flex flex-wrap items-start justify-between gap-3">
-                <div><p className="gc-eyebrow">Review before saving</p><h3 className="mt-1 text-2xl font-bold">{plan.title}</h3><p className="mt-1 text-sm text-neutral-500">Edit anything that was read incorrectly.</p></div>
-                <button type="button" onClick={() => setPlan(null)} className="gc-secondary-button"><PencilLine className="h-4 w-4" /> Choose another file</button>
+                <div><p className="gc-eyebrow">Review before saving</p><h3 className="mt-1 text-2xl font-bold">{plan.title}</h3><p className="mt-1 text-sm text-neutral-500">Edit anything that was read incorrectly.</p>{processingMessage ? <p className="mt-2 inline-flex items-center gap-2 rounded-full border border-emerald-300/20 bg-emerald-300/[0.06] px-3 py-1 text-xs font-bold text-emerald-200"><FileCheck2 className="h-3.5 w-3.5" /> {processingMessage}</p> : null}</div>
+                <button type="button" onClick={() => { setPlan(null); setProcessingMessage(null); }} className="gc-secondary-button"><PencilLine className="h-4 w-4" /> Choose another file</button>
               </div>
 
               {plan.warnings.length > 0 || lowConfidenceCount > 0 ? (
